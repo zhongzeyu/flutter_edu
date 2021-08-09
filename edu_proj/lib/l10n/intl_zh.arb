@@ -1,0 +1,48 @@
+{
+    "backbtn":"  <- ",
+
+    "changepassword":"修改密码",
+    "character":"字节",
+    "checkverifycode":"请查收邮件找到验证码",
+    "createAccount":"创建帐号",
+    "createnewpassword":"创建新密码",
+
+    "email":"电子邮件",
+    "employee":"员工",
+    "eteremailtoresetpassword":"输入邮箱，我们会给您邮件中发验证码，以便重置密码",
+
+    "forgetpassword":"忘记密码?",
+
+    "home":"主页",
+
+    "invalidname":"请输入合法的{name}",
+    "isrequired":"{name}必填",
+
+    "login":"登录",
+
+    "maxinput":"请输入少于{number}个{unit}",
+    "mininput":"请输入至少{number}个{unit}",
+
+    "password":"密码",
+    "plsenteremail":"请输入邮箱地址",
+    "program":"学科",
+
+    "resetpassword":"重置密码",
+    "role":"角色",
+
+    "serverdown":"失败！ 服务器未响应，请稍候再试",
+    "serverwrongcode":"失败！ 服务器返回错误信息, [{responseCode}], [{responsebody}]",
+    "student":"学生",
+    "system":"系统",
+    "systemtitle":"Smile Smart",
+    "submit":"提交",
+
+    "tablerole":"表角色",
+    "tutor":"老师",
+    
+    "updatepassword":"修改密码",
+
+    "verifycode":"验证码",
+    
+    "welcome":"欢迎"
+}

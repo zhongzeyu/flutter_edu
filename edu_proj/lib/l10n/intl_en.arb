@@ -1,0 +1,49 @@
+{
+    "backbtn":"  <- ",
+    
+    "changepassword":"Change Password",
+    "character":"characters",
+    "checkverifycode":"Please check email for verify code",
+    "createAccount":"Create Account",
+    "createnewpassword":"Create new password",
+    
+    "email":"Email",
+    "employee":"Employee",
+    "eteremailtoresetpassword":"Entere your email address and we'll send you an email with code to reset your password. ",
+    
+
+    "forgetpassword":"Forget password?",
+
+    "home":"Home",
+
+    "invalidname":"Please enter an valid {name}",
+    "isrequired":"{name} is required",
+
+    "login":"Login",
+
+    "mininput":"Please enter at least {number} {unit}",
+    "maxinput":"Please enter less than {number} {unit}",
+
+    "password":"Password",
+    "plsenteremail":"Please enter email address",
+    "program":"Program",
+
+    "resetpassword":"Reset password",
+    "role":"Role",
+
+    "serverdown":"Failed! server is not response, please retry after a while",
+    "serverwrongcode":"Failed, Http response code is not right, [{responseCode}], [{responsebody}]",
+    "student":"Student",
+    "system":"System",
+    "systemtitle":"Smile Smart",
+    "submit":"Submit",
+
+    "tablerole":"Table Role",
+    "tutor":"Tutor",
+
+    "updatepassword":"Update password",
+    
+    "verifycode":"Verify Code",
+
+    "welcome":"Welcome"
+}
