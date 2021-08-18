@@ -56,29 +56,11 @@ class DataModel extends ChangeNotifier {
   Map<String, Map<String, dynamic>> _formLists = {};
   Map<int, Color> _bdBackColorList = {};
   Map<String, Map<String, dynamic>> _tableList = {};
-  //List<dynamic> _tabList = [];
-  Widget _tabWidget;
+  List<dynamic> _tabList = [];
+  //Widget _tabWidget;
   Map<String, dynamic> _actionLists = {};
   Map<String, dynamic> _menuLists = {};
   Map<String, dynamic> _screenLists = {};
-  /*'firstPage': {
-      'type': 'PicsAndButtons',
-      'pics': [
-        {'img': 'image0.png', 'label': 'Earn Instant cashback', 'fontSize': 20},
-        {
-          'img': 'image1.png',
-          'label': 'Build Credit with ease',
-          'fontSize': 20
-        },
-        {'img': 'image2.png', 'label': 'welcome', 'fontSize': 20}
-      ],
-      'title': {'label': 'welcome', 'fontSize': 34},
-      'btns': [
-        {'label': 'createaccount', 'action': 'createAccount'},
-        {'label': 'login', 'action': 'login'}
-      ]
-    }
-  };*/
 
   Queue _requestList = new Queue();
 
@@ -90,13 +72,46 @@ class DataModel extends ChangeNotifier {
   Map<String, dynamic> get screenLists => _screenLists;
 
   Map<String, Map<String, dynamic>> get tableList => _tableList;
-  //List<dynamic> get tabList => _tabList;
-  Widget get tabWidget => _tabWidget;
-  //int _tabIndex = 0;
+  List<dynamic> get tabList => _tabList;
+  //Widget get tabWidget => _tabWidget;
+  int _tabIndex = 0;
   Map get systemParams => _systemParams;
   //dynamic _tabParent;
-  //int get tabIndex => _tabIndex;
-  //TabController _tabController;
+  int get tabIndex => _tabIndex;
+  setTabIndex(index) {
+    _tabIndex = index;
+  }
+
+  getTabByIndex(int index) {
+    return GestureDetector(
+      onTap: () {
+        _tabIndex = index;
+        notifyListeners();
+      },
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(getSCurrent(_tabList[index]['label']),
+                  style: TextStyle(
+                      fontWeight: index == _tabIndex
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: index == _tabIndex ? Colors.black : Colors.grey)),
+              Container(
+                margin: EdgeInsets.only(top: 20 / 4),
+                height: 2,
+                width: 30,
+                color: index == _tabIndex ? Colors.black : Colors.transparent,
+              ),
+            ],
+          )),
+    );
+  }
+
+  TabController _tabController;
+
   DataModel() {
     init();
   }
@@ -106,14 +121,10 @@ class DataModel extends ChangeNotifier {
 
   init() {}
   /*initTabController(context) {
-    int tabIndex = _tabController?.index ?? 0;
-    int length = _tabList.length;
-    int initialIndex = tabIndex > length - 1 ? length - 1 : tabIndex;
-    _tabController?.dispose();
 
     _tabController = TabController(
-        length: _tabList.length, vsync: _tabParent, initialIndex: initialIndex);
-    _tabController.animateTo(0);
+        length: _tabList.length, vsync: _tabParent, initialIndex: 0);
+    //_tabController.animateTo(0);
     //_tabController.animateTo(length - 1);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {}
@@ -121,6 +132,7 @@ class DataModel extends ChangeNotifier {
     _tabWidget = Scaffold(
       appBar: AppBar(
         title: getTabBar(),
+        backgroundColor: Colors.white,
       ),
       body: getTabBarView(context),
     );
@@ -135,7 +147,7 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  /*addTab(data, context) {
+  addTab(data, context) {
     //int i = 0;
     _tabList.forEach((element) {
       if (data['label'] == element['label']) {
@@ -152,16 +164,21 @@ class DataModel extends ChangeNotifier {
       'type': data['type'],
       'actionid': data['actionid']
     });
-    initTabController(context);
+    _tabIndex = _tabList.length - 1;
+    //initTabController(context);
+    /*_tabController = TabController(
+        initialIndex: 1, length: _tabList.length, vsync: _tabParent);
+    _tabController.animateTo(_tabList.length - 1);*/
     //getTabItems();
     //getTabItemBodys(context);
     notifyListeners();
+
     //wait(2);
     //_tabController.animateTo(_tabList.length - 1);
     //context.refresh();
     /*wait(1);
     showTab(data['label'], context);*/
-  }*/
+  }
 
   addTable(data) {
     _tableList[data['actionid']] = data['body'][data['actionid']];
@@ -422,7 +439,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getActionIcons(_param, context) {
-    List<Widget> result = getLocalComponentsList();
+    List<Widget> result = getLocalComponentsList(context);
     if (_param['actions'] != null) {
       for (int i = 0; i < _param['actions'].length; i++) {
         dynamic pi = _param['actions'][i];
@@ -553,7 +570,7 @@ class DataModel extends ChangeNotifier {
             ),
             onPressed: () {
               element['colorIndex'] = data['colorIndex'];
-              //processTap(context, element);
+              processTap(context, element);
             },
             child: Text(getSCurrent(element['label']))));
       });
@@ -699,22 +716,26 @@ class DataModel extends ChangeNotifier {
     return TextInputType.text;
   }
 
-  getLocalComponents() {
-    return Row(children: getLocalComponentsList());
+  getLocalComponents(context) {
+    return Row(children: getLocalComponentsList(context));
   }
 
-  getLocalComponentsList() {
+  getLocalComponentsList(context) {
+    ThemeData themeData = Theme.of(context);
+    int valueColor = themeData.backgroundColor.value;
     return [
       Icon(Icons.public_outlined),
       (_locale.languageCode == 'en')
-          ? ElevatedButton(
-              child: Text('中文'),
+          ? TextButton(
+              child: Text('中文',
+                  style: TextStyle(color: fromBdckcolor(valueColor))),
               onPressed: () {
                 setLocale(Locale('zh'));
               },
             )
-          : ElevatedButton(
-              child: Text('EN'),
+          : TextButton(
+              child: Text('EN',
+                  style: TextStyle(color: fromBdckcolor(valueColor))),
               onPressed: () {
                 setLocale(Locale('en'));
               },
@@ -722,19 +743,20 @@ class DataModel extends ChangeNotifier {
     ];
   }
 
-  getMenuItems(List mainItem, context) {
+  getMenuItems(String menuName, context) {
     List<Widget> items = [];
-    mainItem.forEach((element) {
-      Map<String, String> map = {};
-      element.entries.forEach((e) {
-        map[e.key] = e.value;
-      });
+
+    /*for (int i = 0; i < _menuLists[menuName].length; i++) {
+      items.add(Text(getSCurrent(_menuLists[menuName][i]['label'])));
+    }*/
+    _menuLists[menuName].forEach((element) {
+      //items.add(Text(getSCurrent(map['label'])));
       items.add(ListTile(
-        leading: Icon(getIconsByName(map['icon'])),
-        title: Text(getSCurrent(map[
+        leading: Icon(getIconsByName(element['icon'])),
+        title: Text(getSCurrent(element[
             'label'])), //MyLabel({'label': map['label'] + '', 'fontSize': 20.0}),
         onTap: () {
-          onTap(context, map);
+          onTap(context, element);
         },
         //onTap: datamodel.onTap(context, map),
       ));
@@ -864,9 +886,10 @@ class DataModel extends ChangeNotifier {
     return source;
   }
 
-  /*getTabBar() {
+  getTabBar() {
     return TabBar(
       controller: _tabController,
+      isScrollable: true,
       tabs: getTabItems(),
     );
   }
@@ -878,8 +901,8 @@ class DataModel extends ChangeNotifier {
         children: getTabItemBodys(context));
   }
 
-  getTabBody(data, context) {
-    //data = Map.of(data);
+  getTabBody(element, context) {
+    dynamic data = _tabList[_tabIndex];
     if (data['type'] == 'card') {
       return getCard(data['body'], context);
     }
@@ -892,6 +915,9 @@ class DataModel extends ChangeNotifier {
       items.add(Tab(
         text: getSCurrent(element['label']),
       ));
+      /*items.add(Text(
+         getSCurrent(element['label']), style: TextStyle(color: Colors.black, fontSize: 22),
+      ));*/
     });
     return items;
   }
@@ -902,7 +928,7 @@ class DataModel extends ChangeNotifier {
       items.add(getTabBody(element, context));
     });
     return items;
-  }*/
+  }
 
   getTxtImage(label, color, fontSize, height, letterSpacing) {
     return Text(
@@ -1049,8 +1075,8 @@ class DataModel extends ChangeNotifier {
           await changePassword(context, actionData);
         } else if (action == 'finishme') {
           await finishme(context);
-          /*} else if (action == 'processTab') {
-          await processTab(actionData, context);*/
+        } else if (action == 'processTab') {
+          await processTab(actionData, context);
         } else if (action == 'removeAllScreens') {
           await removeAllScreens(context);
         } else if (action == 'resetpassword') {
@@ -1065,8 +1091,8 @@ class DataModel extends ChangeNotifier {
           await setMyInfo(actionData[0], context);
         } else if (action == 'setMyMenu') {
           await setMyMenu(actionData);
-          /*} else if (action == 'setMyTab') {
-          await setMyTab(actionData);*/
+        } else if (action == 'setMyTab') {
+          await setMyTab(actionData);
         } else if (action == 'setInitForm') {
           await setInitForm(actionData);
         } else if (action == 'setSessionkey') {
@@ -1086,7 +1112,7 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  /*processTab(List data, context) {
+  processTab(List data, context) {
     data.forEach((data0) {
       data0 = Map.of(data0);
       if (data0['type'] == 'table') {
@@ -1096,9 +1122,9 @@ class DataModel extends ChangeNotifier {
     });
 
     //notifyListeners();
-  }*/
+  }
 
-  /*processTap(context, element) {
+  processTap(context, element) {
     _tabList.forEach((el) {
       if (el['label'] == element['label']) {
         showTab(el['actionid'], context);
@@ -1106,7 +1132,7 @@ class DataModel extends ChangeNotifier {
       }
     });
     sendRequestOne('process', [element], context);
-  }*/
+  }
 
   removeAllScreens(context) {
     Navigator.of(context)
@@ -1372,11 +1398,19 @@ class DataModel extends ChangeNotifier {
     //notifyListeners();
   }
 
-  setMyMenu(data) {
+  setMyMenu(List data) {
+    for (int i = 0; i < data.length; i++) {
+      data[i] = Map.of(data[i]);
+      //data[i]['widget'] = Text(getSCurrent('role'));
+    }
     _menuLists['main'] = data;
   }
 
-  /*setMyTab(List data) {
+  getMenuListLabel() {
+    return _menuLists['main'][0]['label'];
+  }
+
+  setMyTab(List data) {
     Map data0 = Map.of(data[0]);
     List<dynamic> data0body = data0['body'];
     int i = 0;
@@ -1394,7 +1428,7 @@ class DataModel extends ChangeNotifier {
     data0['isselected'] = true;
     _tabList = [data0];
     notifyListeners();
-  }*/
+  }
 
   setSessionkey(data) {
     int key = int.parse(data);
@@ -1426,20 +1460,22 @@ class DataModel extends ChangeNotifier {
         });
   }
 
-  /*showTab(label, context) {
+  showTab(label, context) {
     int i = 0;
     _tabList.forEach((element) {
       if (element['label'] == label) {
-        _tabController.animateTo(i);
-        //_tabIndex = i;
+        //_tabController.animateTo(i);
+        _tabIndex = i;
         //DefaultTabController.of(context).animateTo(i);
         return;
         //_tabController.initialIndex = i;
       }
       i++;
     });
+    _tabIndex = 0;
+    //addTab();
     //notifyListeners();
-  }*/
+  }
 
   showTable(String tableid, context) {
     if (_tableList[tableid] == null) {

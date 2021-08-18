@@ -16,7 +16,7 @@ class FirstPage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [datamodel.getLocalComponents()]),
+                children: [datamodel.getLocalComponents(context)]),
           ),
           //Expanded(child: PicsAndButtons(datamodel.screenLists[_name])),
           Expanded(child: aScreen),

@@ -57,7 +57,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "student" : MessageLookupByLibrary.simpleMessage("学生"),
     "submit" : MessageLookupByLibrary.simpleMessage("提交"),
     "system" : MessageLookupByLibrary.simpleMessage("系统"),
-    "systemtitle" : MessageLookupByLibrary.simpleMessage("Smile Smart"),
+    "systemtitle" : MessageLookupByLibrary.simpleMessage("睿智的笑"),
     "tablerole" : MessageLookupByLibrary.simpleMessage("表角色"),
     "tutor" : MessageLookupByLibrary.simpleMessage("老师"),
     "updatepassword" : MessageLookupByLibrary.simpleMessage("修改密码"),

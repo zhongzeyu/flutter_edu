@@ -10,6 +10,21 @@ class MyMain extends StatefulWidget {
 }
 
 class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
+  /*TabController _tabController;
+  @protected
+  @override
+  void initState() {
+    super.initState();
+    _tabController =
+        TabController(initialIndex: 0, length: 1, vsync: this); // 直接传this
+
+    print("---->${_tabController.previousIndex}");
+
+    if (_tabController.indexIsChanging) {
+      print("---->indexch");
+    }
+  }*/
+
   @override
   Widget build(BuildContext context) {
     /*getMenuItems(List mainItem, DataModel datamodel) {
@@ -33,7 +48,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
 
     getItemActions(List actionItem, DataModel datamodel) {
       List<Widget> items = [];
-      items.add(datamodel.getLocalComponents());
+      items.add(datamodel.getLocalComponents(context));
       actionItem.forEach((element) {
         Map<String, String> map = {};
         element.entries.forEach((e) {
@@ -96,19 +111,43 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: ListView(
-                      children: datamodel.getMenuItems(
-                          datamodel.menuLists['main'], context),
+                      children: datamodel.getMenuItems('main', context),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          body: Container(
-            //padding: EdgeInsets.all(5.0),
-            child: Text(
-                datamodel.getSCurrent("changepassword")), //datamodel.tabWidget,
+          body: Column(
+            children: [
+              Container(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
+                  height: 35,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: datamodel.tabList.length,
+                    itemBuilder: (context, index) =>
+                        datamodel.getTabByIndex(index),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: datamodel.getTabBody('', context),
+              ),
+            ],
           ),
+          /*Column(
+            children: [
+              Container(
+                //padding: EdgeInsets.all(5.0),
+                child: datamodel.getTabBar(),
+              ),
+              Expanded(
+                child: datamodel.getTabBarView(context),
+              ),
+            ],
+          ),*/
         );
       },
     );
