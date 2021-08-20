@@ -1,3 +1,5 @@
+import 'package:edu_proj/config/constants.dart';
+import 'package:edu_proj/widgets/myTab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edu_proj/models/DataModel.dart';
@@ -36,7 +38,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
         });
         items.add(ListTile(
           leading: Icon(datamodel.getIconsByName(map['icon'])),
-          title: MyLabel({'label': map['label'] + '', 'fontSize': 20.0}),
+          title: MyLabel({gLabel: map[gLabel] + '', 'fontSize': 20.0}),
           onTap: () {
             datamodel.onTap(context, map);
           },
@@ -56,7 +58,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
         });
         items.add(IconButton(
           icon: Icon(datamodel.getIconsByName(map['icon'])),
-          tooltip: map['label'] + '',
+          tooltip: map[gLabel] + '',
           onPressed: () {
             datamodel.onTap(context, map);
           },
@@ -118,25 +120,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
               ),
             ),
           ),
-          body: Column(
-            children: [
-              Container(
-                alignment: Alignment.centerLeft,
-                child: SizedBox(
-                  height: 35,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: datamodel.tabList.length,
-                    itemBuilder: (context, index) =>
-                        datamodel.getTabByIndex(index),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: datamodel.getTabBody('', context),
-              ),
-            ],
-          ),
+          body: MyTab('main'),
           /*Column(
             children: [
               Container(
