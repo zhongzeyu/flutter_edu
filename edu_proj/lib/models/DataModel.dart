@@ -18,8 +18,10 @@ import 'package:edu_proj/widgets/MyForm.dart';
 //import 'package:edu_proj/widgets/MyTable.dart';
 import 'package:edu_proj/widgets/myButton.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
+import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
 import 'package:edu_proj/widgets/myPic.dart';
 import 'package:edu_proj/widgets/picsAndButtons.dart';
+//import 'package:edu_proj/widgets/tableData.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -85,7 +87,7 @@ class DataModel extends ChangeNotifier {
   getTabByIndex(int index, tabName) {
     return GestureDetector(
       onTap: () {
-        _tabList[tabName]['tabIndex'] = index;
+        _tabList[tabName][gTabIndex] = index;
         //_tabIndex = index;
         notifyListeners();
       },
@@ -94,19 +96,19 @@ class DataModel extends ChangeNotifier {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(getSCurrent(_tabList[tabName]['data'][index][gLabel]),
+              Text(getSCurrent(_tabList[tabName][gData][index][gLabel]),
                   style: TextStyle(
-                      fontWeight: index == _tabList[tabName]['tabIndex']
+                      fontWeight: index == _tabList[tabName][gTabIndex]
                           ? FontWeight.bold
                           : FontWeight.normal,
-                      color: index == _tabList[tabName]['tabIndex']
+                      color: index == _tabList[tabName][gTabIndex]
                           ? Colors.black
                           : Colors.grey)),
               Container(
                 margin: EdgeInsets.only(top: 20 / 4),
                 height: 2,
                 width: 30,
-                color: index == _tabList[tabName]['tabIndex']
+                color: index == _tabList[tabName][gTabIndex]
                     ? Colors.black
                     : Colors.transparent,
               ),
@@ -145,7 +147,7 @@ class DataModel extends ChangeNotifier {
 
   addandsentRequest(action, data, context) {
     try {
-      _requestList.add({'action': action, 'data': data});
+      _requestList.add({gAction: action, gData: data});
       sendRequestList(context);
     } catch (e) {
       throw e;
@@ -154,7 +156,7 @@ class DataModel extends ChangeNotifier {
 
   addTab(data, context, tabName) {
     //int i = 0;
-    _tabList[tabName]['data'].forEach((element) {
+    _tabList[tabName][gData].forEach((element) {
       if (data[gLabel] == element[gLabel]) {
         //_tabIndex = i;
         showTab(data[gLabel], context, tabName);
@@ -164,12 +166,9 @@ class DataModel extends ChangeNotifier {
       //i++;
     });
     //_tabIndex = i;
-    _tabList[tabName]['data'].add({
-      gLabel: data[gLabel],
-      gType: data[gType],
-      'actionid': data['actionid']
-    });
-    _tabList[tabName]['tabIndex'] = _tabList[tabName]['data'].length - 1;
+    _tabList[tabName][gData].add(
+        {gLabel: data[gLabel], gType: data[gType], gActionid: data[gActionid]});
+    _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;
     //initTabController(context);
     /*_tabController = TabController(
         initialIndex: 1, length: _tabList.length, vsync: _tabParent);
@@ -186,7 +185,76 @@ class DataModel extends ChangeNotifier {
   }
 
   addTable(data) {
-    _tableList[data['actionid']] = data['body'][data['actionid']];
+    _tableList[data[gActionid]] = Map.of(data[gBody][data[gActionid]]);
+    _tableList[data[gActionid]][gAscending] = true;
+    _tableList[data[gActionid]][gSortColumnIndex] = 0;
+    Map param = {
+      "type": "form",
+      "formdetail": {
+        "formName": "login",
+        "backgroundColor": 4280391411,
+        "submit": "login",
+        "imgTitle": {
+          "title": "welcome",
+          "fontSize": 40.0,
+          "height": 1.2,
+          "letterSpacing": 1.0
+        },
+        "height": 450.5,
+        "top": 130.0,
+        "items": {
+          "email": {
+            "id": "email",
+            "dbid": "email",
+            "type": "email",
+            "label": "email",
+            "defaultValue": "",
+            "placeHolder": "xxx@xxxxx.xxx",
+            "required": true,
+            "minLength": 8,
+            "length": 40,
+            "hash": false,
+            "unit": "characters",
+            "prefixIcon": 59123,
+            "inputType": "emailAddress",
+            "isHidden": false,
+            "fontSize": null,
+            "letterSpacing": null,
+            "isPrimary": false
+          },
+          "password": {
+            "id": "password",
+            "dbid": "password",
+            "type": "password",
+            "label": "password",
+            "defaultValue": "",
+            "placeHolder": "",
+            "required": true,
+            "minLength": 8,
+            "length": 20,
+            "hash": true,
+            "unit": "characters",
+            "prefixIcon": 59459,
+            "inputType": "visiblePassword",
+            "isHidden": false,
+            "fontSize": null,
+            "letterSpacing": null,
+            "isPrimary": false
+          }
+        }
+      },
+      "actions": [
+        {"type": "icon", "value": 58336, "action": "messenger"}
+      ],
+      "bottomImgs": [
+        {"img": "loginimg.png"}
+      ],
+      "title": {"type": "img", "value": "myicon.png"},
+      "btns": [
+        {"label": "forgetpassword", "action": "forgetpassword"}
+      ]
+    };
+    setFormListOne(data[gActionid], param);
   }
 
   Future<void> alert(BuildContext context, String msg) async {
@@ -216,8 +284,8 @@ class DataModel extends ChangeNotifier {
   }
   afterSubmit(context, _formName, result) {
     Map<String, dynamic> formDefine = _formLists[_formName];
-    if (formDefine['btns'] != null) {
-      List btnList = formDefine['btns'];
+    if (formDefine[gBtns] != null) {
+      List btnList = formDefine[gBtns];
       for (int i = 0; i < btnList.length; i++) {
         Map bi = btnList[i];
         result.add(
@@ -233,7 +301,7 @@ class DataModel extends ChangeNotifier {
               style: TextStyle(color: Colors.black),
             ),
             onTap: () {
-              this.sendRequestOne(bi['action'], [], context);
+              this.sendRequestOne(bi[gAction], [], context);
             },
           ),
         );
@@ -242,7 +310,7 @@ class DataModel extends ChangeNotifier {
   }
 
   beforeSubmit(context, _formName, result) {
-    /*if (_formName == 'login') {
+    /*if (_formName == gLogin) {
       result.add(
         SizedBox(
           height: 10,
@@ -274,12 +342,12 @@ class DataModel extends ChangeNotifier {
 
   clear() {
     //_email = null;
-    setFormValue('login', 'email', '');
-    setFormValue('login', 'password', '');
-    //_formLists['login']['items']['email']['defaultValue'] = '';
+    setFormValue(gLogin, gEmail, '');
+    setFormValue(gLogin, 'password', '');
+    //_formLists[gLogin][gItems][gEmail][gDefaultValue] = '';
 
-    //_formLists['login']['items']['email']['txtEditingController']..text = '';
-    //_formLists['login']['items']['password']['txtEditingController']..text = '';
+    //_formLists[gLogin][gItems][gEmail]['txtEditingController']..text = '';
+    //_formLists[gLogin][gItems]['password']['txtEditingController']..text = '';
     _token = '';
     _myId = '';
   }
@@ -340,7 +408,7 @@ class DataModel extends ChangeNotifier {
   }
 
   forgetpassword(context) {
-    var data = getFormValue('login', 'email', 'txtEditingController');
+    var data = getFormValue(gLogin, gEmail, 'txtEditingController');
     if (data != null && data.length > 0) {
       this.sendRequestOne('forgetpassword', data, context);
     } else {
@@ -350,7 +418,7 @@ class DataModel extends ChangeNotifier {
 
   formSubmit(BuildContext context, formid) {
     try {
-      Map<dynamic, dynamic> obj = _formLists[formid]['items'];
+      Map<dynamic, dynamic> obj = _formLists[formid][gItems];
       var changed = false;
       var data = {};
       data[MyConfig.FORMID.name] = formid;
@@ -359,9 +427,9 @@ class DataModel extends ChangeNotifier {
         var objI = element.value;
         var type = objI[gType];
         if (type == MyConfig.TABLEID.name) {
-          data[MyConfig.TABLEID.name] = objI['value'];
+          data[MyConfig.TABLEID.name] = objI[gValue];
         } else if (objI['dbid'] != null && objI['dbid'] != '') {
-          var value = objI['value'];
+          var value = objI[gValue];
           data[objI['dbid']] = value;
           if (objI['hash'] != null && objI['hash']) {
             data[objI['dbid']] = hash(value);
@@ -392,12 +460,12 @@ class DataModel extends ChangeNotifier {
             showMsg(context, 'Password not match. Please check.');
             return;
           }
-          /*data['email'] =
-              getFormValue('login', 'email', 'txtEditingController');*/
+          /*data[gEmail] =
+              getFormValue(gLogin, gEmail, 'txtEditingController');*/
         }
         /*if (formid == 'verifycode') {
-          data['email'] =
-              getFormValue(formid, 'email', 'txtEditingController');
+          data[gEmail] =
+              getFormValue(formid, gEmail, 'txtEditingController');
           //Navigator.pop(context);
         }*/
         //primary key need be transfer
@@ -407,7 +475,7 @@ class DataModel extends ChangeNotifier {
           if (objI[MyConfig.TABLEID.name] != '' &&
               objI['isPrimary'] &&
               data[objI[MyConfig.TABLEID.name]] == null) {
-            data[objI[MyConfig.TABLEID.name]] = objI['defaultValue'];
+            data[objI[MyConfig.TABLEID.name]] = objI[gDefaultValue];
           }
         });
         //send request;
@@ -450,9 +518,9 @@ class DataModel extends ChangeNotifier {
         dynamic pi = _param['actions'][i];
         if (pi[gType] == 'icon') {
           result.add(MyIcon(pi));
-          /*icon: Icon(IconData(pi['value'], fontFamily: 'MaterialIcons')),
+          /*icon: Icon(IconData(pi[gValue], fontFamily: 'MaterialIcons')),
             onPressed: () {
-              sendRequestOne(pi['action'], '', context);
+              sendRequestOne(pi[gAction], '', context);
             },
           ));*/
         }
@@ -462,7 +530,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getButtons(param) {
-    List<dynamic> list = param['btns'];
+    List<dynamic> list = param[gBtns];
     List<Widget> result = [];
     list.forEach((element) {
       result.add(MyButton(element));
@@ -564,7 +632,7 @@ class DataModel extends ChangeNotifier {
 
   getCardButtons(context, data, param0) {
     List<Widget> list = [];
-    if (data[gType] == 'process') {
+    if (data[gType] == gProcess) {
       List detail = data['detail'];
       detail.forEach((element) {
         list.add(TextButton(
@@ -585,7 +653,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getCardTitle(data) {
-    if (data[gType] == 'process')
+    if (data[gType] == gProcess)
       return getTxtImage(
           data[gLabel], _colorList[data['colorIndex']], 24, 0, 2.0);
   }
@@ -628,9 +696,9 @@ class DataModel extends ChangeNotifier {
         child: Column(
             mainAxisAlignment: MainAxisAlignment.end, children: bottom)));
     return Column(children: result);
-    /*if (param[gType] == 'form')
+    /*if (param[gType] == gForm)
       return MyForm(param);
-    else if (param[gType] == 'tableid') return MyTable(param);*/
+    else if (param[gType] == gTableID) return MyTable(param);*/
   }
 
   getFirstPage(name) {
@@ -645,19 +713,19 @@ class DataModel extends ChangeNotifier {
 
   getFormDefineImage(formValue) {
     return getTxtImage(
-        formValue['title'][gLabel],
+        formValue[gTitle][gLabel],
         _lastBackGroundColor,
-        formValue['title']['fontSize'],
-        formValue['title']['height'],
-        formValue['title']['letterSpacing']);
+        formValue[gTitle][gFontSize],
+        formValue[gTitle]['height'],
+        formValue[gTitle]['letterSpacing']);
   }
 
   getFormValue(formid, dbid, valueid) {
     Map<String, dynamic> formDetail = _formLists[formid];
     if (valueid == 'txtEditingController') {
-      return formDetail['items'][dbid][valueid].value.text;
+      return formDetail[gItems][dbid][valueid].value.text;
     }
-    return formDetail['items'][dbid][valueid];
+    return formDetail[gItems][dbid][valueid];
   }
 
   getGrayLevel(int intColor) {
@@ -702,7 +770,7 @@ class DataModel extends ChangeNotifier {
       return TextInputType.datetime;
     } else if (s == 'multiline') {
       return TextInputType.multiline;
-    } else if (s == 'name') {
+    } else if (s == gName) {
       return TextInputType.name;
     } else if (s == 'number') {
       return TextInputType.number;
@@ -714,8 +782,6 @@ class DataModel extends ChangeNotifier {
       return TextInputType.url;
     } else if (s == 'values') {
       return TextInputType.values;
-    } else if (s == 'name') {
-      return TextInputType.name;
     }
 
     return TextInputType.text;
@@ -759,7 +825,7 @@ class DataModel extends ChangeNotifier {
       items.add(ListTile(
         leading: Icon(getIconsByName(element['icon'])),
         title: Text(getSCurrent(element[
-            gLabel])), //MyLabel({gLabel: map[gLabel] + '', 'fontSize': 20.0}),
+            gLabel])), //MyLabel({gLabel: map[gLabel] + '', gFontSize: 20.0}),
         onTap: () {
           onTap(context, element);
         },
@@ -779,7 +845,10 @@ class DataModel extends ChangeNotifier {
   }
 
   getParamTypeValue(param) {
-    param[param[gType]] = param['value'];
+    if (param == null) {
+      param = {gType: "title"};
+    }
+    param[param[gType]] = param[gValue];
 
     return param;
   }
@@ -823,7 +892,9 @@ class DataModel extends ChangeNotifier {
       s = [source];
     }
     try {
-      if (s[0] == 'backbtn') {
+      if (s[0] == gAddnew) {
+        return S.current.addnew;
+      } else if (s[0] == 'backbtn') {
         return S.current.backbtn;
       } else if (s[0] == 'changepassword') {
         return S.current.changepassword;
@@ -835,7 +906,9 @@ class DataModel extends ChangeNotifier {
         return S.current.createAccount;
       } else if (s[0] == 'createnewpassword') {
         return S.current.createnewpassword;
-      } else if (s[0] == 'email') {
+      } else if (s[0] == gDelete) {
+        return S.current.delete;
+      } else if (s[0] == gEmail) {
         return S.current.email;
       } else if (s[0] == 'employee') {
         return S.current.employee;
@@ -907,11 +980,51 @@ class DataModel extends ChangeNotifier {
   }*/
 
   getTabBody(tabname, context) {
-    dynamic data = _tabList[tabname]['data'][_tabList[tabname]['tabIndex']];
+    dynamic data = _tabList[tabname][gData][_tabList[tabname][gTabIndex]];
     if (data[gType] == 'card') {
-      return getCard(data['body'], context, tabname);
+      return getCard(data[gBody], context, tabname);
+    } else if (data[gType] == gTable) {
+      /*return Column(
+        children: [
+          ElevatedButton(onPressed: (){}, child: MyLabel({gLabel:gAddnew}))
+          ListView.builder(
+            itemCount: tableInfo[gData].length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text('row $index'),
+              );
+            },
+          ),
+        ],
+      );*/
+
+      String tableName = data[gActionid];
+      /*  Map tableInfo = _tableList[tableName];
+      //tableInfo.[gData].length;
+      DataTableSource tabledata = TableData(tableInfo);
+
+      List<DataColumn> columns = getTableColumns(tableName);*/
+      return Column(
+        children: [
+          /*Container(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              height: 35,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _tabList['main'][gData].length,
+                itemBuilder: (context, index) => getTabByIndex(index, 'main'),
+              ),
+            ),
+          ),*/
+          Expanded(
+            child: MyPaginatedDataTable({gName: tableName}),
+          ),
+        ],
+      );
     }
-    return Text('not available');
+
+    return Text(data[gType]);
   }
 
   /*getTabItems() {
@@ -955,12 +1068,12 @@ class DataModel extends ChangeNotifier {
   }
 
   getWidgetBody(param) {
-    if (param[gType] == 'form') {
+    if (param[gType] == gForm) {
       return getWidgetForm(param);
     }
     return Column(
       children: [
-        MyLabel({gLabel: 'welcome', 'fontSize': 20.0})
+        MyLabel({gLabel: 'welcome', gFontSize: 20.0})
       ],
     );
   }
@@ -975,14 +1088,14 @@ class DataModel extends ChangeNotifier {
 
   getWidgetTitle(param) {
     Widget title;
-    param['title'] = getParamTypeValue(param['title']);
-    if (param['title'][gType] == gLabel) {
-      title = MyLabel(param['title']);
-    } else if (param['title'][gType] == 'icon') {
-      title = MyIcon(param['title']);
-    } else if (param['title'][gType] == 'img') {
-      title = MyPic(param['title']);
-      //MyImg(getParamTypeValue(param['title']));
+    param[gTitle] = getParamTypeValue(param[gTitle]);
+    if (param[gTitle][gType] == gLabel) {
+      title = MyLabel(param[gTitle]);
+    } else if (param[gTitle][gType] == 'icon') {
+      title = MyIcon(param[gTitle]);
+    } else if (param[gTitle][gType] == 'img') {
+      title = MyPic(param[gTitle]);
+      //MyImg(getParamTypeValue(param[gTitle]));
     }
     return title;
   }
@@ -1001,14 +1114,14 @@ class DataModel extends ChangeNotifier {
 
   onTap(context, Map map) {
     try {
-      if (map[gType] == 'action') {
-        if (map['actionid'] == 'logout') {
+      if (map[gType] == gAction) {
+        if (map[gActionid] == 'logout') {
           logOff();
-        } else if (map['actionid'] == 'changepassword') {
+        } else if (map[gActionid] == 'changepassword') {
           changePassword(context, null);
-        } else if (map['actionid'] == 'role') {}
-      } else if (map[gType] == 'table') {
-        var tableid = map['actionid'];
+        } else if (map[gActionid] == 'role') {}
+      } else if (map[gType] == gTable) {
+        var tableid = map[gActionid];
         _lastBackGroundColor = _defaultBackGroundColor;
 
         showTable(tableid, context);
@@ -1026,8 +1139,8 @@ class DataModel extends ChangeNotifier {
     Map param = {
       'backgroundColor': _formLists[formname]['backgroundColor'],
       'color': _formLists[formname]['color'],
-      'name': formname,
-      gType: 'form'
+      gName: formname,
+      gType: gForm
     };
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => MyDetail(param)));
@@ -1067,9 +1180,9 @@ class DataModel extends ChangeNotifier {
         var action = '';
         List actionData;
         element.forEach((key, value) {
-          if (key == 'action') {
+          if (key == gAction) {
             action = value;
-          } else if (key == 'data') {
+          } else if (key == gData) {
             actionData = value;
           }
         });
@@ -1106,7 +1219,7 @@ class DataModel extends ChangeNotifier {
           showMsg(context, actionData[0]['errMsg']);
           //throw actionData[0]['errMsg'];
         } else if (action == 'showTable') {
-          await showTable(actionData[0]['tableid'], context);
+          await showTable(actionData[0][gTableID], context);
         }
       });
     } catch (e) {
@@ -1117,7 +1230,7 @@ class DataModel extends ChangeNotifier {
   processTab(List data, context) {
     data.forEach((data0) {
       data0 = Map.of(data0);
-      if (data0[gType] == 'table') {
+      if (data0[gType] == gTable) {
         addTable(data0);
       }
       addTab(data0, context, data0['param0']);
@@ -1127,13 +1240,13 @@ class DataModel extends ChangeNotifier {
   }
 
   processTap(context, element, tabName) {
-    _tabList[tabName]['data'].forEach((el) {
+    _tabList[tabName][gData].forEach((el) {
       if (el[gLabel] == element[gLabel]) {
-        showTab(el['actionid'], context, tabName);
+        showTab(el[gActionid], context, tabName);
         return;
       }
     });
-    sendRequestOne('process', [element], context);
+    sendRequestOne(gProcess, [element], context);
   }
 
   removeAllScreens(context) {
@@ -1155,10 +1268,10 @@ class DataModel extends ChangeNotifier {
     if (_requestList != null) {
       _requestList.forEach((element) {
         var value = element.value;
-        var objIaction = value['action'];
-        if (objIaction == item['action']) {
-          var objIDataStr = value['data'].toString();
-          var dataStr = item['data'].toString();
+        var objIaction = value[gAction];
+        if (objIaction == item[gAction]) {
+          var objIDataStr = value[gData].toString();
+          var dataStr = item[gData].toString();
           if (objIDataStr == dataStr) {
             //duplicated, return
             return true;
@@ -1208,7 +1321,7 @@ class DataModel extends ChangeNotifier {
           'getTableData',
           {
             "tableid": tableid,
-            "email": getFormValue('login', 'email', 'value'),
+            gEmail: getFormValue(gLogin, gEmail, gValue),
             "company": _globalCompanyid
           },
           context);
@@ -1233,8 +1346,8 @@ class DataModel extends ChangeNotifier {
         wait(1);
         var param = getMod(_zzydhbase, _arandomsession, _zzyprime);
         _requestList.addFirst({
-          'action': 'getsessionkey',
-          'data': [
+          gAction: 'getsessionkey',
+          gData: [
             {'key': param}
           ]
         });
@@ -1247,7 +1360,7 @@ class DataModel extends ChangeNotifier {
       }
       Map requestFirst = requestListRemoveFirst();
       if (_token != '') {
-        requestFirst['token'] = _token;
+        requestFirst[gToken] = _token;
         requestFirst['companyid'] = _globalCompanyid;
       }
       var dataRequest = encryptByDES(requestFirst);
@@ -1265,7 +1378,7 @@ class DataModel extends ChangeNotifier {
   sendRequestOne(action, data, context) {
     try {
       //check if duplicate
-      if (requestListExists({'action': action, 'data': data})) {
+      if (requestListExists({gAction: action, gData: data})) {
         return;
       }
 
@@ -1288,22 +1401,22 @@ class DataModel extends ChangeNotifier {
 
   setFormListOne(formID, param) {
     var formDetail = param['formdetail'];
-    var btns = param['btns'];
+    var btns = param[gBtns];
     Map<String, dynamic> formValue = Map.from(formDetail);
 
     //formValue['submit'] = getSCurrent(formValue['submit']);
-    //String title = getSCurrent(formValue['title'][gLabel]);
+    //String title = getSCurrent(formValue[gTitle][gLabel]);
 
     formValue['backgroundColor'] = Color(_lastBackGroundColor);
     /*formValue['image'] = Text(
-          getSCurrent(formValue['title'][gLabel]),
+          getSCurrent(formValue[gTitle][gLabel]),
           style: TextStyle(
             color: fromBdckcolor(_lastBackGroundColor),
-            fontSize: formValue['title']['fontSize'],
-            height: formValue['title']['height'],
+            fontSize: formValue[gTitle][gFontSize],
+            height: formValue[gTitle]['height'],
 
             //fontFamily: ,
-            letterSpacing: formValue['title']['letterSpacing'],
+            letterSpacing: formValue[gTitle]['letterSpacing'],
             fontWeight: FontWeight.bold,
             //background: new Paint()..color = Colors.yellow,
             //foreground: new Paint()..color = Colors.red,
@@ -1318,27 +1431,27 @@ class DataModel extends ChangeNotifier {
           ),
         );*/
 
-    Map<String, dynamic> itemList = formValue['items'];
+    Map<dynamic, dynamic> itemList = formValue[gItems];
     itemList.entries.forEach((elementItemList) {
-      Map<String, dynamic> valueItemList = elementItemList.value;
+      Map<dynamic, dynamic> valueItemList = elementItemList.value;
       //valueItemList[gLabel] = getSCurrent(valueItemList[gLabel]);
       /*valueItemList['prefixIcon'] = Icon(
           IconData(valueItemList['prefixIcon'], fontFamily: 'MaterialIcons'));*/
-      valueItemList['inputType'] = getInputType(valueItemList['inputType']);
+      valueItemList[gInputType] = getInputType(valueItemList[gInputType]);
       valueItemList['txtEditingController'] =
-          TextEditingController(text: valueItemList['defaultValue']);
-      valueItemList['value'] = '';
+          TextEditingController(text: valueItemList[gDefaultValue]);
+      valueItemList[gValue] = '';
       valueItemList['oldvalue'] = '';
       valueItemList['textFontColor'] = fromBdckcolor(_lastBackGroundColor);
 
       valueItemList = Map.from(valueItemList);
     });
-    formValue['items'] = Map.from(itemList);
-    formValue['items'].forEach((key, value) {
-      formValue['items'][key] = Map.of(value);
+    formValue[gItems] = Map.from(itemList);
+    formValue[gItems].forEach((key, value) {
+      formValue[gItems][key] = Map.of(value);
     });
 
-    formValue['btns'] = btns;
+    formValue[gBtns] = btns;
     _formLists[formID] = formValue;
   }
 
@@ -1348,9 +1461,9 @@ class DataModel extends ChangeNotifier {
       String name;
       dynamic data;
       ai.entries.forEach((element) {
-        if (element.key == 'name') {
+        if (element.key == gName) {
           name = element.value;
-        } else if (element.key == 'data') {
+        } else if (element.key == gData) {
           data = element.value;
         }
       });
@@ -1368,14 +1481,32 @@ class DataModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  showTableForm(tableName, context) {
+    Map formdetail = _formLists[tableName];
+    List actionData = [
+      {
+        "name": "detailPage",
+        "data": {
+          "type": "form",
+          "formdetail": Map.of(formdetail),
+          "actions": [],
+          "bottomImgs": [],
+          "title": {},
+          "btns": []
+        }
+      }
+    ];
+    showScreenPage(actionData, context);
+  }
+
   setInitForm(actionData) {
-    _firstFormName = actionData[0]['name'];
+    _firstFormName = actionData[0][gName];
     notifyListeners();
   }
 
   setFormValue(formid, colId, value) {
-    _formLists[formid]['items'][colId]['value'] = value;
-    _formLists['login']['items'][colId]['txtEditingController']..text = value;
+    _formLists[formid][gItems][colId][gValue] = value;
+    _formLists[formid][gItems][colId]['txtEditingController']..text = value;
     //
   }
 
@@ -1392,10 +1523,10 @@ class DataModel extends ChangeNotifier {
 
   setMyInfo(data, context) {
     //_myInfo = data;
-    setFormValue('login', 'email', data['email']);
-    //_formLists['login']['items']['email']['defaultValue'] = data['email'];
-    _token = data['token'];
-    _myId = data['email'];
+    setFormValue(gLogin, gEmail, data[gEmail]);
+    //_formLists[gLogin][gItems][gEmail][gDefaultValue] = data[gEmail];
+    _token = data[gToken];
+    _myId = data[gEmail];
     _globalCompanyid = data['companyid'];
     //notifyListeners();
   }
@@ -1414,7 +1545,7 @@ class DataModel extends ChangeNotifier {
 
   setMyTab(List data) {
     Map data0 = Map.of(data[0]);
-    List<dynamic> data0body = data0['body'];
+    List<dynamic> data0body = data0[gBody];
     int i = 0;
     List databodyNew = [];
     data0body.forEach((element) {
@@ -1426,11 +1557,12 @@ class DataModel extends ChangeNotifier {
       databodyNew.add(element);
       i++;
     });
-    data0['body'] = databodyNew;
+    data0[gBody] = databodyNew;
     data0['isselected'] = true;
     _tabList['main'] = {};
-    _tabList['main']['data'] = [data0];
-    _tabList['main']['tabIndex'] = 0;
+    _tabList['main'][gData] = [data0];
+    _tabList['main'][gTabIndex] = 0;
+
     notifyListeners();
   }
 
@@ -1469,14 +1601,14 @@ class DataModel extends ChangeNotifier {
     _tabList[tabName].forEach((element) {
       if (element[gLabel] == label) {
         //_tabController.animateTo(i);
-        _tabList[tabName]['tabIndex'] = i;
+        _tabList[tabName][gTabIndex] = i;
         //DefaultTabController.of(context).animateTo(i);
         return;
         //_tabController.initialIndex = i;
       }
       i++;
     });
-    _tabList[tabName]['tabIndex'] = 0;
+    _tabList[tabName][gTabIndex] = 0;
     //addTab();
     //notifyListeners();
   }
@@ -1485,10 +1617,15 @@ class DataModel extends ChangeNotifier {
     if (_tableList[tableid] == null) {
       retrieveTableFromDB(tableid, context);
     } else {
-      Map param = {'tableid': tableid, gType: gTable};
+      Map param = {gTableID: tableid, gType: gTable};
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => MyDetail(param)));
     }
+  }
+
+  tableSort(tableName, columnIndex, ascending) {
+    if (ascending) {
+    } else {}
   }
 
   wait(waitSeconds) async {

@@ -31,12 +31,14 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
+    "addnew" : MessageLookupByLibrary.simpleMessage("新增"),
     "backbtn" : MessageLookupByLibrary.simpleMessage("  <- "),
     "changepassword" : MessageLookupByLibrary.simpleMessage("修改密码"),
     "character" : MessageLookupByLibrary.simpleMessage("字节"),
     "checkverifycode" : MessageLookupByLibrary.simpleMessage("请查收邮件找到验证码"),
     "createAccount" : MessageLookupByLibrary.simpleMessage("创建帐号"),
     "createnewpassword" : MessageLookupByLibrary.simpleMessage("创建新密码"),
+    "delete" : MessageLookupByLibrary.simpleMessage("删除"),
     "email" : MessageLookupByLibrary.simpleMessage("电子邮件"),
     "employee" : MessageLookupByLibrary.simpleMessage("员工"),
     "eteremailtoresetpassword" : MessageLookupByLibrary.simpleMessage("输入邮箱，我们会给您邮件中发验证码，以便重置密码"),

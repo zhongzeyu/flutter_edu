@@ -1,4 +1,6 @@
 {
+    "addnew":"新增",
+
     "backbtn":"  <- ",
 
     "changepassword":"修改密码",
@@ -6,6 +8,8 @@
     "checkverifycode":"请查收邮件找到验证码",
     "createAccount":"创建帐号",
     "createnewpassword":"创建新密码",
+
+    "delete":"删除",
 
     "email":"电子邮件",
     "employee":"员工",

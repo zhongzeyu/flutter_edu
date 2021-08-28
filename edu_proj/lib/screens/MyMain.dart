@@ -82,6 +82,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
               icon: Icon(Icons.menu),
               onPressed: null,
             ),*/
+
             title: Text(
                 datamodel.getSCurrent(datamodel.systemParams['systemTitle'])),
             actions: getItemActions(datamodel.actionLists['main'], datamodel),

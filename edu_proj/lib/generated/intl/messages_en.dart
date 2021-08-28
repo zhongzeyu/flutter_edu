@@ -31,12 +31,14 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
+    "addnew" : MessageLookupByLibrary.simpleMessage("Add New"),
     "backbtn" : MessageLookupByLibrary.simpleMessage("  <- "),
     "changepassword" : MessageLookupByLibrary.simpleMessage("Change Password"),
     "character" : MessageLookupByLibrary.simpleMessage("characters"),
     "checkverifycode" : MessageLookupByLibrary.simpleMessage("Please check email for verify code"),
     "createAccount" : MessageLookupByLibrary.simpleMessage("Create Account"),
     "createnewpassword" : MessageLookupByLibrary.simpleMessage("Create new password"),
+    "delete" : MessageLookupByLibrary.simpleMessage("Delete"),
     "email" : MessageLookupByLibrary.simpleMessage("Email"),
     "employee" : MessageLookupByLibrary.simpleMessage("Employee"),
     "eteremailtoresetpassword" : MessageLookupByLibrary.simpleMessage("Entere your email address and we\'ll send you an email with code to reset your password. "),

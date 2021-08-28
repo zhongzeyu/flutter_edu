@@ -35,6 +35,16 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
+  /// `Add New`
+  String get addnew {
+    return Intl.message(
+      'Add New',
+      name: 'addnew',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `  <- `
   String get backbtn {
     return Intl.message(
@@ -90,6 +100,16 @@ class S {
     return Intl.message(
       'Create new password',
       name: 'createnewpassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete`
+  String get delete {
+    return Intl.message(
+      'Delete',
+      name: 'delete',
       desc: '',
       args: [],
     );

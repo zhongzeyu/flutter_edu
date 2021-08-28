@@ -1,3 +1,4 @@
+import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 class MyTab extends StatelessWidget {
   final dynamic _param;
   MyTab(this._param);
+  //final _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +19,7 @@ class MyTab extends StatelessWidget {
               height: 35,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: datamodel.tabList[_param]['data'].length,
+                itemCount: datamodel.tabList[_param][gData].length,
                 itemBuilder: (context, index) =>
                     datamodel.getTabByIndex(index, _param),
               ),

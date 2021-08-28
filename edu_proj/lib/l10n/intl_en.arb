@@ -1,4 +1,6 @@
 {
+    "addnew":"Add New",
+    
     "backbtn":"  <- ",
     
     "changepassword":"Change Password",
@@ -7,6 +9,8 @@
     "createAccount":"Create Account",
     "createnewpassword":"Create new password",
     
+    "delete":"Delete",
+
     "email":"Email",
     "employee":"Employee",
     "eteremailtoresetpassword":"Entere your email address and we'll send you an email with code to reset your password. ",
