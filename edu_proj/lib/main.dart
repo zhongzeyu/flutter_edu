@@ -1,9 +1,9 @@
 import 'package:edu_proj/common/theme.dart';
-import 'package:edu_proj/generated/l10n.dart';
+//import 'package:edu_proj/generated/l10n.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+//import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -177,7 +177,7 @@ class MyAppState extends State<MyApp> {
         title: '',
         theme: appTheme,
         home: MyHomePage(title: ''),
-        localizationsDelegates: [
+        /*localizationsDelegates: [
           S.delegate,
           //AppLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,
@@ -208,7 +208,7 @@ class MyAppState extends State<MyApp> {
             return locale;
           }
           return Locale('en');
-        },
+        },*/
       );
     });
   }

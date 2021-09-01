@@ -24,7 +24,7 @@ class TableData extends DataTableSource {
     List<DataCell> dataCellList = [];
     for (int i = 0; i < _param[gColumns].length; i++) {
       dataCellList.add(
-          DataCell(Text(_param[gData][_param[gColumns][i]['id']].toString())));
+          DataCell(Text(_param[gData][_param[gColumns][i][gId]].toString())));
     }
     return DataRow(cells: dataCellList);
   }

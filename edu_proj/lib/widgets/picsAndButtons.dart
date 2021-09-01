@@ -15,9 +15,9 @@ class PicsAndButtons extends StatelessWidget {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          PicsAndLabels(_param),
+          Expanded(child: PicsAndLabels(_param)),
           SizedBox(height: 120),
-          MyLabel(datamodel.getParamTypeValue(_param['title'])),
+          MyLabel(datamodel.getParamTypeValue(_param[gTitle])),
           SizedBox(height: 150),
           datamodel.getButtons(Map.of(_param)),
           SizedBox(height: gDefaultPaddin),

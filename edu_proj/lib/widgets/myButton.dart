@@ -1,3 +1,4 @@
+import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,7 @@ class MyButton extends StatelessWidget {
           width: double.infinity,
           child: ElevatedButton(
               onPressed: () {
-                datamodel.sendRequestOne(_param['action'], '', context);
+                datamodel.sendRequestOne(_param[gAction], '', context);
               },
               child: MyLabel(_param)),
         ),

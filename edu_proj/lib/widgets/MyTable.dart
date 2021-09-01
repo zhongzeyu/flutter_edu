@@ -13,7 +13,7 @@ class MyTable extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
-        final String _tableid = _param['tableid'];
+        final String _tableid = _param[gTableID];
         Map<String, dynamic> tableDefine = datamodel.tableList[_tableid];
 
         Size size = MediaQuery.of(context).size;
@@ -38,11 +38,11 @@ class MyTable extends StatelessWidget {
                     //children: [
                     Container(
                       width: size.width - 5,
-                      height: tableDefine['height'] -
-                          tableDefine['top'] -
+                      height: tableDefine[gHeight] -
+                          tableDefine[gTop] -
                           gDefaultPaddin,
 
-                      margin: EdgeInsets.only(top: tableDefine['top']),
+                      margin: EdgeInsets.only(top: tableDefine[gTop]),
                       padding: EdgeInsets.only(
                           top: gDefaultPaddin,
                           left: gDefaultPaddin,
@@ -70,7 +70,7 @@ class MyTable extends StatelessWidget {
                           end: Alignment.bottomRight,
                           colors: [
                             Color(0xf2f2f2f2),
-                            tableDefine['backgroundColor']
+                            tableDefine[gBackgroundColor]
                           ],
                         ),
                       ),

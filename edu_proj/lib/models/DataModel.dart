@@ -1,11 +1,11 @@
 import 'dart:collection';
 import 'dart:convert';
+//import 'dart:typed_data';
 //import 'dart:html';
 import 'package:crypto/crypto.dart';
-import 'package:edu_proj/business/businessConfig.dart';
+//import 'package:edu_proj/business/businessConfig.dart';
 import 'package:edu_proj/config/MyConfig.dart';
 import 'package:edu_proj/config/constants.dart';
-import 'package:edu_proj/generated/l10n.dart';
 import 'package:edu_proj/screens/MyMain.dart';
 import 'package:edu_proj/screens/firstPage.dart';
 import 'package:edu_proj/screens/mainPage.dart';
@@ -24,7 +24,6 @@ import 'package:edu_proj/widgets/picsAndButtons.dart';
 //import 'package:edu_proj/widgets/tableData.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 
@@ -39,12 +38,13 @@ class DataModel extends ChangeNotifier {
   int _requestCnt = 0;
   String _globalCompanyid = '';
   final int _defaultBackGroundColor = 4294967295; //4280391411;
-  Map _systemParams = {'systemTitle': 'systemtitle'};
+  Map _systemParams = {gSystemTitle: gSystemTitle};
   int _lastBackGroundColor = 4280391411;
   final int _requestCntMax = 10;
   String _firstFormName = '';
   http.Client httpClient = http.Client();
-  Locale _locale = const Locale('en', '');
+  //Locale _locale = const Locale('en', '');
+  String _locale = 'en';
   final List<int> _colorList = [
     4282679983,
     4291930500,
@@ -53,7 +53,8 @@ class DataModel extends ChangeNotifier {
     4294278273,
     4289572269
   ];
-  Locale get locale => _locale;
+  //Locale get locale => _locale;
+  String get locale => _locale;
   Widget _firstPage;
   Map<String, Map<String, dynamic>> _formLists = {};
   Map<int, Color> _bdBackColorList = {};
@@ -63,7 +64,12 @@ class DataModel extends ChangeNotifier {
   Map<String, dynamic> _actionLists = {};
   Map<String, dynamic> _menuLists = {};
   Map<String, dynamic> _screenLists = {};
-
+  Map<String, String> _imgList = {
+    gMain:
+        'https://cdna.artstation.com/p/assets/images/images/010/039/240/large/liu-x-160.jpg?1522232709'
+  };
+  Map get imgList => _imgList;
+  Map<String, dynamic> _i10nMap = {};
   Queue _requestList = new Queue();
 
   //String get email => _email;
@@ -189,71 +195,34 @@ class DataModel extends ChangeNotifier {
     _tableList[data[gActionid]][gAscending] = true;
     _tableList[data[gActionid]][gSortColumnIndex] = 0;
     Map param = {
-      "type": "form",
-      "formdetail": {
-        "formName": "login",
-        "backgroundColor": 4280391411,
-        "submit": "login",
-        "imgTitle": {
-          "title": "welcome",
-          "fontSize": 40.0,
-          "height": 1.2,
-          "letterSpacing": 1.0
+      gType: gForm,
+      gFormdetail: {
+        gFormName: data[gActionid],
+        gsBackgroundColor: 4280391411,
+        gSubmit: gSubmit,
+        gImgTitle: {
+          gTitle: data[gLabel],
+          gFontSize: 40.0,
+          gHeight: 1.2,
+          gLetterSpacing: 1.0
         },
-        "height": 450.5,
-        "top": 130.0,
-        "items": {
-          "email": {
-            "id": "email",
-            "dbid": "email",
-            "type": "email",
-            "label": "email",
-            "defaultValue": "",
-            "placeHolder": "xxx@xxxxx.xxx",
-            "required": true,
-            "minLength": 8,
-            "length": 40,
-            "hash": false,
-            "unit": "characters",
-            "prefixIcon": 59123,
-            "inputType": "emailAddress",
-            "isHidden": false,
-            "fontSize": null,
-            "letterSpacing": null,
-            "isPrimary": false
-          },
-          "password": {
-            "id": "password",
-            "dbid": "password",
-            "type": "password",
-            "label": "password",
-            "defaultValue": "",
-            "placeHolder": "",
-            "required": true,
-            "minLength": 8,
-            "length": 20,
-            "hash": true,
-            "unit": "characters",
-            "prefixIcon": 59459,
-            "inputType": "visiblePassword",
-            "isHidden": false,
-            "fontSize": null,
-            "letterSpacing": null,
-            "isPrimary": false
-          }
-        }
+        gHeight: 450.5,
+        gTop: 130.0,
+        gItems: {}
       },
-      "actions": [
-        {"type": "icon", "value": 58336, "action": "messenger"}
+      gActions: [
+        {gType: gIcon, gValue: 58336, gAction: gMessenger}
       ],
-      "bottomImgs": [
-        {"img": "loginimg.png"}
-      ],
-      "title": {"type": "img", "value": "myicon.png"},
-      "btns": [
-        {"label": "forgetpassword", "action": "forgetpassword"}
-      ]
+      gBottomImgs: [],
+      gTitle: {},
+      gBtns: []
     };
+
+    //for (int i = 0; i < _tableList[data[gActionid]][gColumns].length; i++) {
+    for (int i = 0; i < 3; i++) {
+      Map ti = Map.of(_tableList[data[gActionid]][gColumns][i]);
+      param[gFormdetail][gItems][ti[gDbid]] = ti;
+    }
     setFormListOne(data[gActionid], param);
   }
 
@@ -332,22 +301,20 @@ class DataModel extends ChangeNotifier {
   }
 
   changePassword(context, data) async {
-    if (data != null &&
-        data.length > 0 &&
-        data[0]['lastaction'] == 'finishme') {
+    if (data != null && data.length > 0 && data[0][gLastaction] == gFinishme) {
       await finishme(context);
     }
-    await openDetailForm('changepassword', context);
+    await openDetailForm(gChangepassword, context);
   }
 
   clear() {
     //_email = null;
     setFormValue(gLogin, gEmail, '');
-    setFormValue(gLogin, 'password', '');
+    setFormValue(gLogin, gPassword, '');
     //_formLists[gLogin][gItems][gEmail][gDefaultValue] = '';
 
-    //_formLists[gLogin][gItems][gEmail]['txtEditingController']..text = '';
-    //_formLists[gLogin][gItems]['password']['txtEditingController']..text = '';
+    //_formLists[gLogin][gItems][gEmail][gTxtEditingController]..text = '';
+    //_formLists[gLogin][gItems]['password'][gTxtEditingController]..text = '';
     _token = '';
     _myId = '';
   }
@@ -372,18 +339,18 @@ class DataModel extends ChangeNotifier {
     var result = '';
     //var iv = '12345678';
     if (key == '') {
-      result = 'noecrypted' + message;
+      result = gNoecrypted + message;
     } else {
-      result = 'sidb' +
+      result = gSidb +
           AESUtil.encrypting(key, 'kjsdkfjsijfkaejkjgkadjfskfjdsakf') +
-          'sessionidend' +
+          gSessionidend +
           AESUtil.encrypting(message, key);
     }
     return Uri.encodeComponent(result);
   }
 
   enterUserCode(context) {
-    openDetailForm('verifycode', context);
+    openDetailForm(gVerifycode, context);
   }
 
   finishme(context) async {
@@ -400,7 +367,7 @@ class DataModel extends ChangeNotifier {
     }
 
     if (_token == '' || _myId == '') {
-      if (_firstFormName == 'firstPage') {
+      if (_firstFormName == gFirstPage) {
         return _firstPage;
       }
     }
@@ -408,11 +375,11 @@ class DataModel extends ChangeNotifier {
   }
 
   forgetpassword(context) {
-    var data = getFormValue(gLogin, gEmail, 'txtEditingController');
+    var data = getFormValue(gLogin, gEmail, gTxtEditingController);
     if (data != null && data.length > 0) {
-      this.sendRequestOne('forgetpassword', data, context);
+      this.sendRequestOne(gForgetpassword, data, context);
     } else {
-      showMsg(context, getSCurrent('plsenteremail'));
+      showMsg(context, getSCurrent(gPlsenteremail));
     }
   }
 
@@ -428,52 +395,45 @@ class DataModel extends ChangeNotifier {
         var type = objI[gType];
         if (type == MyConfig.TABLEID.name) {
           data[MyConfig.TABLEID.name] = objI[gValue];
-        } else if (objI['dbid'] != null && objI['dbid'] != '') {
+        } else if (objI[gDbid] != null && objI[gDbid] != '') {
           var value = objI[gValue];
-          data[objI['dbid']] = value;
-          if (objI['hash'] != null && objI['hash']) {
-            data[objI['dbid']] = hash(value);
+          data[objI[gDbid]] = value;
+          if (objI[gHash] != null && objI[gHash]) {
+            data[objI[gDbid]] = hash(value);
           }
           if (type == MyConfig.DATE.name) {
-            //data[objI['dbid']] = value.format(MyConfig.DATEFORMAT.name);
-            data[objI['dbid']] =
-                DateFormat(MyConfig.DATEFORMAT.name).format(value);
+            data[objI['dbid']] = value.format(MyConfig.DATEFORMAT.name);
+            //data[objI[gDbid]] =
+            //  DateFormat(MyConfig.DATEFORMAT.name).format(value);
           }
           var oldValue = '';
-          if (objI['oldvalue'] != null) {
-            oldValue = objI['oldvalue'];
+          if (objI[gOldvalue] != null) {
+            oldValue = objI[gOldvalue];
           }
-          if (data[objI['dbid']] != oldValue) {
+          if (data[objI[gDbid]] != oldValue) {
             changed = true;
           }
         }
       });
       if (changed) {
         //console.log(data);
-        if (formid == 'changepassword' || formid == 'resetpassword') {
-          var password =
-              getFormValue(formid, 'password', 'txtEditingController');
+        if (formid == gChangepassword || formid == gResetpassword) {
+          var password = getFormValue(formid, gPassword, gTxtEditingController);
           var password1 =
-              getFormValue(formid, 'password1', 'txtEditingController');
+              getFormValue(formid, gPassword1, gTxtEditingController);
 
           if (password1 != password) {
-            showMsg(context, 'Password not match. Please check.');
+            showMsg(context, getSCurrent(gPasswordnotmatch));
             return;
           }
-          /*data[gEmail] =
-              getFormValue(gLogin, gEmail, 'txtEditingController');*/
         }
-        /*if (formid == 'verifycode') {
-          data[gEmail] =
-              getFormValue(formid, gEmail, 'txtEditingController');
-          //Navigator.pop(context);
-        }*/
+
         //primary key need be transfer
         obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
           //var key = element.entries.first.key;
           var objI = element.value;
           if (objI[MyConfig.TABLEID.name] != '' &&
-              objI['isPrimary'] &&
+              objI[gIsPrimary] &&
               data[objI[MyConfig.TABLEID.name]] == null) {
             data[objI[MyConfig.TABLEID.name]] = objI[gDefaultValue];
           }
@@ -483,7 +443,7 @@ class DataModel extends ChangeNotifier {
 
         return;
       }
-      alert(context, 'No change');
+      alert(context, gNochange);
     } catch (e) {
       print('======exception is ' + e);
       //throw e;
@@ -513,10 +473,10 @@ class DataModel extends ChangeNotifier {
 
   getActionIcons(_param, context) {
     List<Widget> result = getLocalComponentsList(context);
-    if (_param['actions'] != null) {
-      for (int i = 0; i < _param['actions'].length; i++) {
-        dynamic pi = _param['actions'][i];
-        if (pi[gType] == 'icon') {
+    if (_param[gActions] != null) {
+      for (int i = 0; i < _param[gActions].length; i++) {
+        dynamic pi = _param[gActions][i];
+        if (pi[gType] == gIcon) {
           result.add(MyIcon(pi));
           /*icon: Icon(IconData(pi[gValue], fontFamily: 'MaterialIcons')),
             onPressed: () {
@@ -544,7 +504,7 @@ class DataModel extends ChangeNotifier {
       itemBuilder: (context, index) {
         return Card(
           clipBehavior: Clip.hardEdge,
-          color: Color(_colorList[data[index]['colorIndex']]),
+          color: Color(_colorList[data[index][gColorIndex]]),
           elevation: 10.0,
           child: Column(
             children: [
@@ -633,16 +593,16 @@ class DataModel extends ChangeNotifier {
   getCardButtons(context, data, param0) {
     List<Widget> list = [];
     if (data[gType] == gProcess) {
-      List detail = data['detail'];
+      List detail = data[gDetail];
       detail.forEach((element) {
         list.add(TextButton(
             style: TextButton.styleFrom(
               padding: const EdgeInsets.all(16.0),
-              primary: fromBdckcolor(data['colorIndex']),
+              primary: fromBdckcolor(data[gColorIndex]),
               textStyle: const TextStyle(fontSize: 20),
             ),
             onPressed: () {
-              element['colorIndex'] = data['colorIndex'];
+              element[gColorIndex] = data[gColorIndex];
               processTap(context, element, param0);
             },
             child: Text(getSCurrent(element[gLabel]))));
@@ -655,7 +615,7 @@ class DataModel extends ChangeNotifier {
   getCardTitle(data) {
     if (data[gType] == gProcess)
       return getTxtImage(
-          data[gLabel], _colorList[data['colorIndex']], 24, 0, 2.0);
+          data[gLabel], _colorList[data[gColorIndex]], 24, 0, 2.0);
   }
 
   getDetailWidget(param) {
@@ -685,8 +645,8 @@ class DataModel extends ChangeNotifier {
 
     //add  bottomImages
     List<Widget> bottom = [];
-    if (param['bottomImgs'] != null) {
-      List bottomImages = param['bottomImgs'];
+    if (param[gBottomImgs] != null) {
+      List bottomImages = param[gBottomImgs];
 
       for (int i = 0; i < bottomImages.length; i++) {
         bottom.add(MyPic(bottomImages[i]));
@@ -703,9 +663,9 @@ class DataModel extends ChangeNotifier {
 
   getFirstPage(name) {
     Widget result;
-    if (_screenLists[name][gType] == 'PicsAndButtons') {
+    if (_screenLists[name][gType] == gPicsAndButtons) {
       result = new PicsAndButtons(_screenLists[name]);
-    } else if (_screenLists[name][gType] == 'Login') {
+    } else if (_screenLists[name][gType] == gLogin) {
       //result = Login(_screenLists[_name]);
     }
     return result;
@@ -716,13 +676,13 @@ class DataModel extends ChangeNotifier {
         formValue[gTitle][gLabel],
         _lastBackGroundColor,
         formValue[gTitle][gFontSize],
-        formValue[gTitle]['height'],
-        formValue[gTitle]['letterSpacing']);
+        formValue[gTitle][gHeight],
+        formValue[gTitle][gLetterSpacing]);
   }
 
   getFormValue(formid, dbid, valueid) {
     Map<String, dynamic> formDetail = _formLists[formid];
-    if (valueid == 'txtEditingController') {
+    if (valueid == gTxtEditingController) {
       return formDetail[gItems][dbid][valueid].value.text;
     }
     return formDetail[gItems][dbid][valueid];
@@ -751,36 +711,48 @@ class DataModel extends ChangeNotifier {
   }
 
   getIconsByName(iconname) {
-    if (iconname == 'menu') {
+    if (iconname == gMenu) {
       return Icons.menu;
-    } else if (iconname == 'logout') {
+    } else if (iconname == gLogout) {
       return Icons.logout;
-    } else if (iconname == 'manage_accounts') {
+    } else if (iconname == gManageAccounts) {
       return Icons.person;
     }
     return Icons.device_unknown;
   }
 
+  getImage(imgName, context) {
+    if (_imgList[imgName] != null) {
+      return;
+    }
+    try {
+      sendRequestOne(gGetImageLink,
+          {gImgID: imgName, gCompany: _globalCompanyid}, context);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   getInputType(s) {
-    if (s == 'visiblePassword') {
+    if (s == gVisiblePassword) {
       return TextInputType.visiblePassword;
-    } else if (s == 'emailAddress') {
+    } else if (s == gEmailAddress) {
       return TextInputType.emailAddress;
-    } else if (s == 'datetime') {
+    } else if (s == gDatetime) {
       return TextInputType.datetime;
-    } else if (s == 'multiline') {
+    } else if (s == gMultiline) {
       return TextInputType.multiline;
     } else if (s == gName) {
       return TextInputType.name;
-    } else if (s == 'number') {
+    } else if (s == gNumber) {
       return TextInputType.number;
-    } else if (s == 'phone') {
+    } else if (s == gPhone) {
       return TextInputType.phone;
-    } else if (s == 'streetAddress') {
+    } else if (s == gStreetAddress) {
       return TextInputType.streetAddress;
-    } else if (s == 'url') {
+    } else if (s == gUrl) {
       return TextInputType.url;
-    } else if (s == 'values') {
+    } else if (s == gValues) {
       return TextInputType.values;
     }
 
@@ -796,19 +768,22 @@ class DataModel extends ChangeNotifier {
     int valueColor = themeData.backgroundColor.value;
     return [
       Icon(Icons.public_outlined),
-      (_locale.languageCode == 'en')
+      //(_locale.languageCode == 'en')
+      (_locale == 'en')
           ? TextButton(
               child: Text('中文',
                   style: TextStyle(color: fromBdckcolor(valueColor))),
               onPressed: () {
-                setLocale(Locale('zh'));
+                //setLocale(Locale('zh'));
+                setLocale('zh');
               },
             )
           : TextButton(
               child: Text('EN',
                   style: TextStyle(color: fromBdckcolor(valueColor))),
               onPressed: () {
-                setLocale(Locale('en'));
+                //setLocale(Locale('en'));
+                setLocale('en');
               },
             )
     ];
@@ -823,7 +798,7 @@ class DataModel extends ChangeNotifier {
     _menuLists[menuName].forEach((element) {
       //items.add(Text(getSCurrent(map[gLabel])));
       items.add(ListTile(
-        leading: Icon(getIconsByName(element['icon'])),
+        leading: Icon(getIconsByName(element[gIcon])),
         title: Text(getSCurrent(element[
             gLabel])), //MyLabel({gLabel: map[gLabel] + '', gFontSize: 20.0}),
         onTap: () {
@@ -846,7 +821,7 @@ class DataModel extends ChangeNotifier {
 
   getParamTypeValue(param) {
     if (param == null) {
-      param = {gType: "title"};
+      param = {gType: gTitle};
     }
     param[param[gType]] = param[gValue];
 
@@ -855,13 +830,13 @@ class DataModel extends ChangeNotifier {
 
   int _picIndex = 0;
   getPics(param) {
-    List<dynamic> list = param['pics'];
+    List<dynamic> list = param[gPics];
     if (_picIndex >= list.length) {
       _picIndex = 0;
     }
 
     List<Widget> result = [];
-    result.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+    result.add(Row(mainAxisAlignment: MainAxisAlignment.start, children: [
       MyPic(list[_picIndex]),
       SizedBox(width: gDefaultPaddin),
       MyLabel(list[_picIndex]),
@@ -870,13 +845,16 @@ class DataModel extends ChangeNotifier {
     for (int i = 0; i < list.length; i++) {
       dotList.add(Material(
         child: InkWell(
-            onTap: () {
-              _picIndex = i;
-              notifyListeners();
-            },
-            child: Image.asset(
+          onTap: () {
+            _picIndex = i;
+            notifyListeners();
+          },
+          child: MyPic(
+              {gImg: _imgList[((i == _picIndex) ? 'bright' : 'dark') + 'dot']}),
+          /*Image.asset(
                 '/images/' + ((i == _picIndex) ? 'bright' : 'dark') + 'dot.png',
-                package: packageName)),
+                package: packageName)*/
+        ),
       ));
     }
     result.add(
@@ -885,7 +863,21 @@ class DataModel extends ChangeNotifier {
   }
 
   getSCurrent(dynamic source) {
-    List<dynamic> s;
+    if (_i10nMap[source] != null) {
+      String result = _i10nMap[source][_locale];
+      if (result != null) {
+        if (result.indexOf('}') > 0 && result.indexOf('{') > 0) {
+          String result0 = result.substring(0, result.indexOf('{'));
+          String resultMid = result.substring(
+              result.indexOf('{') + 1, result.indexOf('}') - 1);
+          String result1 = result.substring(0, result.indexOf('}') + 1);
+          result = result0 + resultMid + getSCurrent(result1);
+        }
+        return result;
+      }
+    }
+    return source;
+    /*List<dynamic> s;
     try {
       s = source;
     } catch (e) {
@@ -894,74 +886,78 @@ class DataModel extends ChangeNotifier {
     try {
       if (s[0] == gAddnew) {
         return S.current.addnew;
-      } else if (s[0] == 'backbtn') {
+      } else if (s[0] == gBackbtn) {
         return S.current.backbtn;
-      } else if (s[0] == 'changepassword') {
+      } else if (s[0] == gChangepassword) {
         return S.current.changepassword;
-      } else if (s[0] == 'character') {
+      } else if (s[0] == gCharacter) {
         return S.current.character;
-      } else if (s[0] == 'checkverifycode') {
+      } else if (s[0] == gCheckverifycode) {
         return S.current.checkverifycode;
-      } else if (s[0] == 'createAccount') {
+      } else if (s[0] == gCreateAccount) {
         return S.current.createAccount;
-      } else if (s[0] == 'createnewpassword') {
+      } else if (s[0] == gCreatenewpassword) {
         return S.current.createnewpassword;
       } else if (s[0] == gDelete) {
         return S.current.delete;
       } else if (s[0] == gEmail) {
         return S.current.email;
-      } else if (s[0] == 'employee') {
+      } else if (s[0] == gEmployee) {
         return S.current.employee;
-      } else if (s[0] == 'eteremailtoresetpassword') {
+      } else if (s[0] == gEteremailtoresetpassword) {
         return S.current.eteremailtoresetpassword;
-      } else if (s[0] == 'forgetpassword') {
+      } else if (s[0] == gForgetpassword) {
         return S.current.forgetpassword;
-      } else if (s[0] == 'home') {
+      } else if (s[0] == gHome) {
         return S.current.home;
-      } else if (s[0] == 'invalidname') {
+      } else if (s[0] == gInvalidname) {
         return S.current.invalidname(getSCurrent([s[1]]));
-      } else if (s[0] == 'isrequired') {
+      } else if (s[0] == gIsrequired) {
         return S.current.isrequired(getSCurrent([s[1]]));
-      } else if (s[0] == 'login') {
+      } else if (s[0] == gLogin) {
         return S.current.login;
-      } else if (s[0] == 'mininput') {
+      } else if (s[0] == gMininput) {
         return S.current.mininput(s[1], s[2]);
-      } else if (s[0] == 'maxinput') {
+      } else if (s[0] == gMaxinput) {
         return S.current.maxinput(s[1], s[2]);
-      } else if (s[0] == 'password') {
+      } else if (s[0] == gNochange) {
+        return S.current.nochange;
+      } else if (s[0] == gPassword) {
         return S.current.password;
-      } else if (s[0] == 'plsenteremail') {
+      } else if (s[0] == gPasswordnotmatch) {
+        return S.current.passwordnotmatch;
+      } else if (s[0] == gPlsenteremail) {
         return S.current.plsenteremail;
-      } else if (s[0] == 'program') {
+      } else if (s[0] == gProgram) {
         return S.current.program;
-      } else if (s[0] == 'resetpassword') {
+      } else if (s[0] == gResetpassword) {
         return S.current.resetpassword;
-      } else if (s[0] == 'role') {
+      } else if (s[0] == gRole) {
         return S.current.role;
-      } else if (s[0] == 'serverdown') {
+      } else if (s[0] == gServerdown) {
         return S.current.serverdown;
-      } else if (s[0] == 'serverwrongcode') {
+      } else if (s[0] == gServerwrongcode) {
         return S.current.serverwrongcode;
-      } else if (s[0] == 'student') {
+      } else if (s[0] == gStudent) {
         return S.current.student;
-      } else if (s[0] == 'submit') {
+      } else if (s[0] == gSubmit) {
         return S.current.submit;
-      } else if (s[0] == 'system') {
+      } else if (s[0] == gSystem) {
         return S.current.system;
-      } else if (s[0] == 'systemtitle') {
+      } else if (s[0] == gSystemTitle) {
         return S.current.systemtitle;
-      } else if (s[0] == 'tutor') {
+      } else if (s[0] == gTutor) {
         return S.current.tutor;
-      } else if (s[0] == 'updatepassword') {
+      } else if (s[0] == gUpdatepassword) {
         return S.current.updatepassword;
-      } else if (s[0] == 'verifycode') {
+      } else if (s[0] == gVerifycode) {
         return S.current.verifycode;
-      } else if (s[0] == 'welcome') {
+      } else if (s[0] == gWelcome) {
         return S.current.welcome;
       }
     } catch (e) {}
 
-    return source;
+    return source;*/
   }
 
   /*getTabBar() {
@@ -981,7 +977,7 @@ class DataModel extends ChangeNotifier {
 
   getTabBody(tabname, context) {
     dynamic data = _tabList[tabname][gData][_tabList[tabname][gTabIndex]];
-    if (data[gType] == 'card') {
+    if (data[gType] == gCard) {
       return getCard(data[gBody], context, tabname);
     } else if (data[gType] == gTable) {
       /*return Column(
@@ -1073,13 +1069,13 @@ class DataModel extends ChangeNotifier {
     }
     return Column(
       children: [
-        MyLabel({gLabel: 'welcome', gFontSize: 20.0})
+        MyLabel({gLabel: gWelcome, gFontSize: 20.0})
       ],
     );
   }
 
   getWidgetForm(param) {
-    String formID = param['formdetail']['formName'];
+    String formID = param[gFormdetail][gFormName];
 
     setFormListOne(formID, param);
 
@@ -1091,9 +1087,9 @@ class DataModel extends ChangeNotifier {
     param[gTitle] = getParamTypeValue(param[gTitle]);
     if (param[gTitle][gType] == gLabel) {
       title = MyLabel(param[gTitle]);
-    } else if (param[gTitle][gType] == 'icon') {
+    } else if (param[gTitle][gType] == gIcon) {
       title = MyIcon(param[gTitle]);
-    } else if (param[gTitle][gType] == 'img') {
+    } else if (param[gTitle][gType] == gImg) {
       title = MyPic(param[gTitle]);
       //MyImg(getParamTypeValue(param[gTitle]));
     }
@@ -1115,11 +1111,11 @@ class DataModel extends ChangeNotifier {
   onTap(context, Map map) {
     try {
       if (map[gType] == gAction) {
-        if (map[gActionid] == 'logout') {
+        if (map[gActionid] == gLogout) {
           logOff();
-        } else if (map[gActionid] == 'changepassword') {
+        } else if (map[gActionid] == gChangepassword) {
           changePassword(context, null);
-        } else if (map[gActionid] == 'role') {}
+        } else if (map[gActionid] == gRole) {}
       } else if (map[gType] == gTable) {
         var tableid = map[gActionid];
         _lastBackGroundColor = _defaultBackGroundColor;
@@ -1137,8 +1133,8 @@ class DataModel extends ChangeNotifier {
 
   openDetailForm(formname, context) {
     Map param = {
-      'backgroundColor': _formLists[formname]['backgroundColor'],
-      'color': _formLists[formname]['color'],
+      gsBackgroundColor: _formLists[formname][gsBackgroundColor],
+      gColor: _formLists[formname][gColor],
       gName: formname,
       gType: gForm
     };
@@ -1166,8 +1162,8 @@ class DataModel extends ChangeNotifier {
       });
 
       if (response.statusCode != 200) {
-        throw Exception(S.current
-            .serverwrongcode(response.statusCode, response.body.toString()));
+        throw Exception(getSCurrent(
+            "serverwrongcode(${response.statusCode}, ${response.body.toString()})"));
       }
       print('==== response: ' + response.body);
       List data = jsonDecode(response.body);
@@ -1186,9 +1182,9 @@ class DataModel extends ChangeNotifier {
             actionData = value;
           }
         });
-        if (action == 'changepassword') {
+        if (action == gChangepassword) {
           await changePassword(context, actionData);
-        } else if (action == 'finishme') {
+        } else if (action == gFinishme) {
           await finishme(context);
         } else if (action == 'processTab') {
           await processTab(actionData, context);
@@ -1196,10 +1192,8 @@ class DataModel extends ChangeNotifier {
           await removeAllScreens(context);
         } else if (action == 'resetpassword') {
           await resetPassword(context, actionData);
-        } else if (action == 'showScreenPage') {
-          await showScreenPage(actionData, context);
-          /*} else if (action == 'setFormList') {
-          await setFormList(actionData);*/
+        } else if (action == 'setImgList') {
+          await setImgList(actionData);
         } else if (action == 'setMyAction') {
           await setMyAction(actionData);
         } else if (action == 'setMyInfo') {
@@ -1208,6 +1202,8 @@ class DataModel extends ChangeNotifier {
           await setMyMenu(actionData);
         } else if (action == 'setMyTab') {
           await setMyTab(actionData);
+        } else if (action == 'setI10n') {
+          await setI10n(actionData);
         } else if (action == 'setInitForm') {
           await setInitForm(actionData);
         } else if (action == 'setSessionkey') {
@@ -1218,6 +1214,10 @@ class DataModel extends ChangeNotifier {
           actionData[0] = Map.of(actionData[0]);
           showMsg(context, actionData[0]['errMsg']);
           //throw actionData[0]['errMsg'];
+        } else if (action == 'showScreenPage') {
+          await showScreenPage(actionData, context);
+          /*} else if (action == 'setFormList') {
+          await setFormList(actionData);*/
         } else if (action == 'showTable') {
           await showTable(actionData[0][gTableID], context);
         }
@@ -1233,7 +1233,7 @@ class DataModel extends ChangeNotifier {
       if (data0[gType] == gTable) {
         addTable(data0);
       }
-      addTab(data0, context, data0['param0']);
+      addTab(data0, context, data0[gParam0]);
     });
 
     //notifyListeners();
@@ -1293,8 +1293,8 @@ class DataModel extends ChangeNotifier {
   resetPassword(context, data) {
     if (data != null &&
         data.length > 0 &&
-        data[0]['msg'] != null &&
-        data[0]['msg'] == 'enterusercode') {
+        data[0][gMsg] != null &&
+        data[0][gMsg] == gEnterusercode) {
       enterUserCode(context);
     }
     //check password
@@ -1307,7 +1307,7 @@ class DataModel extends ChangeNotifier {
       _requestCnt++;
       if (_requestCnt > _requestCntMax) {
         _requestCnt = 0;
-        throw Exception(getSCurrent('serverdown'));
+        throw Exception(getSCurrent(gServerdown));
       }
       sendRequestList(context);
     } catch (e) {
@@ -1318,11 +1318,11 @@ class DataModel extends ChangeNotifier {
   retrieveTableFromDB(tableid, context) {
     try {
       sendRequestOne(
-          'getTableData',
+          gGetTableData,
           {
-            "tableid": tableid,
+            gTableID: tableid,
             gEmail: getFormValue(gLogin, gEmail, gValue),
-            "company": _globalCompanyid
+            gCompany: _globalCompanyid
           },
           context);
     } catch (e) {
@@ -1346,9 +1346,9 @@ class DataModel extends ChangeNotifier {
         wait(1);
         var param = getMod(_zzydhbase, _arandomsession, _zzyprime);
         _requestList.addFirst({
-          gAction: 'getsessionkey',
+          gAction: gGetsessionkey,
           gData: [
-            {'key': param}
+            {gKey: param}
           ]
         });
       }
@@ -1361,7 +1361,7 @@ class DataModel extends ChangeNotifier {
       Map requestFirst = requestListRemoveFirst();
       if (_token != '') {
         requestFirst[gToken] = _token;
-        requestFirst['companyid'] = _globalCompanyid;
+        requestFirst[gCompanyid] = _globalCompanyid;
       }
       var dataRequest = encryptByDES(requestFirst);
       await processRequest(dataRequest, context);
@@ -1400,14 +1400,14 @@ class DataModel extends ChangeNotifier {
   }
 
   setFormListOne(formID, param) {
-    var formDetail = param['formdetail'];
+    var formDetail = param[gFormdetail];
     var btns = param[gBtns];
     Map<String, dynamic> formValue = Map.from(formDetail);
 
     //formValue['submit'] = getSCurrent(formValue['submit']);
     //String title = getSCurrent(formValue[gTitle][gLabel]);
 
-    formValue['backgroundColor'] = Color(_lastBackGroundColor);
+    formValue[gsBackgroundColor] = Color(_lastBackGroundColor);
     /*formValue['image'] = Text(
           getSCurrent(formValue[gTitle][gLabel]),
           style: TextStyle(
@@ -1438,11 +1438,11 @@ class DataModel extends ChangeNotifier {
       /*valueItemList['prefixIcon'] = Icon(
           IconData(valueItemList['prefixIcon'], fontFamily: 'MaterialIcons'));*/
       valueItemList[gInputType] = getInputType(valueItemList[gInputType]);
-      valueItemList['txtEditingController'] =
+      valueItemList[gTxtEditingController] =
           TextEditingController(text: valueItemList[gDefaultValue]);
       valueItemList[gValue] = '';
-      valueItemList['oldvalue'] = '';
-      valueItemList['textFontColor'] = fromBdckcolor(_lastBackGroundColor);
+      valueItemList[gOldvalue] = '';
+      valueItemList[gTextFontColor] = fromBdckcolor(_lastBackGroundColor);
 
       valueItemList = Map.from(valueItemList);
     });
@@ -1453,6 +1453,7 @@ class DataModel extends ChangeNotifier {
 
     formValue[gBtns] = btns;
     _formLists[formID] = formValue;
+    //print(jsonEncode(_formLists[formID]));
   }
 
   showScreenPage(actionData, context) {
@@ -1468,11 +1469,11 @@ class DataModel extends ChangeNotifier {
         }
       });
 
-      if (name == 'firstPage') {
+      if (name == gFirstPage) {
         _screenLists[name] = Map.of(data);
         _firstFormName = name;
         _firstPage = FirstPage(_firstFormName);
-      } else if (name == 'detailPage') {
+      } else if (name == gDetailPage) {
         //deailPage(_firstFormName);
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => MyDetail(Map.of(data))));
@@ -1485,18 +1486,35 @@ class DataModel extends ChangeNotifier {
     Map formdetail = _formLists[tableName];
     List actionData = [
       {
-        "name": "detailPage",
-        "data": {
-          "type": "form",
-          "formdetail": Map.of(formdetail),
-          "actions": [],
-          "bottomImgs": [],
-          "title": {},
-          "btns": []
+        gName: gDetailPage,
+        gData: {
+          gType: gForm,
+          gFormdetail: Map.of(formdetail),
+          gActions: [],
+          gBottomImgs: [],
+          gTitle: {},
+          gBtns: []
         }
       }
     ];
     showScreenPage(actionData, context);
+  }
+
+  setI10n(actionData) {
+    for (int i = 0; i < actionData.length; i++) {
+      Map<String, dynamic> ai = Map.of(actionData[i]);
+      ai.entries.forEach((element) {
+        Map mValue = Map.of(element.value);
+        mValue.entries.forEach((element1) {
+          if (element1.key != 'en') {
+            mValue[element1.key] =
+                utf8.decode(element1.value.toString().codeUnits);
+          }
+        });
+        _i10nMap[element.key] = mValue;
+      });
+    }
+    notifyListeners();
   }
 
   setInitForm(actionData) {
@@ -1506,19 +1524,28 @@ class DataModel extends ChangeNotifier {
 
   setFormValue(formid, colId, value) {
     _formLists[formid][gItems][colId][gValue] = value;
-    _formLists[formid][gItems][colId]['txtEditingController']..text = value;
+    _formLists[formid][gItems][colId][gTxtEditingController]..text = value;
     //
   }
 
   setLocale(value) {
     _locale = value;
-    S.load(_locale);
+    //S.load(_locale);
 
     notifyListeners();
   }
 
+  setImgList(data) {
+    for (int i = 0; i < data.length; i++) {
+      Map dataMap = Map.of(data[i]);
+      dataMap.entries.forEach((element) {
+        _imgList[element.key] = element.value;
+      });
+    }
+  }
+
   setMyAction(data) {
-    _actionLists['main'] = data;
+    _actionLists[gMain] = data;
   }
 
   setMyInfo(data, context) {
@@ -1527,7 +1554,7 @@ class DataModel extends ChangeNotifier {
     //_formLists[gLogin][gItems][gEmail][gDefaultValue] = data[gEmail];
     _token = data[gToken];
     _myId = data[gEmail];
-    _globalCompanyid = data['companyid'];
+    _globalCompanyid = data[gCompanyid];
     //notifyListeners();
   }
 
@@ -1536,11 +1563,11 @@ class DataModel extends ChangeNotifier {
       data[i] = Map.of(data[i]);
       //data[i]['widget'] = Text(getSCurrent('role'));
     }
-    _menuLists['main'] = data;
+    _menuLists[gMain] = data;
   }
 
   getMenuListLabel() {
-    return _menuLists['main'][0][gLabel];
+    return _menuLists[gMain][0][gLabel];
   }
 
   setMyTab(List data) {
@@ -1553,15 +1580,15 @@ class DataModel extends ChangeNotifier {
       if (i == _colorList.length) {
         i = 0;
       }
-      element['colorIndex'] = i;
+      element[gColorIndex] = i;
       databodyNew.add(element);
       i++;
     });
     data0[gBody] = databodyNew;
-    data0['isselected'] = true;
-    _tabList['main'] = {};
-    _tabList['main'][gData] = [data0];
-    _tabList['main'][gTabIndex] = 0;
+    data0[gIsselected] = true;
+    _tabList[gMain] = {};
+    _tabList[gMain][gData] = [data0];
+    _tabList[gMain][gTabIndex] = 0;
 
     notifyListeners();
   }

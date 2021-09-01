@@ -30,9 +30,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
-  flutter_localizations:
-    sdk: flutter
-  
   json_annotation: ^4.0.0-0
   http:
   fluttertoast: ^8.0.7
@@ -57,17 +54,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
-  assets:
-     - packages/edu_proj/images/brightdot.png
-     - packages/edu_proj/images/darkdot.png
-     - packages/edu_proj/images/image0.png
-     - packages/edu_proj/images/image1.png
-     - packages/edu_proj/images/image2.png
-     - packages/edu_proj/images/loginimg.png
-     - packages/edu_proj/images/mainimg.png
-     - packages/edu_proj/images/myicon.png
-     - packages/edu_proj/images/smilesmart.svg
-     - packages/edu_proj/images/search.svg
+  #assets:
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -92,5 +79,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-flutter_intl:
-  enabled: true

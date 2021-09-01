@@ -1,5 +1,6 @@
 //import 'package:edu_proj/config/MyConfig.dart';
 import 'package:edu_proj/config/MyConfig.dart';
+import 'package:edu_proj/config/constants.dart';
 //import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
@@ -19,7 +20,7 @@ class MyForm extends StatelessWidget {
         final String _formName = _param;
         //['name'];
         Map<String, dynamic> formDefine = datamodel.formLists[_formName];
-        Map<dynamic, dynamic> items = formDefine['items'];
+        Map<dynamic, dynamic> items = formDefine[gItems];
 
         //Size size = MediaQuery.of(context).size;
         //double _top = 10.0;
@@ -27,13 +28,13 @@ class MyForm extends StatelessWidget {
           List<Widget> result = [];
 
           items.entries.forEach((item) {
-            if (item.value['isHidden'] != 'true' &&
-                item.value['type'] != 'hidden') {
+            if (item.value[gIsHidden] != gTrue &&
+                item.value[gType] != gHidden) {
               //_top += 10;
-              if (item.value['type'] == MyConfig.TEXT.name) {
+              if (item.value[gType] == MyConfig.TEXT.name) {
                 result.add(
                   Text(
-                    datamodel.getSCurrent(item.value['label']),
+                    datamodel.getSCurrent(item.value[gLabel]),
 
                     /*
                 onTab: () => {_onTab(item.value['id'], size)},
@@ -68,7 +69,7 @@ class MyForm extends StatelessWidget {
           datamodel.beforeSubmit(context, _formName, result);
           result.add(
             ElevatedButton(
-              child: Text(datamodel.getSCurrent(formDefine['submit'])),
+              child: Text(datamodel.getSCurrent(formDefine[gSubmit])),
               onPressed: () {
                 if (!_formKey.currentState.validate()) {
                   return;

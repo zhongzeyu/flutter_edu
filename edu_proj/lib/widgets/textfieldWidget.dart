@@ -1,4 +1,5 @@
 import 'package:edu_proj/config/MyConfig.dart';
+import 'package:edu_proj/config/constants.dart';
 //import 'package:edu_proj/generated/l10n.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class TextFieldWidget extends StatelessWidget {
   });
 
   _getWidth() {
-    return item.value['width'];
+    return item.value[gWidth];
   }
 
   Widget build(BuildContext context) {
@@ -22,71 +23,71 @@ class TextFieldWidget extends StatelessWidget {
       return Container(
         width: _getWidth(),
         child: TextFormField(
-          controller: item.value['txtEditingController'],
+          controller: item.value[gTxtEditingController],
 
           autofocus: true,
-          keyboardType: item.value['inputType'],
-          maxLength: item.value['length'],
+          keyboardType: item.value[gInputType],
+          maxLength: item.value[gLength],
           style: TextStyle(
-            //color: item.value['textFontColor'],
-            fontSize: item.value['fontSize'],
-            fontStyle: item.value['fontStyle'],
-            fontWeight: item.value['fontWeight'],
-            letterSpacing: item.value['letterSpacing'],
+            //color: item.value[gTextFontColor],
+            fontSize: item.value[gFontSize],
+            fontStyle: item.value[gFontStyle],
+            fontWeight: item.value[gFontWeight],
+            letterSpacing: item.value[gLetterSpacing],
           ),
           decoration: InputDecoration(
-            labelText: datamodel.getSCurrent(item.value['label']),
+            labelText: datamodel.getSCurrent(item.value[gLabel]),
             labelStyle: TextStyle(
-              //color: item.value['textFontColor'],
-              fontSize: item.value['fontSize'],
-              fontStyle: item.value['fontStyle'],
-              fontWeight: item.value['fontWeight'],
-              letterSpacing: item.value['letterSpacing'],
+              //color: item.value[gTextFontColor],
+              fontSize: item.value[gFontSize],
+              fontStyle: item.value[gFontStyle],
+              fontWeight: item.value[gFontWeight],
+              letterSpacing: item.value[gLetterSpacing],
             ),
-            hintText: item.value['placeholder'],
+            hintText: item.value[gPlaceHolder],
             hintStyle: TextStyle(
-              //color: item.value['textFontColor'],
-              fontSize: item.value['fontSize'],
-              fontStyle: item.value['fontStyle'],
-              fontWeight: item.value['fontWeight'],
-              letterSpacing: item.value['letterSpacing'],
+              //color: item.value[gTextFontColor],
+              fontSize: item.value[gFontSize],
+              fontStyle: item.value[gFontStyle],
+              fontWeight: item.value[gFontWeight],
+              letterSpacing: item.value[gLetterSpacing],
             ),
-            suffixIcon: item.value['suffixIcon'],
+            suffixIcon: item.value[gSuffixIcon],
             //prefixIcon: item.value['prefixIcon'],
           ),
-          obscureText: (item.value['type'] == MyConfig.PASSWORD.name),
+          obscureText: (item.value[gType] == MyConfig.PASSWORD.name),
           validator: (String value) {
-            if (item.value['required'] && value.isEmpty) {
-              return datamodel.getSCurrent(['isrequired', item.value['label']]);
+            if (item.value[gRequired] && value.isEmpty) {
+              return datamodel.getSCurrent([gIsrequired, item.value[gLabel]]);
               //return S.of(context).isrequired(item.value['label']);
             }
-            if (item.value['type'] == 'email' &&
+            if (item.value[gType] == gEmail &&
                 !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                     .hasMatch(value)) {
-              return datamodel.getSCurrent(['invalidname', 'email']);
+              return datamodel.getSCurrent([gInvalidname, gEmail]);
               //return S.of(context).invalidname(S.of(context).email);
             }
-            if (item.value['minLength'] != '0' &&
-                value.length < item.value['minLength']) {
+            if (item.value[gMinLength] != '0' &&
+                value.length < item.value[gMinLength]) {
               /*return S
                   .of(context)
-                  .mininput(item.value['minLength'], item.value['unit']);*/
+                  .mininput(item.value[gMinLength], item.value[gUnit]);*/
               return datamodel.getSCurrent(
-                  ['mininput', item.value['minLength'], item.value['unit']]);
+                  [gMininput, item.value[gMinLength], item.value[gUnit]]);
             }
-            if (item.value['length'] != '0' &&
-                value.length > item.value['length']) {
+            if (item.value[gLength] != '0' &&
+                value.length > item.value[gLength]) {
               return datamodel.getSCurrent(
-                  ['maxinput', item.value['length'], item.value['unit']]);
+                  [gMaxinput, item.value[gLength], item.value[gUnit]]);
               /*return S
                   .of(context)
-                  .maxinput(item.value['length'], item.value['unit']);*/
+                  .maxinput(item.value[gLength], item.value[gUnit]);*/
             }
             return null;
           },
-          //initialValue: item.value['defaultValue'],
+          //initialValue: item.value[gDefaultValue],
           onSaved: (String value) {
-            item.value['value'] = value;
+            item.value[gValue] = value;
           },
         ),
       );

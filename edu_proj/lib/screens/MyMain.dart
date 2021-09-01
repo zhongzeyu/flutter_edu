@@ -57,7 +57,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
           map[e.key] = e.value;
         });
         items.add(IconButton(
-          icon: Icon(datamodel.getIconsByName(map['icon'])),
+          icon: Icon(datamodel.getIconsByName(map[gIcon])),
           tooltip: map[gLabel] + '',
           onPressed: () {
             datamodel.onTap(context, map);
@@ -70,7 +70,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
 
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
-        Map<String, dynamic> formDefine = datamodel.formLists['login'];
+        Map<String, dynamic> formDefine = datamodel.formLists[gLogin];
         //datamodel.setTabParent(this);
         //datamodel.initTabController(context);
         /*String myTitle =
@@ -84,8 +84,8 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
             ),*/
 
             title: Text(
-                datamodel.getSCurrent(datamodel.systemParams['systemTitle'])),
-            actions: getItemActions(datamodel.actionLists['main'], datamodel),
+                datamodel.getSCurrent(datamodel.systemParams[gSystemTitle])),
+            actions: getItemActions(datamodel.actionLists[gMain], datamodel),
           ),
           drawer: Drawer(
             child: MediaQuery.removePadding(
@@ -106,7 +106,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
                           ),
                         ),
                         Text(
-                          formDefine['items']['email']['defaultValue'],
+                          formDefine[gItems][gEmail][gDefaultValue],
                           style: TextStyle(fontWeight: FontWeight.bold),
                         )
                       ],
@@ -114,14 +114,14 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: ListView(
-                      children: datamodel.getMenuItems('main', context),
+                      children: datamodel.getMenuItems(gMain, context),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          body: MyTab('main'),
+          body: MyTab(gMain),
           /*Column(
             children: [
               Container(
