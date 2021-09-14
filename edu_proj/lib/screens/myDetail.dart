@@ -13,6 +13,7 @@ class MyDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       //Size size = MediaQuery.of(context).size;
+
       return Scaffold(
         //backgroundColor: _param[gBackgroundColor],
         appBar: AppBar(
@@ -29,8 +30,6 @@ class MyDetail extends StatelessWidget {
               datamodel.getActionIcons(_param, context),
         ),
         body: datamodel.getDetailWidget(_param),
-
-        
       );
     });
   }

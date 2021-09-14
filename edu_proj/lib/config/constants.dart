@@ -29,6 +29,8 @@ const gCreateAccount = 'createAccount';
 const gCreatenewpassword = 'createnewpassword';
 
 const gData = 'data';
+const gDate = 'date';
+const gDateformat = 'yyyy-MM-dd';
 const gDatetime = 'datetime';
 const gDbid = 'dbid';
 const gDefaultPaddin = 20.0;
@@ -50,6 +52,7 @@ const gFontStyle = 'fontStyle';
 const gFontWeight = 'fontWeight';
 const gForgetpassword = 'forgetpassword';
 const gForm = 'form';
+const gFormid = 'formid';
 const gFormdetail = 'formdetail';
 const gFormName = 'formName';
 

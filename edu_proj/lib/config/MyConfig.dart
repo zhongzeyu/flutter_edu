@@ -1,27 +1,11 @@
 enum MyConfig {
-  TABLEID,
-  FORMID,
-  EMAIL,
-  SINGLEINT,
-  PASSWORD,
-  DATE,
-  DATEFORMAT,
-  TEXT,
-  URL
+  URL,
 }
 
 extension MyConfigExtension on MyConfig {
   String get name {
     return [
-      'id',
-      'formid',
-      'email',
-      'singleint',
-      'password',
-      'date',
-      'yyyy-MM-dd',
-      'text',
-      'http://localhost/'
+      'http://localhost/',
     ][this.index];
   }
 }

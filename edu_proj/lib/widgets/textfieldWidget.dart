@@ -1,14 +1,10 @@
-import 'package:edu_proj/config/MyConfig.dart';
 import 'package:edu_proj/config/constants.dart';
-//import 'package:edu_proj/generated/l10n.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
-  //final IconData suffixIconData;
-  //final Function onChanged;
 
   TextFieldWidget({
     this.item,
@@ -55,7 +51,7 @@ class TextFieldWidget extends StatelessWidget {
             suffixIcon: item.value[gSuffixIcon],
             //prefixIcon: item.value['prefixIcon'],
           ),
-          obscureText: (item.value[gType] == MyConfig.PASSWORD.name),
+          obscureText: (item.value[gType] == gPassword),
           validator: (String value) {
             if (item.value[gRequired] && value.isEmpty) {
               return datamodel.getSCurrent([gIsrequired, item.value[gLabel]]);

@@ -122,17 +122,6 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
             ),
           ),
           body: MyTab(gMain),
-          /*Column(
-            children: [
-              Container(
-                //padding: EdgeInsets.all(5.0),
-                child: datamodel.getTabBar(),
-              ),
-              Expanded(
-                child: datamodel.getTabBarView(context),
-              ),
-            ],
-          ),*/
         );
       },
     );

@@ -13,8 +13,14 @@ class MyPic extends StatelessWidget {
     if (_param[gImg] == null) {
       return null;
     }
-    return Image.memory(base64.decode(_param[gImg]),
-        fit: BoxFit.fill, gaplessPlayback: true);
+
+    return Image.memory(
+      base64.decode(_param[gImg]),
+      fit: BoxFit.fill,
+      gaplessPlayback: true,
+      height: (_param[gHeight] != null) ? _param[gHeight] : null,
+      width: (_param[gWidth] != null) ? _param[gWidth] : null,
+    );
     /*return Image(
       image: NetworkImage(_param[gImg]),
       fit: BoxFit.fitWidth,

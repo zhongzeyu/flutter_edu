@@ -8,7 +8,9 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      datamodel.setScreenSize(size);
       return Center(
         child: Image.network(datamodel.imgList[gMain]),
       );

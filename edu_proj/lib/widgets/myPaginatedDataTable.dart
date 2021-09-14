@@ -43,12 +43,6 @@ class MyPaginatedDataTable extends StatelessWidget {
         return result;
       }
 
-      /*tableAddNew(tablename, context) {
-        Map param = datamodel.formLists[tablename];
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => MyDetail(param)));
-      }*/
-
       getTableBtns(tableInfo, datamodel, context) {
         Map attr = Map.of(tableInfo[gAttr]);
         List<Widget> items = [];
