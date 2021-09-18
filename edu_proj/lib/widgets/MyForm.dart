@@ -1,3 +1,4 @@
+// @dart=2.9
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
@@ -65,7 +66,7 @@ class MyForm extends StatelessWidget {
 
           result.add(
             SizedBox(
-              height: 24,
+              height: 24.0,
             ),
           );
           datamodel.beforeSubmit(context, _formName, result);

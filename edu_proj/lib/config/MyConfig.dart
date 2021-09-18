@@ -1,11 +1,13 @@
 enum MyConfig {
   URL,
+  PROJ,
 }
 
 extension MyConfigExtension on MyConfig {
   String get name {
     return [
-      'http://localhost/',
+      '192.168.50.238',
+      'smilesmart',
     ][this.index];
   }
 }

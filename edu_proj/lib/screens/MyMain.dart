@@ -1,5 +1,5 @@
+// @dart=2.9
 import 'package:edu_proj/config/constants.dart';
-import 'package:edu_proj/widgets/myTab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edu_proj/models/DataModel.dart';
@@ -52,10 +52,11 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
       List<Widget> items = [];
       items.add(datamodel.getLocalComponents(context));
       actionItem.forEach((element) {
-        Map<String, String> map = {};
+        Map<String, dynamic> map = Map.of(element);
+        /*{};
         element.entries.forEach((e) {
           map[e.key] = e.value;
-        });
+        });*/
         items.add(IconButton(
           icon: Icon(datamodel.getIconsByName(map[gIcon])),
           tooltip: map[gLabel] + '',
@@ -102,7 +103,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: ClipOval(
-                            child: Icon(Icons.person),
+                            child: Icon(Icons.person_outline),
                           ),
                         ),
                         Text(
@@ -121,7 +122,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
               ),
             ),
           ),
-          body: MyTab(gMain),
+          body: datamodel.getMyBody(gMain),
         );
       },
     );

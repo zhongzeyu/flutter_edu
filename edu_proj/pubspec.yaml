@@ -36,6 +36,7 @@ dependencies:
   flutter_string_encryption: ^0.3.1
   encrypt: ^5.0.0
   flutter_svg: ^0.22.0
+  shared_preferences: 0.5.12+4
   
   
   

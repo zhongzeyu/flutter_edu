@@ -1,8 +1,10 @@
+// @dart=2.9
 import 'dart:collection';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:edu_proj/config/MyConfig.dart';
 import 'package:edu_proj/config/constants.dart';
+import 'package:edu_proj/screens/MyDynamicBody.dart';
 import 'package:edu_proj/screens/MyMain.dart';
 import 'package:edu_proj/screens/firstPage.dart';
 import 'package:edu_proj/screens/mainPage.dart';
@@ -19,12 +21,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DataModel extends ChangeNotifier {
   //String _email;
   String _token = '';
   String _myId = '';
   String _sessionkey = '';
+  String initRequest = 'checkout';
   int _zzyprime = 91473769;
   int _zzydhbase = 2;
   int _arandomsession = new Random().nextInt(1000);
@@ -48,7 +52,7 @@ class DataModel extends ChangeNotifier {
   ];
   //Locale get locale => _locale;
   String get locale => _locale;
-  Widget _firstPage;
+  Widget _firstPage = Text('');
   Map<String, Map<String, dynamic>> _formLists = {};
   Map<int, Color> _bdBackColorList = {};
   Map<String, Map<String, dynamic>> _tableList = {};
@@ -77,7 +81,7 @@ class DataModel extends ChangeNotifier {
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
   Map get systemParams => _systemParams;
-  Size _sceenSize;
+  Size _sceenSize = new Size(800, 1000);
   Size get sceenSize => _sceenSize;
   setScreenSize(Size size) {
     _sceenSize = size;
@@ -102,6 +106,7 @@ class DataModel extends ChangeNotifier {
             children: [
               Text(getSCurrent(_tabList[tabName][gData][index][gLabel]),
                   style: TextStyle(
+                      fontSize: 30.0,
                       fontWeight: index == _tabList[tabName][gTabIndex]
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -130,7 +135,10 @@ class DataModel extends ChangeNotifier {
     _tabParent = parent;
   }*/
 
-  init() {}
+  init() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _locale = (prefs.getString('locallan') ?? _locale);
+  }
   /*initTabController(context) {
 
     _tabController = TabController(
@@ -445,7 +453,7 @@ class DataModel extends ChangeNotifier {
       }
       alert(context, gNochange);
     } catch (e) {
-      print('======exception is ' + e);
+      print('======exception is ' + e.toString());
       //throw e;
       showMsg(context, e);
     }
@@ -501,9 +509,46 @@ class DataModel extends ChangeNotifier {
   getCard(List data, context, param0) {
     return ListView.builder(
       itemCount: data.length,
+      scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
         return Card(
-          clipBehavior: Clip.hardEdge,
+          elevation: 2,
+          color: Color(_colorList[data[index][gColorIndex]]),
+          child: Padding(
+            padding: EdgeInsets.all(7),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      SizedBox(
+                        height: 10,
+                      ),
+                      getCardTitle(data[index]),
+                      //Spacer(),
+                      //cryptoChange(),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      //changeIcon(),
+                      SizedBox(
+                        width: 20,
+                      )
+                    ],
+                  ),
+                  ButtonBar(
+                    alignment: MainAxisAlignment.end,
+                    children: getCardButtons(context, data[index], param0),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+        /*return Card(
+          //clipBehavior: Clip.hardEdge,
+
           color: Color(_colorList[data[index][gColorIndex]]),
           elevation: 10.0,
           child: Column(
@@ -518,7 +563,7 @@ class DataModel extends ChangeNotifier {
               )
             ],
           ),
-        );
+        );*/
       },
     );
   }
@@ -548,7 +593,7 @@ class DataModel extends ChangeNotifier {
   getCardTitle(data) {
     if (data[gType] == gProcess)
       return getTxtImage(
-          data[gLabel], _colorList[data[gColorIndex]], 24, 0, 2.0);
+          data[gLabel], _colorList[data[gColorIndex]], 24.0, 2.0, 2.0);
   }
 
   getDetailWidget(param) {
@@ -607,8 +652,65 @@ class DataModel extends ChangeNotifier {
     return Column(children: result);
   }
 
+  getDynamicWidgets(List param, context) {
+    List<Widget> widgetList = [];
+    param.forEach((element) {
+      String type = element[gType];
+      if (type == gTab) {
+        widgetList.add(
+          Container(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                height: 50,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: tabList[param][gData].length,
+                  itemBuilder: (context, index) => getTabByIndex(index, param),
+                ),
+              ),
+            ),
+          ),
+        );
+        widgetList.add(
+          Expanded(
+            child: getTabBody(element[gData], context),
+          ),
+        );
+      } else if (type == gLabel) {
+        Widget widget = MyLabel({
+          gLabel: element[gLabel],
+          gFontSize: element[gFontSize],
+          gColor: element[gColor]
+        });
+        if (element[gAlign] == gCenter) {
+          widget = Center(child: widget);
+        }
+
+        widgetList.add(SizedBox(height: element[gHeight], child: widget));
+      } else if (type == gButton) {
+        Widget widget = MyButton({
+          gLabel: element[gLabel],
+          gFontSize: element[gFontSize],
+          gColor: element[gColor]
+        });
+        objList.add({
+          gType: gButton,
+          gHeight: 80.0,
+          gAlign: gCenter,
+          gLabel: gCharge,
+          gFontSize: 40.0,
+          gColor: Colors.white,
+          gBackgroundColor: Colors.green
+        });
+      }
+    });
+    return widgetList;
+  }
+
   getFirstPage(name) {
-    Widget result;
+    Widget result = Text('');
     if (_screenLists[name][gType] == gPicsAndButtons) {
       result = new PicsAndButtons(_screenLists[name]);
     } else if (_screenLists[name][gType] == gLogin) {
@@ -657,14 +759,15 @@ class DataModel extends ChangeNotifier {
   }
 
   getIconsByName(iconname) {
-    if (iconname == gMenu) {
+    /*if (iconname == gMenu) {
       return Icons.menu;
     } else if (iconname == gLogout) {
       return Icons.logout;
     } else if (iconname == gManageAccounts) {
       return Icons.person;
-    }
-    return Icons.device_unknown;
+    }*/
+    //return Icons.device_unknown;
+    return IconData(iconname, fontFamily: 'MaterialIcons');
   }
 
   getImage(imgName, context) {
@@ -759,12 +862,25 @@ class DataModel extends ChangeNotifier {
   }
 
   getMod(source, exponent, divider) {
-    var rtn = 1;
+    num rtn = 1;
     for (var i = 0; i < exponent; i++) {
       rtn *= source;
       rtn = rtn % divider;
     }
     return rtn;
+  }
+
+  getMyBody(name) {
+    if (name == gMain) {
+      if (initRequest == '') {
+        List objList = [];
+        objList.add({gType: gTab, gData: name});
+        return MyDynamicBody(objList);
+
+        //return MyTab(gMain);
+      }
+    }
+    return businessMyBody(name);
   }
 
   getParamTypeValue(param) {
@@ -863,7 +979,7 @@ class DataModel extends ChangeNotifier {
       );
     }
 
-    return Text(data[gType]);
+    return Text(data[gType] + ' will be available soon');
   }
 
   /*getTabItems() {
@@ -995,13 +1111,14 @@ class DataModel extends ChangeNotifier {
       'accept-language': 'en-US,en'
     };
 
-    var url = MyConfig.URL.name + 'smilesmart';
+    //dynamic url = MyConfig.URL.name + 'smilesmart';
+    Uri uri = new Uri.http(MyConfig.URL.name, MyConfig.PROJ.name);
     http.Response response;
     try {
       response =
           // ignore: return_of_invalid_type_from_catch_error
           await httpClient
-              .post(url, headers: headers, body: dataRequest)
+              .post(uri, headers: headers, body: dataRequest)
               .catchError((error) {
         //ShowToast.warning(error.toString());
         throw (error);
@@ -1020,7 +1137,7 @@ class DataModel extends ChangeNotifier {
       data.forEach((element) async {
         //print(key);
         var action = '';
-        List actionData;
+        List actionData = [];
         element.forEach((key, value) {
           if (key == gAction) {
             action = value;
@@ -1111,6 +1228,7 @@ class DataModel extends ChangeNotifier {
   }
 
   requestListExists(item) {
+    bool rtn = false;
     if (_requestList != null) {
       _requestList.forEach((element) {
         var value = element.value;
@@ -1120,13 +1238,14 @@ class DataModel extends ChangeNotifier {
           var dataStr = item[gData].toString();
           if (objIDataStr == dataStr) {
             //duplicated, return
-            return true;
+            // ignore: void_checks
+            rtn = true;
           }
         }
       });
     }
 
-    return false;
+    return rtn;
   }
 
   requestListRemoveFirst() {
@@ -1189,14 +1308,27 @@ class DataModel extends ChangeNotifier {
       var secretekey = _sessionkey;
       if (secretekey == '') {
         //hold for 1 sec
-        wait(1);
-        var param = getMod(_zzydhbase, _arandomsession, _zzyprime);
-        _requestList.addFirst({
-          gAction: gGetsessionkey,
-          gData: [
-            {gKey: param}
-          ]
-        });
+        if (initRequest == '') {
+          wait(1);
+          var param = getMod(_zzydhbase, _arandomsession, _zzyprime);
+          _requestList.addFirst({
+            gAction: gGetsessionkey,
+            gData: [
+              {gKey: param}
+            ]
+          });
+        } else {
+          //no need session key
+
+          /*_requestList.addFirst({
+            gAction: initRequest,
+            gData: [
+            ]
+          });*/
+          myBusiness(initRequest, context);
+          //set i10t
+
+        }
       }
       if (_requestList.isEmpty) {
         return;
@@ -1307,7 +1439,7 @@ class DataModel extends ChangeNotifier {
   showScreenPage(actionData, context) {
     for (int i = 0; i < actionData.length; i++) {
       Map<String, dynamic> ai = actionData[i];
-      String name;
+      String name = '';
       dynamic data;
       ai.entries.forEach((element) {
         if (element.key == gName) {
@@ -1331,7 +1463,7 @@ class DataModel extends ChangeNotifier {
   }
 
   showTableForm(tableName, context) {
-    Map formdetail = _formLists[tableName];
+    Map<String, dynamic> formdetail = _formLists[tableName];
     /*String title = tableName;
     if (formdetail[gImgTitle] != null) {
       if (formdetail[gImgTitle][gTitle] != null) {
@@ -1361,8 +1493,8 @@ class DataModel extends ChangeNotifier {
         Map mValue = Map.of(element.value);
         mValue.entries.forEach((element1) {
           if (element1.key != 'en') {
-            mValue[element1.key] =
-                utf8.decode(element1.value.toString().codeUnits);
+            mValue[element1.key] = element1.value;
+            //utf8.decode(element1.value.toString().codeUnits);
           }
         });
         _i10nMap[element.key] = mValue;
@@ -1382,10 +1514,11 @@ class DataModel extends ChangeNotifier {
     //
   }
 
-  setLocale(value) {
+  setLocale(value) async {
     _locale = value;
     //S.load(_locale);
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('locallan', value);
     notifyListeners();
   }
 
@@ -1425,23 +1558,28 @@ class DataModel extends ChangeNotifier {
   }
 
   setMyTab(List data) {
-    Map data0 = Map.of(data[0]);
-    List<dynamic> data0body = data0[gBody];
     int i = 0;
-    List databodyNew = [];
-    data0body.forEach((element) {
-      element = Map.of(element);
-      if (i == _colorList.length) {
-        i = 0;
-      }
-      element[gColorIndex] = i;
-      databodyNew.add(element);
-      i++;
-    });
-    data0[gBody] = databodyNew;
-    data0[gIsselected] = true;
     _tabList[gMain] = {};
-    _tabList[gMain][gData] = [data0];
+    _tabList[gMain][gData] = [];
+
+    data.forEach((element) {
+      List databodyNew = [];
+      Map data0 = Map.of(element);
+      List<dynamic> data0body = data0[gBody];
+      data0body.forEach((element) {
+        element = Map.of(element);
+        if (i == _colorList.length) {
+          i = 0;
+        }
+        element[gColorIndex] = i;
+        databodyNew.add(element);
+        i++;
+      });
+      data0[gBody] = databodyNew;
+      data0[gIsselected] = true;
+      _tabList[gMain][gData].add(data0);
+    });
+
     _tabList[gMain][gTabIndex] = 0;
 
     notifyListeners();
@@ -1511,5 +1649,481 @@ class DataModel extends ChangeNotifier {
 
   wait(waitSeconds) async {
     await Future.delayed(Duration(seconds: waitSeconds));
+  }
+
+  myBusiness(initRequest, context) {
+    if (initRequest == 'checkout') {
+      //1 set i10n
+      {
+        var actionData = [
+          {
+            "parent": {gEn: "parent", gZh: "ç¶ç±»"}
+          },
+          {
+            "serverwrongcode": {
+              gEn:
+                  "failed, Http response code is not right, [{responseCode}], [{responsebody}]",
+              gZh:
+                  "å¤±è´¥ï¼ æå¡å¨è¿åéè¯¯ä¿¡æ¯, [{responseCode}], [{responsebody}]"
+            }
+          },
+          {
+            "program": {gEn: "program", "zh": "é¡¹ç®"}
+          },
+          {
+            "employee": {"en": "employee", "zh": "åå·¥"}
+          },
+          {
+            "type": {"en": "type", "zh": "ç±»å"}
+          },
+          {
+            "checkverifycode": {
+              "en": "please check email for verify code",
+              "zh": "è¯·æ¥æ¶é®ä»¶æ¾å°éªè¯ç "
+            }
+          },
+          {
+            "character": {"en": "characters", "zh": "字符"}
+          },
+          {
+            "charge": {"en": "charge", "zh": "金额"}
+          },
+          {
+            "companyid": {"en": "company", "zh": "公司"}
+          },
+          {
+            "password": {"en": "password", "zh": "密码"}
+          },
+          {
+            "action": {"en": "action", "zh": "动作"}
+          },
+          {
+            "create": {"en": "create", "zh": "创建"}
+          },
+          {
+            "enter": {"en": "enter", "zh": "输入"}
+          },
+          {
+            "welcome": {"en": "welcome", "zh": "欢迎"}
+          },
+          {
+            "new": {"en": "new", "zh": "新"}
+          },
+          {
+            "isrequired": {"en": "{name} is required", "zh": "{name}必填"}
+          },
+          {
+            "systemtitle": {"en": "Checkout", "zh": "结帐"}
+          },
+          {
+            "entryid": {"en": "enter by", "zh": "输入"}
+          },
+          {
+            "tutor": {"en": "tutor", "zh": "老师"}
+          },
+          {
+            "forget": {"en": "forget", "zh": "忘记"}
+          },
+          {
+            "dictionary": {"en": "dictionary", "zh": "字典"}
+          },
+          {
+            "system": {"en": "system", "zh": "系统"}
+          },
+          {
+            "name": {"en": "name", "zh": "名称"}
+          },
+          {
+            "invalidname": {
+              "en": "pleaseÂ enterÂ anÂ validÂ {name}",
+              "zh": "è¯·è¾å¥åæ³ç{name}"
+            }
+          },
+          {
+            "reset": {"en": "reset", "zh": "éç½®"}
+          },
+          {
+            "detail": {"en": "detail", "zh": "æç»"}
+          },
+          {
+            "maxinput": {
+              "en": "please enter less than {number} {unit}",
+              "zh": "è¯·è¾å¥å°äº{number}ä¸ª{unit}"
+            }
+          },
+          {
+            "desc": {"en": "description", "zh": "æè¿°"}
+          },
+          {
+            "code": {"en": "code", "zh": "ç "}
+          },
+          {
+            "role": {"en": "Role", "zh": "è§è²"}
+          },
+          {
+            "entrytime": {"en": "enter at", "zh": "å½å¥æ¶é´"}
+          },
+          {
+            "submit": {"en": "submit", "zh": "æäº¤"}
+          },
+          {
+            "student": {"en": "student", "zh": "å­¦ç"}
+          },
+          {
+            "mininput": {
+              "en": "please enter at least {number} {unit}",
+              "zh": "è¯·è¾å¥è³å°{number}ä¸ª{unit}"
+            }
+          },
+          {
+            "update": {"en": "update", "zh": "ä¿®æ¹"}
+          },
+          {
+            "industry": {"en": "industry", "zh": "è¡ä¸"}
+          },
+          {
+            "login": {"en": "login", "zh": "ç»å½"}
+          },
+          {
+            "delete": {"en": "delete", "zh": "å é¤"}
+          },
+          {
+            "eteremailtoresetpassword": {
+              "en":
+                  "enter your email address and we'll send you an email with code to reset your password.",
+              "zh":
+                  "è¾å¥é®ç®±ï¼æä»¬ä¼ç»æ¨é®ä»¶ä¸­åéªè¯ç ï¼ä»¥ä¾¿éç½®å¯ç "
+            }
+          },
+          {
+            "not": {"en": "not", "zh": "ä¸"}
+          },
+          {
+            "serverdown": {
+              "en":
+                  "failed! server is not response, please retry after a while",
+              "zh": "å¤±è´¥ï¼ æå¡å¨æªååºï¼è¯·ç¨ååè¯"
+            }
+          },
+          {
+            "backbtn": {"en": "  <- ", "zh": "  <- "}
+          },
+          {
+            "beef": {"en": "beef", "zh": "牛肉"}
+          },
+          {
+            "verify": {"en": "verify", "zh": "éªè¯ç "}
+          },
+          {
+            "company": {"en": "company", "zh": "å¬å¸"}
+          },
+          {
+            "nochange": {"en": "no change", "zh": "æªä¿®æ¹"}
+          },
+          {
+            "noodle": {"en": "noodle", "zh": "面"}
+          },
+          {
+            "email": {"en": "email", "zh": "çµå­é®ä»¶"}
+          },
+          {
+            "table": {"en": "table", "zh": "è¡¨"}
+          },
+          {
+            "change": {"en": "change", "zh": "ä¿®æ¹"}
+          },
+          {
+            "match": {"en": "match", "zh": "å¹é"}
+          },
+          {
+            "addnew": {"en": "add new", "zh": "æ°å¢"}
+          },
+          {
+            "home": {"en": "home", "zh": "ä¸»é¡µ"}
+          },
+          {
+            "pls": {"en": "Please", "zh": "è¯·"}
+          },
+          {
+            "account": {"en": "account", "zh": "å¸å·"}
+          }
+        ];
+        setI10n(actionData);
+      }
+      {
+        setSessionkey("77680759");
+      }
+      {
+        Map param = {
+          "type": "form",
+          "formdetail": {
+            "formName": "login",
+            "backgroundColor": 4280391411,
+            "submit": "Login",
+            "imgTitle": {
+              "title": "Welcome",
+              "fontSize": 40.0,
+              "height": 1.2,
+              "letterSpacing": 1.0
+            },
+            "height": 450.5,
+            "top": 130.0,
+            "items": {
+              "email": {
+                "id": "email",
+                "dbid": "email",
+                "type": "email",
+                "label": "Email",
+                "defaultValue": "",
+                "placeHolder": "xxx@xxxxx.xxx",
+                "required": true,
+                "minLength": 8,
+                "length": 40,
+                "hash": false,
+                "unit": "characters",
+                "prefixIcon": 59123,
+                "inputType": "emailAddress",
+                "isHidden": false,
+                "fontSize": null,
+                "letterSpacing": null,
+                "isPrimary": false
+              },
+              "password": {
+                "id": "password",
+                "dbid": "password",
+                "type": "password",
+                "label": "Password",
+                "defaultValue": "",
+                "placeHolder": "",
+                "required": true,
+                "minLength": 8,
+                "length": 20,
+                "hash": true,
+                "unit": "characters",
+                "prefixIcon": 59459,
+                "inputType": "visiblePassword",
+                "isHidden": false,
+                "fontSize": null,
+                "letterSpacing": null,
+                "isPrimary": false
+              }
+            }
+          }
+        };
+        getWidgetForm(param);
+      }
+      {
+        dynamic data = {
+          "id": "996a925f-5ce8-4d08-9ef6-2f3169d21491",
+          "zzyoptlock": "619",
+          "username": "Linus",
+          "firstname": "Zhong",
+          "usercode": "1220",
+          "email": "none",
+          "token": "none",
+          "cell": "null",
+          "parentid": "null",
+          "url": "null",
+          "roleid": "-1",
+          "password": "",
+          "companyid": "IOTPay",
+          "entryid": "996a925f-5ce8-4d08-9ef6-2f3169d21491",
+          "entrytime": "1623459619673"
+        };
+        setMyInfo(data, context);
+      }
+
+      {
+        List actiondata = [
+          {
+            "label": "Role",
+            "icon": 0xf1ac,
+            "type": "table",
+            "actionid": "Zzyrole"
+          },
+          {
+            "label": "Menu",
+            "icon": 0xf1c4,
+            "type": "table",
+            "actionid": "Zzymenu"
+          },
+          {
+            "label": "Test",
+            "icon": 0xf2dd,
+            "type": "action",
+            "actionid": "test"
+          },
+          {
+            "label": "Change Password",
+            "icon": 0xf33f,
+            "type": "action",
+            "actionid": "changepassword"
+          }
+        ];
+        setMyMenu(actiondata);
+      }
+      {
+        List actionData = [
+          {
+            gLabel: "Shopping Cart",
+            gIcon: 0xf37f,
+            gType: gAction,
+            gActionid: "businessShowShoppingCart"
+          }
+        ];
+        setMyAction(actionData);
+      }
+
+      {
+        Map items = businessCheckoutGetItems();
+        Map category = businessCheckoutGetCategory();
+        List data = [];
+        category.forEach((key, value) {
+          List itemList = value[gItems];
+          List bodyList = [];
+          itemList.forEach((element) {
+            Map itemOne = items[element];
+            bodyList.add({
+              gLabel: itemOne[gLabel],
+              gType: gProcess,
+              gActionid: 'businessChckoutAddOneToShoppingCart',
+              gDetail: [
+                {gLabel: itemOne[gPrice], gType: gMoney, gActionid: element}
+              ]
+            });
+          });
+          data.add({gLabel: value[gLabel], gType: gCard, gBody: bodyList});
+        });
+
+        setMyTab(data);
+      }
+      {
+        removeAllScreens(context);
+      }
+    }
+  }
+
+  businessCheckoutGetItems() {
+    return {
+      'item0': {
+        gLabel: "Beef Noodle",
+        gPrice: "15.00",
+      },
+      'item1': {
+        gLabel: "House special stir Fried sliced",
+        gPrice: "12.10",
+      },
+      'item2': {
+        gLabel: "Red curry over Noodle",
+        gPrice: "13.00",
+      },
+      'item3': {
+        gLabel: "Taipei Riverway Seafood Thisk so...",
+        gPrice: "14.00",
+      },
+      'item4': {
+        gLabel: "White Rice",
+        gPrice: "1.00",
+      },
+      'item5': {
+        gLabel: "Brown Rice",
+        gPrice: "1.50",
+      },
+      'item6': {
+        gLabel: "Eight Treasure Rice",
+        gPrice: "2.50",
+      },
+      'item7': {
+        gLabel: "Stirred Rice",
+        gPrice: "5.50",
+      },
+      'item8': {
+        gLabel: "Red Tea",
+        gPrice: "5.50",
+      },
+      'item9': {
+        gLabel: "Green Tea",
+        gPrice: "4.50",
+      },
+      'item10': {
+        gLabel: "Rose Tea",
+        gPrice: "10.50",
+      },
+      'item11': {
+        gLabel: "Regular Coffee",
+        gPrice: "1.50",
+      },
+      'item12': {
+        gLabel: "Carpocino",
+        gPrice: "2.50",
+      },
+      'item13': {
+        gLabel: "Cat poop",
+        gPrice: "12.50",
+      },
+      'item14': {
+        gLabel: "Apple juice",
+        "price": "2.50",
+      },
+      'item15': {
+        gLabel: "Beer",
+        gPrice: "4.50",
+      },
+    };
+  }
+
+  businessCheckoutGetCategory() {
+    return {
+      'cate0': {
+        gLabel: "Noodle",
+        gItems: ['item0', 'item1', 'item2', 'item3']
+      },
+      'cate1': {
+        gLabel: "Rice",
+        gItems: ['item4', 'item5', 'item6', 'item7']
+      },
+      'cate2': {
+        gLabel: "Tea",
+        gItems: ['item8', 'item9', 'item10']
+      },
+      'cate3': {
+        gLabel: "Coffee",
+        gItems: ['item11', 'item12', 'item13']
+      },
+      'cate4': {
+        gLabel: "Uncategorized",
+        gItems: ['item14', 'item15']
+      },
+    };
+  }
+
+  businessGetOrderSum() {
+    return '20.00';
+  }
+
+  businessMyBody(name) {
+    if (name == gMain) {
+      List objList = [];
+      objList.add({
+        gType: gLabel,
+        gHeight: 80.0,
+        gAlign: gCenter,
+        gLabel: '\$ ' + businessGetOrderSum(),
+        gFontSize: 40.0,
+        gColor: Colors.red
+      });
+      objList.add({
+        gType: gButton,
+        gHeight: 80.0,
+        gAlign: gCenter,
+        gLabel: gCharge,
+        gFontSize: 40.0,
+        gColor: Colors.white,
+        gBackgroundColor: Colors.green
+      });
+      //objList.add({gType: gTab, gData: name});
+      return MyDynamicBody(objList);
+    }
+    return null;
   }
 }

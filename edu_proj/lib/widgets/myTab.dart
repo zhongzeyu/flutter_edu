@@ -15,13 +15,16 @@ class MyTab extends StatelessWidget {
         children: [
           Container(
             alignment: Alignment.centerLeft,
-            child: SizedBox(
-              height: 35,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: datamodel.tabList[_param][gData].length,
-                itemBuilder: (context, index) =>
-                    datamodel.getTabByIndex(index, _param),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                height: 50,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: datamodel.tabList[_param][gData].length,
+                  itemBuilder: (context, index) =>
+                      datamodel.getTabByIndex(index, _param),
+                ),
               ),
             ),
           ),

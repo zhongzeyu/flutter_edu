@@ -4,6 +4,7 @@ const gAction = 'action';
 const gActionid = 'actionid';
 const gActions = 'actions';
 const gAddnew = 'addnew';
+const gAlign = 'align';
 const gAscending = 'ascending';
 const gAttr = 'attr';
 
@@ -13,12 +14,15 @@ const gBody = 'body';
 const gBottomImgs = 'bottomImgs';
 const gBtns = 'btns';
 const gsBackgroundColor = 'backgroundColor';
+const gButton = 'button';
 
 const gCanDelete = 'canDelete';
 const gCanInsert = 'canInsert';
 const gCard = 'card';
+const gCenter = 'center';
 const gChangepassword = 'changepassword';
 const gCharacter = 'character';
+const gCharge = 'Charge';
 const gCheckverifycode = 'checkverifycode';
 const gColor = 'color';
 const gColorIndex = 'colorIndex';
@@ -42,6 +46,7 @@ const gDetailPage = 'detailPage';
 const gEmail = 'email';
 const gEmailAddress = 'emailAddress';
 const gEmployee = 'employee';
+const gEn = 'en';
 const gEnterusercode = 'enterusercode';
 const gEteremailtoresetpassword = 'eteremailtoresetpassword';
 
@@ -95,6 +100,7 @@ const gMessenger = 'messenger';
 const gMenu = 'menu';
 const gMininput = 'mininput';
 const gMinLength = 'minLength';
+const gMoney = 'money';
 const gMsg = 'msg';
 const gMultiline = 'multiline';
 
@@ -104,6 +110,7 @@ const gNoecrypted = 'noecrypted';
 const gNumber = 'number';
 
 const gOldvalue = 'oldvalue';
+const gOther = 'other';
 
 const gParam0 = 'param0';
 const gPassword = 'password';
@@ -115,6 +122,7 @@ const gPlsenteremail = 'plsenteremail';
 const gPhone = 'phone';
 const gPics = 'pics';
 const gPreFixIcon = 'preFixIcon';
+const gPrice = 'price';
 const gProcess = 'process';
 const gProgram = 'program';
 
@@ -147,6 +155,7 @@ const gTxtEditingController = 'txtEditingController';
 const gTitle = 'title';
 const gToken = 'token';
 const gTutor = 'tutor';
+const gTab = 'tab';
 const gType = 'type';
 
 const gUnit = 'unit';
@@ -160,3 +169,4 @@ const gVisiblePassword = 'visiblePassword';
 
 const gWelcome = 'welcome';
 const gWidth = 'width';
+const gZh = 'zh';
