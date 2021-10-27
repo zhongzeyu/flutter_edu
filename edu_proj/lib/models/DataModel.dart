@@ -28,7 +28,7 @@ class DataModel extends ChangeNotifier {
   String _token = '';
   String _myId = '';
   String _sessionkey = '';
-  String initRequest = 'checkout';
+  String initRequest = ''; //'checkout';
   int _zzyprime = 91473769;
   int _zzydhbase = 2;
   int _arandomsession = new Random().nextInt(1000);
@@ -167,17 +167,10 @@ class DataModel extends ChangeNotifier {
   }
 
   addTab(data, context, tabName) {
-    //int i = 0;
-    _tabList[tabName][gData].forEach((element) {
-      if (data[gLabel] == element[gLabel]) {
-        //_tabIndex = i;
-        showTab(data[gLabel], context, tabName);
-        notifyListeners();
-        return;
-      }
-      //i++;
-    });
-    //_tabIndex = i;
+    bool tabExists = showTab(data[gLabel], context, tabName);
+    if (tabExists) {
+      return;
+    }
     _tabList[tabName][gData].add(
         {gLabel: data[gLabel], gType: data[gType], gActionid: data[gActionid]});
     _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;
@@ -198,8 +191,24 @@ class DataModel extends ChangeNotifier {
 
   addTable(data) {
     _tableList[data[gActionid]] = Map.of(data[gBody][data[gActionid]]);
+    List dataList = _tableList[data[gActionid]][gData];
+    if (dataList != null && dataList.length > 0) {
+      for (int i = 0; i < dataList.length; i++) {
+        dataList[i] = Map.of(dataList[i]);
+      }
+    }
+    List colList = _tableList[data[gActionid]][gColumns];
+    if (colList != null && colList.length > 0) {
+      for (int i = 0; i < colList.length; i++) {
+        colList[i] = Map.of(colList[i]);
+      }
+    }
+    _tableList[data[gActionid]][gAttr] =
+        Map.of(_tableList[data[gActionid]][gAttr]);
+
     _tableList[data[gActionid]][gAscending] = true;
     _tableList[data[gActionid]][gSortColumnIndex] = 0;
+    _tableList[data[gActionid]][gTableID] = data[gActionid];
     Map param = {
       gType: gForm,
       gFormdetail: {
@@ -507,34 +516,57 @@ class DataModel extends ChangeNotifier {
   }
 
   getCard(List data, context, param0) {
-    return ListView.builder(
-      itemCount: data.length,
+    List<Widget> cardLists = [];
+    data.forEach((element) {
+      cardLists.add(Card(
+        elevation: 2,
+        color: Color(_colorList[element[gColorIndex]]),
+        child: Scaffold(
+          appBar: AppBar(
+            title: getCardTitle(element),
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              children: getCardButtons(context, element, param0),
+            ),
+          ),
+        ),
+        /*child: Column(
+          children: <Widget>[
+            ListTile(
+              subtitle: getCardTitle(element),
+            ),
+            ButtonBar(
+              alignment: MainAxisAlignment.end,
+              children: getCardButtons(context, element, param0),
+            )
+          ],
+        ),*/
+      ));
+    });
+
+    return GridView.count(crossAxisCount: 3, children: cardLists);
+    /*ListView.builder(
+
+    itemCount: data.length,
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
+        GridView.count(
+          crossAxisCount: 4,
         return Card(
           elevation: 2,
           color: Color(_colorList[data[index][gColorIndex]]),
           child: Padding(
-            padding: EdgeInsets.all(7),
+            padding: EdgeInsets.all(2),
             child: Align(
               alignment: Alignment.centerRight,
               child: Column(
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      SizedBox(
-                        height: 10,
-                      ),
                       getCardTitle(data[index]),
                       //Spacer(),
                       //cryptoChange(),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      //changeIcon(),
-                      SizedBox(
-                        width: 20,
-                      )
                     ],
                   ),
                   ButtonBar(
@@ -546,26 +578,9 @@ class DataModel extends ChangeNotifier {
             ),
           ),
         );
-        /*return Card(
-          //clipBehavior: Clip.hardEdge,
-
-          color: Color(_colorList[data[index][gColorIndex]]),
-          elevation: 10.0,
-          child: Column(
-            children: [
-              ListTile(
-                title: getCardTitle(data[index]),
-              ),
-              Divider(),
-              ButtonBar(
-                alignment: MainAxisAlignment.end,
-                children: getCardButtons(context, data[index], param0),
-              )
-            ],
-          ),
-        );*/
+        
       },
-    );
+    );*/
   }
 
   getCardButtons(context, data, param0) {
@@ -575,9 +590,9 @@ class DataModel extends ChangeNotifier {
       detail.forEach((element) {
         list.add(TextButton(
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.all(16.0),
-              primary: fromBdckcolor(data[gColorIndex]),
-              textStyle: const TextStyle(fontSize: 20),
+              //padding: const EdgeInsets.all(10.0),
+              //primary: fromBdckcolor(data[gColorIndex]),
+              textStyle: const TextStyle(fontSize: 15),
             ),
             onPressed: () {
               element[gColorIndex] = data[gColorIndex];
@@ -593,7 +608,7 @@ class DataModel extends ChangeNotifier {
   getCardTitle(data) {
     if (data[gType] == gProcess)
       return getTxtImage(
-          data[gLabel], _colorList[data[gColorIndex]], 24.0, 2.0, 2.0);
+          data[gLabel], _colorList[data[gColorIndex]], 15.0, 2.0, 2.0);
   }
 
   getDetailWidget(param) {
@@ -660,24 +675,32 @@ class DataModel extends ChangeNotifier {
         widgetList.add(
           Container(
             alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: tabList[param][gData].length,
-                  itemBuilder: (context, index) => getTabByIndex(index, param),
-                ),
+            child: SizedBox(
+              height: 50,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: tabList[element[gData]][gData].length,
+                itemBuilder: (context, index) =>
+                    getTabByIndex(index, element[gData]),
               ),
             ),
           ),
         );
+        double bodyheight = _sceenSize.height - 125;
+        if (bodyheight < 20) {
+          bodyheight = 20;
+        }
         widgetList.add(
-          Expanded(
+          SizedBox(
+            height: bodyheight,
             child: getTabBody(element[gData], context),
           ),
         );
+        /*widgetList.add(
+          Expanded(
+            child: getTabBody(element[gData], context),
+          ),
+        );*/
       } else if (type == gLabel) {
         Widget widget = MyLabel({
           gLabel: element[gLabel],
@@ -695,7 +718,8 @@ class DataModel extends ChangeNotifier {
           gFontSize: element[gFontSize],
           gColor: element[gColor]
         });
-        objList.add({
+        widgetList.add(SizedBox(height: element[gHeight], child: widget));
+        /*objList.add({
           gType: gButton,
           gHeight: 80.0,
           gAlign: gCenter,
@@ -703,7 +727,7 @@ class DataModel extends ChangeNotifier {
           gFontSize: 40.0,
           gColor: Colors.white,
           gBackgroundColor: Colors.green
-        });
+        });*/
       }
     });
     return widgetList;
@@ -1064,6 +1088,20 @@ class DataModel extends ChangeNotifier {
     return digest1.toString();
   }
 
+  localAction(requestFirst) {
+    Map data = requestFirst[gData];
+    if (data[gLabel] != null &&
+        data[gLabel] == gEdit &&
+        data[gTableID] != null) {
+      //showFormEdit
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gDelete &&
+        data[gTableID] != null) {
+      //show delete confirm dialog, and send delete request.
+
+    }
+  }
+
   logOff() {
     clear();
 
@@ -1129,6 +1167,8 @@ class DataModel extends ChangeNotifier {
             "serverwrongcode(${response.statusCode}, ${response.body.toString()})"));
       }
       print('==== response: ' + response.body);
+      /*Utf8Decoder decode = new Utf8Decoder();
+      List data = jsonDecode(decode.convert(response.bodyBytes));*/
       List data = jsonDecode(response.body);
 
       //print(data.entries.first.key);
@@ -1151,6 +1191,8 @@ class DataModel extends ChangeNotifier {
           await finishme(context);
         } else if (action == 'processTab') {
           await processTab(actionData, context);
+        } else if (action == 'processTableSave') {
+          await processTableSave(actionData, context);
         } else if (action == 'removeAllScreens') {
           await removeAllScreens(context);
         } else if (action == 'resetpassword') {
@@ -1202,10 +1244,29 @@ class DataModel extends ChangeNotifier {
     //notifyListeners();
   }
 
+  processTableSave(List data, context) {
+    data.forEach((data0) {
+      data0 = Map.of(data0);
+      saveTableOne(data0, context);
+    });
+
+    //notifyListeners();
+  }
+
+  saveTableOne(data0, context) {
+    //formid = data0[gFormid];
+    if (data0[gActionid] == gTableAdd) {
+      List tableData = tableList[data0[gTableID]][gData];
+      tableData.insert(0, Map.of(data0[gBody]));
+    } else if (data0[gType] == gTableUpdate) {}
+    finishme(context);
+    notifyListeners();
+  }
+
   processTap(context, element, tabName) {
     _tabList[tabName][gData].forEach((el) {
       if (el[gLabel] == element[gLabel]) {
-        showTab(el[gActionid], context, tabName);
+        showTab(el[gLabel], context, tabName);
         return;
       }
     });
@@ -1337,6 +1398,10 @@ class DataModel extends ChangeNotifier {
         return;
       }
       Map requestFirst = requestListRemoveFirst();
+      if (requestFirst[gAction] != null &&
+          requestFirst[gAction] == gLocalAction) {
+        localAction(requestFirst);
+      }
       if (_token != '') {
         requestFirst[gToken] = _token;
         requestFirst[gCompanyid] = _globalCompanyid;
@@ -1493,8 +1558,10 @@ class DataModel extends ChangeNotifier {
         Map mValue = Map.of(element.value);
         mValue.entries.forEach((element1) {
           if (element1.key != 'en') {
-            mValue[element1.key] = element1.value;
-            //utf8.decode(element1.value.toString().codeUnits);
+            //mValue[element1.key] = element1.value;
+            mValue[element1.key] = utf8.decode(element1.value.codeUnits);
+
+            //mValue[element1.key] = Utf8Decoder().convert(element1.value);
           }
         });
         _i10nMap[element.key] = mValue;
@@ -1616,20 +1683,45 @@ class DataModel extends ChangeNotifier {
   }
 
   showTab(label, context, tabName) {
-    int i = 0;
-    _tabList[tabName].forEach((element) {
+    for (int i = 0; i < _tabList[tabName][gData].length; i++) {
+      if (_tabList[tabName][gData][i][gLabel] == label) {
+        if (_tabList[tabName][gTabIndex] != i) {
+          _tabList[tabName][gTabIndex] = i;
+          notifyListeners();
+        }
+        return true;
+      }
+    }
+    _tabList[tabName][gTabIndex] = 0;
+    return false;
+
+    /*
+        int i = 0;
+    bool tablExists = false;
+
+    _tabList[tabName][gData].forEach((element) {
       if (element[gLabel] == label) {
         //_tabController.animateTo(i);
-        _tabList[tabName][gTabIndex] = i;
+        tablExists = true;
+        if (_tabList[tabName][gTabIndex] != i) {
+          _tabList[tabName][gTabIndex] = i;
+          notifyListeners();
+        }
+
         //DefaultTabController.of(context).animateTo(i);
-        return;
+        return tablExists;
         //_tabController.initialIndex = i;
       }
       i++;
     });
-    _tabList[tabName][gTabIndex] = 0;
+    if (!tablExists) {
+      _tabList[tabName][gTabIndex] = 0;
+    }
+
+    return tablExists;
+
     //addTab();
-    //notifyListeners();
+    //notifyListeners();*/
   }
 
   showTable(String tableid, context) {
@@ -1643,8 +1735,17 @@ class DataModel extends ChangeNotifier {
   }
 
   tableSort(tableName, columnIndex, ascending) {
+    List data = tableList[tableName][gData];
+    if (data == null || data.length < 2) {
+      return;
+    }
+    String colName = tableList[tableName][gColumns][columnIndex][gId];
+
     if (ascending) {
-    } else {}
+      data.sort((a, b) => a[colName].compareTo(b[colName]));
+    } else {
+      data.sort((a, b) => b[colName].compareTo(a[colName]));
+    }
   }
 
   wait(waitSeconds) async {
@@ -1686,7 +1787,7 @@ class DataModel extends ChangeNotifier {
             "character": {"en": "characters", "zh": "字符"}
           },
           {
-            "charge": {"en": "charge", "zh": "金额"}
+            "charge": {"en": "charge", "zh": "结帐"}
           },
           {
             "companyid": {"en": "company", "zh": "公司"}
@@ -2110,7 +2211,7 @@ class DataModel extends ChangeNotifier {
         gAlign: gCenter,
         gLabel: '\$ ' + businessGetOrderSum(),
         gFontSize: 40.0,
-        gColor: Colors.red
+        //gColor: Colors.red
       });
       objList.add({
         gType: gButton,
@@ -2121,7 +2222,8 @@ class DataModel extends ChangeNotifier {
         gColor: Colors.white,
         gBackgroundColor: Colors.green
       });
-      //objList.add({gType: gTab, gData: name});
+
+      objList.add({gType: gTab, gData: name});
       return MyDynamicBody(objList);
     }
     return null;

@@ -15,7 +15,8 @@ class MyLabel extends StatelessWidget {
         style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: _param[gFontSize],
-            color: _param[gColor]),
+            color: _param[gColor],
+            backgroundColor: _param[gBackgroundColor]),
       );
     });
   }

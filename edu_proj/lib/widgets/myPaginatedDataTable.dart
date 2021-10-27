@@ -35,8 +35,14 @@ class MyPaginatedDataTable extends StatelessWidget {
       }
 
       getTableColumns() {
-        List columns = tableInfo['columns'];
+        List columns = tableInfo[gColumns];
         List<DataColumn> result = [];
+        if (tableInfo[gAttr][gCanEdit]) {
+          result.add(DataColumn(label: MyLabel({gLabel: gEdit})));
+        }
+        if (tableInfo[gAttr][gCanDelete]) {
+          result.add(DataColumn(label: MyLabel({gLabel: gDelete})));
+        }
         columns.forEach((element) {
           result.add(DataColumn(
               label: MyLabel({gLabel: element[gLabel]}), onSort: sortTable));
@@ -45,7 +51,7 @@ class MyPaginatedDataTable extends StatelessWidget {
       }
 
       getTableBtns(tableInfo, datamodel, context) {
-        Map attr = Map.of(tableInfo[gAttr]);
+        Map attr = tableInfo[gAttr];
         List<Widget> items = [];
         if (attr[gCanInsert]) {
           items.add(ElevatedButton(
@@ -68,37 +74,31 @@ class MyPaginatedDataTable extends StatelessWidget {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: tableTheme,
-        home: InteractiveViewer(
-          //constrained: true,
-          scaleEnabled: true,
+        home: Scaffold(
+          appBar: AppBar(
+            /*IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: null,
+            ),*/
 
-          //scrollDirection: Axis.horizontal,
-          child: Scaffold(
-            appBar: AppBar(
-              /*IconButton(
-                icon: Icon(Icons.menu),
-                onPressed: null,
-              ),*/
-
-              actions: getTableBtns(tableInfo, datamodel, context),
-            ),
-            body: SingleChildScrollView(
-              child: PaginatedDataTable(
-                //header: MyLabel(data),
-                //rowsPerPage: 5,
-                //availableRowsPerPage: [5, 10, 20, 50],
-                onPageChanged: (e) {},
-                onRowsPerPageChanged: (int v) {
-                  //widget.onRowsPerPageChanged?.call(v ?? 10);
-                },
-                columns: getTableColumns(),
-                columnSpacing: 30,
-                horizontalMargin: 5,
-                source: tabledata,
-                showCheckboxColumn: true,
-                sortAscending: tableInfo[gAscending],
-                sortColumnIndex: tableInfo[gSortColumnIndex],
-              ),
+            actions: getTableBtns(tableInfo, datamodel, context),
+          ),
+          body: SingleChildScrollView(
+            child: PaginatedDataTable(
+              //header: MyLabel(data),
+              rowsPerPage: 5,
+              availableRowsPerPage: [5, 10, 20, 50],
+              onPageChanged: (e) {},
+              onRowsPerPageChanged: (int v) {
+                //widget.onRowsPerPageChanged?.call(v ?? 10);
+              },
+              columns: getTableColumns(),
+              columnSpacing: 30,
+              horizontalMargin: 5,
+              source: tabledata,
+              showCheckboxColumn: true,
+              sortAscending: tableInfo[gAscending],
+              sortColumnIndex: tableInfo[gSortColumnIndex],
             ),
           ),
         ),

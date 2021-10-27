@@ -10,8 +10,11 @@ class MyDynamicBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      return Column(
-        children: datamodel.getDynamicWidgets(_param, context),
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: datamodel.getDynamicWidgets(_param, context),
+        ),
       );
     });
   }

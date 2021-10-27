@@ -16,6 +16,7 @@ const gBtns = 'btns';
 const gsBackgroundColor = 'backgroundColor';
 const gButton = 'button';
 
+const gCanEdit = 'canEdit';
 const gCanDelete = 'canDelete';
 const gCanInsert = 'canInsert';
 const gCard = 'card';
@@ -24,6 +25,7 @@ const gChangepassword = 'changepassword';
 const gCharacter = 'character';
 const gCharge = 'Charge';
 const gCheckverifycode = 'checkverifycode';
+
 const gColor = 'color';
 const gColorIndex = 'colorIndex';
 const gColumns = 'columns';
@@ -43,6 +45,7 @@ const gDelete = 'delete';
 const gDetail = 'detail';
 const gDetailPage = 'detailPage';
 
+const gEdit = 'edit';
 const gEmail = 'email';
 const gEmailAddress = 'emailAddress';
 const gEmployee = 'employee';
@@ -72,6 +75,7 @@ const gHome = 'home';
 
 const gIcon = 'icon';
 const gId = 'id';
+const gIndex = 'index';
 const gInputType = 'inputType';
 const gImg = 'img';
 const gImgID = 'imgID';
@@ -90,6 +94,7 @@ const gLabel = 'label';
 const gLastaction = 'lastaction';
 const gLength = 'length';
 const gLetterSpacing = 'letterSpacing';
+const gLocalAction = 'localAction';
 const gLogin = 'login';
 const gLogout = 'logout';
 
@@ -129,6 +134,7 @@ const gProgram = 'program';
 const gRequired = 'required';
 const gResetpassword = 'resetpassword';
 const gRole = 'role';
+const gRow = 'row';
 
 const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
@@ -144,6 +150,8 @@ const gSystemTitle = 'systemtitle';
 
 const gTabIndex = 'tabIndex';
 const gTable = 'table';
+const gTableAdd = 'tableAdd';
+const gTableUpdate = 'tableUpdate';
 const gTableID = 'tableid';
 const gTextFontColor = 'textFontColor';
 const gTop = 'top';

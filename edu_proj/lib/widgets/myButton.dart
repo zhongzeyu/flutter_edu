@@ -15,10 +15,9 @@ class MyButton extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(18.0),
         child: SizedBox(
-          width: double.infinity,
           child: ElevatedButton(
               onPressed: () {
-                datamodel.sendRequestOne(_param[gAction], '', context);
+                datamodel.sendRequestOne(_param[gAction], _param, context);
               },
               child: MyLabel(_param)),
         ),
