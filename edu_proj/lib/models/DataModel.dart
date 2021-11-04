@@ -1088,17 +1088,24 @@ class DataModel extends ChangeNotifier {
     return digest1.toString();
   }
 
-  localAction(requestFirst) {
+  localAction(requestFirst, context) {
     Map data = requestFirst[gData];
     if (data[gLabel] != null &&
         data[gLabel] == gEdit &&
         data[gTableID] != null) {
+      var tableId = data[gTableID];
+      int index = data[gRow];
       //showFormEdit
+      showTableFormByIndex(tableId, context, index);
     } else if (data[gLabel] != null &&
         data[gLabel] == gDelete &&
         data[gTableID] != null) {
+      int row = data[gRow];
       //show delete confirm dialog, and send delete request.
-
+      var dataDelete = {};
+      dataDelete[gFormid] = data[gTableID];
+      dataDelete[gId] = _tableList[data[gTableID]][gData][row][gId];
+      sendRequestOne('formchange', [dataDelete], context);
     }
   }
 
@@ -1255,11 +1262,18 @@ class DataModel extends ChangeNotifier {
 
   saveTableOne(data0, context) {
     //formid = data0[gFormid];
+    List tableData = tableList[data0[gTableID]][gData];
     if (data0[gActionid] == gTableAdd) {
-      List tableData = tableList[data0[gTableID]][gData];
       tableData.insert(0, Map.of(data0[gBody]));
-    } else if (data0[gType] == gTableUpdate) {}
-    finishme(context);
+      finishme(context);
+    } else if (data0[gActionid] == gTableUpdate) {
+      finishme(context);
+    } else if (data0[gActionid] == gTableDelete) {
+      var deletedID = data0[gBody][gId];
+
+      tableData.removeWhere((element) => element[gId] == deletedID);
+    }
+
     notifyListeners();
   }
 
@@ -1400,7 +1414,8 @@ class DataModel extends ChangeNotifier {
       Map requestFirst = requestListRemoveFirst();
       if (requestFirst[gAction] != null &&
           requestFirst[gAction] == gLocalAction) {
-        localAction(requestFirst);
+        localAction(requestFirst, context);
+        return;
       }
       if (_token != '') {
         requestFirst[gToken] = _token;
@@ -1528,6 +1543,10 @@ class DataModel extends ChangeNotifier {
   }
 
   showTableForm(tableName, context) {
+    showTableFormByIndex(tableName, context, -1);
+  }
+
+  showTableFormByIndex(tableName, context, idnex) {
     Map<String, dynamic> formdetail = _formLists[tableName];
     /*String title = tableName;
     if (formdetail[gImgTitle] != null) {

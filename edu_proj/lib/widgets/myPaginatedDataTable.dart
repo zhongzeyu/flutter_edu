@@ -17,6 +17,7 @@ class MyPaginatedDataTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DataTableSource tabledata;
+    int actionBtnCnts = 0;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       String tableName = _param[gName];
 
@@ -25,23 +26,26 @@ class MyPaginatedDataTable extends StatelessWidget {
       tabledata = TableData(tableInfo);
 
       sortTable(int columnIndex, bool ascending) {
-        datamodel.tableSort(tableName, columnIndex, ascending);
+        int sortIndex = columnIndex - actionBtnCnts;
+        datamodel.tableSort(tableName, sortIndex, ascending);
 
-        print(
-            '============columnIndex is $columnIndex, ascending is $ascending');
+        print('============columnIndex is $sortIndex, ascending is $ascending');
         tableInfo[gAscending] = ascending;
-        tableInfo[gSortColumnIndex] = columnIndex;
+        tableInfo[gSortColumnIndex] = sortIndex;
         datamodel.notifyListeners();
       }
 
       getTableColumns() {
         List columns = tableInfo[gColumns];
         List<DataColumn> result = [];
+        actionBtnCnts = 0;
         if (tableInfo[gAttr][gCanEdit]) {
           result.add(DataColumn(label: MyLabel({gLabel: gEdit})));
+          actionBtnCnts++;
         }
         if (tableInfo[gAttr][gCanDelete]) {
           result.add(DataColumn(label: MyLabel({gLabel: gDelete})));
+          actionBtnCnts++;
         }
         columns.forEach((element) {
           result.add(DataColumn(
@@ -98,7 +102,7 @@ class MyPaginatedDataTable extends StatelessWidget {
               source: tabledata,
               showCheckboxColumn: true,
               sortAscending: tableInfo[gAscending],
-              sortColumnIndex: tableInfo[gSortColumnIndex],
+              sortColumnIndex: tableInfo[gSortColumnIndex] + actionBtnCnts,
             ),
           ),
         ),
