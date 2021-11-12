@@ -21,7 +21,6 @@ class TextFieldWidget extends StatelessWidget {
         width: _getWidth(),
         child: TextFormField(
           controller: item.value[gTxtEditingController],
-
           autofocus: true,
           keyboardType: item.value[gInputType],
           maxLength: item.value[gLength],
@@ -82,7 +81,11 @@ class TextFieldWidget extends StatelessWidget {
             }
             return null;
           },
-          //initialValue: item.value[gDefaultValue],
+          /*initialValue: item.value[gValue] != null
+              ? item.value[gValue]
+              : (item.value[gDefaultValue] != null
+                  ? item.value[gDefaultValue]
+                  : ""),*/
           onSaved: (String value) {
             item.value[gValue] = value;
           },

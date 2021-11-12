@@ -7,8 +7,9 @@ import 'package:provider/provider.dart';
 
 class MyForm extends StatelessWidget {
   final String _param;
+  final int _tableIndex;
 
-  MyForm(this._param);
+  MyForm(this._param, this._tableIndex);
 
   @override
   Widget build(BuildContext context) {
@@ -24,29 +25,48 @@ class MyForm extends StatelessWidget {
         //double _top = 10.0;
         List<Widget> _showItems() {
           List<Widget> result = [];
+          dynamic dataRow;
+          if (_tableIndex != null && _tableIndex > -1) {
+            //get table data by index
+            dataRow = datamodel.getTableByIndex(_tableIndex, _formName);
+          }
 
           items.entries.forEach((item) {
+            item.value[gOldvalue] =
+                (dataRow == null) ? null : dataRow[item.value[gId]];
+
+            item.value[gValue] = item.value[gOldvalue];
+            item.value[gTxtEditingController]
+              ..text = (dataRow == null)
+                  ? null
+                  : dataRow[item.value[gId]].toString();
             if (item.value[gIsHidden] != gTrue &&
                 item.value[gType] != gHidden) {
               //_top += 10;
               if (item.value[gType] == gLabel) {
-                if (item.value[gDefaultValue] != null &&
-                    item.value[gDefaultValue] != '') {
-                  result.add(
-                    Text(
-                      datamodel.getSCurrent(item.value[gLabel]) +
-                          ":" +
-                          item.value[gDefaultValue],
+                dynamic aDvalue = (item.value[gValue] == null)
+                    ? item.value[gDefaultValue].toString()
+                    : item.value[gValue].toString();
+                // if (item.value[gDefaultValue] != null &&
+                //    item.value[gDefaultValue] != '') {
+                result.add(
+                  Text(
+                    datamodel.getSCurrent(item.value[gLabel]) + ":"
+                    /*+
+                            (item.value[gValue] == null)
+                        ? item.value[gDefaultValue].toString()
+                        : item.value[gValue].toString()*/
+                    ,
 
-                      /*
+                    /*
                 onTab: () => {_onTab(item.value['id'], size)},
                 onChanged: (String value) =>
                     {_onChange(item.value['id'], value)},
                 textFieldController: item.value['txtEditingController'],
                 */
-                    ),
-                  );
-                }
+                  ),
+                );
+                //}
               } else {
                 result.add(
                   TextFieldWidget(

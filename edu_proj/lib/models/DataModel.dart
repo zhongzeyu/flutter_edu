@@ -126,6 +126,11 @@ class DataModel extends ChangeNotifier {
     );
   }
 
+  getTableByIndex(int index, tableid) {
+    dynamic tableData = _tableList[tableid][gData][index];
+    return tableData;
+  }
+
   //TabController _tabController;
 
   DataModel() {
@@ -1061,8 +1066,12 @@ class DataModel extends ChangeNotifier {
     String formID = param[gFormdetail][gFormName];
 
     setFormListOne(formID, param);
+    int index = -1;
+    if (param[gIndex] != null) {
+      index = param[gIndex];
+    }
 
-    return MyForm(formID);
+    return MyForm(formID, index);
   }
 
   getWidgetTitle(param) {
@@ -1546,7 +1555,7 @@ class DataModel extends ChangeNotifier {
     showTableFormByIndex(tableName, context, -1);
   }
 
-  showTableFormByIndex(tableName, context, idnex) {
+  showTableFormByIndex(tableName, context, index) {
     Map<String, dynamic> formdetail = _formLists[tableName];
     /*String title = tableName;
     if (formdetail[gImgTitle] != null) {
@@ -1563,8 +1572,9 @@ class DataModel extends ChangeNotifier {
           gActions: [],
           gBottomImgs: [],
           gTitle: formdetail[gImgTitle], // {gType: gLabel, gValue: tableName},
-          gBtns: []
-        }
+          gBtns: [],
+          gIndex: index
+        },
       }
     ];
     showScreenPage(actionData, context);
