@@ -17,7 +17,8 @@ class MyButton extends StatelessWidget {
         child: SizedBox(
           child: ElevatedButton(
               onPressed: () {
-                datamodel.sendRequestOne(_param[gAction], _param, context);
+                datamodel.sendRequestOne(
+                    _param[gAction], _param, this._param[gContext] ?? context);
               },
               child: MyLabel(_param)),
         ),

@@ -54,7 +54,8 @@ class TextFieldWidget extends StatelessWidget {
           obscureText: (item.value[gType] == gPassword),
           validator: (String value) {
             if (item.value[gRequired] && value.isEmpty) {
-              return datamodel.getSCurrent([gIsrequired, item.value[gLabel]]);
+              return datamodel
+                  .getSCurrent(gIsrequired + "{" + item.value[gLabel] + "}");
               //return S.of(context).isrequired(item.value['label']);
             }
             if (item.value[gType] == gEmail &&

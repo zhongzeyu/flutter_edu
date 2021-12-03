@@ -350,6 +350,14 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
+  deleteTableOne(data, context) {
+    int row = data[gRow];
+    var dataDelete = {};
+    dataDelete[gFormid] = data[gTableID];
+    dataDelete[gId] = _tableList[data[gTableID]][gData][row][gId];
+    sendRequestOne('formchange', [dataDelete], context);
+  }
+
   encryptByDES(datalist) {
     var key = _sessionkey;
     var json = jsonEncode(datalist); //.toString();
@@ -409,6 +417,7 @@ class DataModel extends ChangeNotifier {
       var changed = false;
       var data = {};
       data[gFormid] = formid;
+      data[gId] = (obj[gId] != null) ? obj[gId][gValue] : '';
       obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
         //var key = element.entries.first.key;
         var objI = element.value;
@@ -418,12 +427,12 @@ class DataModel extends ChangeNotifier {
         } else if (objI[gType] == gLabel) {
         } else if (objI[gDbid] != null && objI[gDbid] != '') {
           var value = objI[gValue];
-          data[objI[gDbid]] = value;
+          //data[objI[gDbid]] = value;
           if (objI[gHash] != null && objI[gHash]) {
-            data[objI[gDbid]] = hash(value);
+            value = hash(value);
           }
           if (type == gDate) {
-            data[objI['dbid']] = value.format(gDateformat);
+            value = value.format(gDateformat);
             //data[objI[gDbid]] =
             //  DateFormat(gDateformat).format(value);
           }
@@ -431,8 +440,14 @@ class DataModel extends ChangeNotifier {
           if (objI[gOldvalue] != null) {
             oldValue = objI[gOldvalue];
           }
-          if (data[objI[gDbid]] != oldValue) {
+          if (objI[gId] != '' && objI[gIsPrimary] != null && objI[gIsPrimary]) {
+            data[objI[gDbid]] = oldValue;
+          }
+          if (value != oldValue) {
             changed = true;
+            data[objI[gDbid]] = value;
+          } else if (data[gId] == '') {
+            data[objI[gDbid]] = value;
           }
         }
       });
@@ -449,7 +464,7 @@ class DataModel extends ChangeNotifier {
           }
         }
 
-        //primary key need be transfer
+        //primary key need be set to default value if empty
         obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
           //var key = element.entries.first.key;
           var objI = element.value;
@@ -457,7 +472,7 @@ class DataModel extends ChangeNotifier {
               objI[gIsPrimary] != null &&
               objI[gIsPrimary] &&
               data[objI[gId]] == null) {
-            data[objI[gId]] = objI[gDefaultValue];
+            data[objI[gId]] = objI[gOldvalue] ?? objI[gDefaultValue];
           }
         });
         //send request;
@@ -957,20 +972,28 @@ class DataModel extends ChangeNotifier {
 
   getSCurrent(dynamic sourceOriginal) {
     String source0 = sourceOriginal + "";
-    String source = source0.toLowerCase();
-    if (_i10nMap[source] != null) {
-      String result = _i10nMap[source][_locale];
+    String sourceLocase = source0.toLowerCase();
+    String source = sourceLocase;
+    String sourceChck = source;
+    if (sourceChck.indexOf("{") > 0) {
+      sourceChck = sourceChck.substring(0, sourceChck.indexOf("{"));
+    }
+    if (_i10nMap[sourceChck] != null) {
+      String result = _i10nMap[sourceChck][_locale];
       if (result != null) {
-        if (result.indexOf('}') > 0 && result.indexOf('{') > 0) {
+        while ((result.indexOf('}') > 0 && result.indexOf('{') >= 0)) {
           String result0 = result.substring(0, result.indexOf('{'));
-          String resultMid = result.substring(
-              result.indexOf('{') + 1, result.indexOf('}') - 1);
-          String result1 = result.substring(0, result.indexOf('}') + 1);
-          result = result0 + resultMid + getSCurrent(result1);
+          String resultMid =
+              source.substring(source.indexOf('{') + 1, source.indexOf('}'));
+
+          String result1 = result.substring(result.indexOf('}') + 1);
+          result = result0 + getSCurrent(resultMid) + result1;
+          source = source.substring(source.indexOf('}') + 1);
         }
-        if (source == result.toLowerCase()) {
+
+        if (sourceLocase == result.toLowerCase()) {
           return source0;
-        } else if (source != source0 && _locale == 'en') {
+        } else if (sourceLocase != source0 && _locale == 'en') {
           //upper case
           return result.substring(0, 1).toUpperCase() + result.substring(1);
         }
@@ -988,7 +1011,7 @@ class DataModel extends ChangeNotifier {
         }
       }
 
-      return getSCurrent(s0) + delimiter + getSCurrent(s1);
+      return s0Result + delimiter + s1Result;
     }
     return source0;
   }
@@ -1028,6 +1051,37 @@ class DataModel extends ChangeNotifier {
     });
     return items;
   }*/
+  getTableValue(tableId, row, colid) {
+    var table = _tableList[tableId];
+
+    var result = table[gData][row][colid];
+
+    return result;
+  }
+
+  getTableValueAttr(tableId, attrName) {
+    var table = _tableList[tableId];
+
+    var result = table[gAttr][attrName];
+
+    return result;
+  }
+
+  getTableValuePrimary(tableId, row) {
+    var table = _tableList[tableId];
+
+    var data = table[gData][row];
+    List columns = table[gColumns];
+    var result = "";
+    var sep = "";
+    columns.forEach((element) {
+      if ((element[gIsPrimary] ?? false)) {
+        result += sep + data[element[gId]];
+        sep = ",";
+      }
+    });
+    return result;
+  }
 
   getTxtImage(label, color, fontSize, height, letterSpacing) {
     return Text(
@@ -1070,7 +1124,6 @@ class DataModel extends ChangeNotifier {
     if (param[gIndex] != null) {
       index = param[gIndex];
     }
-
     return MyForm(formID, index);
   }
 
@@ -1097,6 +1150,39 @@ class DataModel extends ChangeNotifier {
     return digest1.toString();
   }
 
+  showAlertDialog(BuildContext context, title, msg, requestFirst) {
+    // set up the buttons
+    Widget cancelButton = ElevatedButton(
+      child: MyLabel({gLabel: gCancel}),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget continueButton = ElevatedButton(
+      child: MyLabel({gLabel: gContinue}),
+      onPressed: () {
+        localAction(requestFirst, context);
+        Navigator.of(context).pop();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: MyLabel({gLabel: title}),
+      content: MyLabel({gLabel: msg}),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   localAction(requestFirst, context) {
     Map data = requestFirst[gData];
     if (data[gLabel] != null &&
@@ -1109,12 +1195,49 @@ class DataModel extends ChangeNotifier {
     } else if (data[gLabel] != null &&
         data[gLabel] == gDelete &&
         data[gTableID] != null) {
+      var tableId = data[gTableID];
       int row = data[gRow];
+      var primaryValue = getTableValuePrimary(tableId, row);
+      data[gLabel] = gSureDelete;
+      showAlertDialog(context, gAlert,
+          gRemove + " [" + primaryValue + "], areyousure ?", requestFirst);
+      //);
+
+      return;
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gSureDelete &&
+        data[gTableID] != null) {
+      deleteTableOne(data, context);
+      /*int row = data[gRow];
+      //popup confirm dialog
       //show delete confirm dialog, and send delete request.
       var dataDelete = {};
       dataDelete[gFormid] = data[gTableID];
       dataDelete[gId] = _tableList[data[gTableID]][gData][row][gId];
-      sendRequestOne('formchange', [dataDelete], context);
+      sendRequestOne('formchange', [dataDelete], context);*/
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gDetail &&
+        data[gTableID] != null) {
+      var tableId = data[gTableID];
+      int row = data[gRow];
+      var primaryValue = getTableValuePrimary(tableId, row);
+      //{gAction: gProcess,gData:[{gLabel:"",gType:gTable,gActionid:"Zzyimage","colorIndex":0}],"token":"89345dd3-f653-48a3-b7c1-b2d4af8728c1","companyid":"smilesmart"}
+      Map element = {
+        gLabel: gDetail +
+            " for " +
+            getTableValueAttr(tableId, gLabel) +
+            "." +
+            primaryValue,
+        gType: gTable,
+        gActionid: getTableValueAttr(tableId, gDetail),
+        gWhere: gParentid + "='" + getTableValue(tableId, row, gId) + "'",
+        gColorIndex: 0
+      };
+      sendRequestOne(gProcess, [element], context);
+      //show delete confirm dialog, and send delete request.
+      //open detail
+      //sendRequestOne('formchange', [dataDelete], context);
+
     }
   }
 
@@ -1277,9 +1400,11 @@ class DataModel extends ChangeNotifier {
       finishme(context);
     } else if (data0[gActionid] == gTableUpdate) {
       finishme(context);
+      var deletedID = data0[gBody][gId];
+      tableData.removeWhere((element) => element[gId] == deletedID);
+      tableData.insert(0, Map.of(data0[gBody]));
     } else if (data0[gActionid] == gTableDelete) {
       var deletedID = data0[gBody][gId];
-
       tableData.removeWhere((element) => element[gId] == deletedID);
     }
 

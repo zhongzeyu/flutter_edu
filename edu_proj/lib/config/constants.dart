@@ -4,6 +4,7 @@ const gAction = 'action';
 const gActionid = 'actionid';
 const gActions = 'actions';
 const gAddnew = 'Addnew';
+const gAlert = 'Alert';
 const gAlign = 'align';
 const gAscending = 'ascending';
 const gAttr = 'attr';
@@ -16,6 +17,7 @@ const gBtns = 'btns';
 const gsBackgroundColor = 'backgroundColor';
 const gButton = 'button';
 
+const gCancel = 'cancel';
 const gCanEdit = 'canEdit';
 const gCanDelete = 'canDelete';
 const gCanInsert = 'canInsert';
@@ -31,6 +33,8 @@ const gColorIndex = 'colorIndex';
 const gColumns = 'columns';
 const gCompany = 'company';
 const gCompanyid = 'companyid';
+const gContext = 'context';
+const gContinue = 'Continue';
 const gCreateAccount = 'createAccount';
 const gCreatenewpassword = 'createnewpassword';
 
@@ -42,6 +46,7 @@ const gDbid = 'dbid';
 const gDefaultPaddin = 20.0;
 const gDefaultValue = 'defaultValue';
 const gDelete = 'Delete';
+const gSureDelete = 'Sure delete';
 const gDetail = 'detail';
 const gDetailPage = 'detailPage';
 
@@ -118,6 +123,7 @@ const gOldvalue = 'oldvalue';
 const gOther = 'other';
 
 const gParam0 = 'param0';
+const gParentid = 'parentid';
 const gPassword = 'password';
 const gPassword1 = 'password1';
 const gPasswordnotmatch = 'passwordnotmatch';
@@ -131,6 +137,7 @@ const gPrice = 'price';
 const gProcess = 'process';
 const gProgram = 'program';
 
+const gRemove = 'Remove';
 const gRequired = 'required';
 const gResetpassword = 'resetpassword';
 const gRole = 'role';
@@ -177,5 +184,6 @@ const gVerifycode = 'verifycode';
 const gVisiblePassword = 'visiblePassword';
 
 const gWelcome = 'welcome';
+const gWhere = 'where';
 const gWidth = 'width';
 const gZh = 'zh';

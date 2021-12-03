@@ -23,7 +23,7 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       Map tableInfo = datamodel.tableList[tableName];
       //tableInfo.[gData].length;
-      tabledata = TableData(tableInfo);
+      tabledata = TableData(tableInfo, context);
 
       sortTable(int columnIndex, bool ascending) {
         int sortIndex = columnIndex - actionBtnCnts;
@@ -40,11 +40,15 @@ class MyPaginatedDataTable extends StatelessWidget {
         List<DataColumn> result = [];
         actionBtnCnts = 0;
         if (tableInfo[gAttr][gCanEdit]) {
-          result.add(DataColumn(label: MyLabel({gLabel: gEdit})));
+          result.add(DataColumn(label: Text("")));
           actionBtnCnts++;
         }
         if (tableInfo[gAttr][gCanDelete]) {
-          result.add(DataColumn(label: MyLabel({gLabel: gDelete})));
+          result.add(DataColumn(label: Text("")));
+          actionBtnCnts++;
+        }
+        if ((tableInfo[gAttr][gDetail] ?? "") != "") {
+          result.add(DataColumn(label: Text("")));
           actionBtnCnts++;
         }
         columns.forEach((element) {

@@ -51,7 +51,9 @@ class MyForm extends StatelessWidget {
                 //    item.value[gDefaultValue] != '') {
                 result.add(
                   Text(
-                    datamodel.getSCurrent(item.value[gLabel]) + ":"
+                    datamodel.getSCurrent(item.value[gLabel]) +
+                        ":" +
+                        aDvalue.toString()
                     /*+
                             (item.value[gValue] == null)
                         ? item.value[gDefaultValue].toString()
@@ -110,15 +112,12 @@ class MyForm extends StatelessWidget {
           return result;
         }
 
-        return InteractiveViewer(
-          scaleEnabled: true,
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _showItems(),
-              ),
+        return SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _showItems(),
             ),
           ),
         );
