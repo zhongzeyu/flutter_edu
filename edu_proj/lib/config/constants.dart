@@ -6,6 +6,7 @@ const gActions = 'actions';
 const gAddnew = 'Addnew';
 const gAlert = 'Alert';
 const gAlign = 'align';
+const gAsc = 'asc';
 const gAscending = 'ascending';
 const gAttr = 'attr';
 
@@ -18,9 +19,11 @@ const gsBackgroundColor = 'backgroundColor';
 const gButton = 'button';
 
 const gCancel = 'cancel';
+const gCanClose = 'canClose';
 const gCanEdit = 'canEdit';
 const gCanDelete = 'canDelete';
 const gCanInsert = 'canInsert';
+const gCanRefresh = 'canRefresh';
 const gCard = 'card';
 const gCenter = 'center';
 const gChangepassword = 'changepassword';
@@ -28,6 +31,8 @@ const gCharacter = 'character';
 const gCharge = 'Charge';
 const gCheckverifycode = 'checkverifycode';
 
+const gClose = 'close';
+const gCollapsed = 'Collapsed';
 const gColor = 'color';
 const gColorIndex = 'colorIndex';
 const gColumns = 'columns';
@@ -43,6 +48,7 @@ const gDate = 'date';
 const gDateformat = 'yyyy-MM-dd';
 const gDatetime = 'datetime';
 const gDbid = 'dbid';
+const gDbname = 'dbname';
 const gDefaultPaddin = 20.0;
 const gDefaultValue = 'defaultValue';
 const gDelete = 'Delete';
@@ -57,6 +63,7 @@ const gEmployee = 'employee';
 const gEn = 'en';
 const gEnterusercode = 'enterusercode';
 const gEteremailtoresetpassword = 'eteremailtoresetpassword';
+const gExpanded = 'Expanded';
 
 const gFinishme = 'finishme';
 const gFirstPage = 'firstPage';
@@ -87,6 +94,8 @@ const gImgID = 'imgID';
 const gImgTitle = 'imgTitle';
 const gInvalidname = 'invalidname';
 const gIsHidden = 'isHidden';
+
+const gIsKeyword = 'isKeyword';
 const gIsPrimary = 'isPrimary';
 const gIsrequired = 'isrequired';
 const gIsselected = 'isselected';
@@ -111,17 +120,21 @@ const gMenu = 'menu';
 const gMininput = 'mininput';
 const gMinLength = 'minLength';
 const gMoney = 'money';
+const gMove = 'move';
 const gMsg = 'msg';
 const gMultiline = 'multiline';
 
 const gName = 'name';
 const gNochange = 'nochange';
+const gNode = 'node';
 const gNoecrypted = 'noecrypted';
 const gNumber = 'number';
 
 const gOldvalue = 'oldvalue';
+const gOrderby = "orderby";
 const gOther = 'other';
 
+const gPagetable = 'pagetable';
 const gParam0 = 'param0';
 const gParentid = 'parentid';
 const gPassword = 'password';
@@ -132,11 +145,13 @@ const gPlaceHolder = 'placeholder';
 const gPlsenteremail = 'plsenteremail';
 const gPhone = 'phone';
 const gPics = 'pics';
+const gPopupnew = 'popupnew';
 const gPreFixIcon = 'preFixIcon';
 const gPrice = 'price';
 const gProcess = 'process';
 const gProgram = 'program';
 
+const gRefresh = 'Refresh';
 const gRemove = 'Remove';
 const gRequired = 'required';
 const gResetpassword = 'resetpassword';
@@ -155,23 +170,28 @@ const gSuffixIcon = 'suffixIcon';
 const gSystem = 'system';
 const gSystemTitle = 'systemtitle';
 
+const gTab = 'tab';
 const gTabIndex = 'tabIndex';
+const gTabName = 'tabName';
 const gTable = 'table';
 const gTableAdd = 'tableAdd';
 const gTableDelete = 'tableDelete';
+const gTabletree = "tabletree";
 const gTableUpdate = 'tableUpdate';
 const gTableID = 'tableid';
-const gTextFontColor = 'textFontColor';
-const gTop = 'top';
-const gTrue = 'true';
-
 const gTextColor = Color(0xFF535353);
+const gTextFontColor = 'textFontColor';
 const gTextLightColor = Color(0xFFACACAC);
-const gTxtEditingController = 'txtEditingController';
 const gTitle = 'title';
 const gToken = 'token';
+const gTop = 'top';
+const gTranspass = 'transpass';
+const gTreeExpand = 'TreeExpand';
+const gTreeLabel = 'treelabel';
+const gTreeSelected = 'TreeSelected';
+const gTrue = 'true';
 const gTutor = 'tutor';
-const gTab = 'tab';
+const gTxtEditingController = 'txtEditingController';
 const gType = 'type';
 
 const gUnit = 'unit';
@@ -181,6 +201,7 @@ const gUrl = 'url';
 const gValue = 'value';
 const gValues = 'values';
 const gVerifycode = 'verifycode';
+const gVisible = 'visible';
 const gVisiblePassword = 'visiblePassword';
 
 const gWelcome = 'welcome';

@@ -61,21 +61,31 @@ class TextFieldWidget extends StatelessWidget {
             if (item.value[gType] == gEmail &&
                 !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                     .hasMatch(value)) {
-              return datamodel.getSCurrent([gInvalidname, gEmail]);
+              return datamodel.getSCurrent(gInvalidname + "{" + gEmail + "}");
               //return S.of(context).invalidname(S.of(context).email);
             }
-            if (item.value[gMinLength] != '0' &&
+            if (item.value[gMinLength] != null &&
+                item.value[gMinLength] != '0' &&
                 value.length < item.value[gMinLength]) {
               /*return S
                   .of(context)
                   .mininput(item.value[gMinLength], item.value[gUnit]);*/
-              return datamodel.getSCurrent(
-                  [gMininput, item.value[gMinLength], item.value[gUnit]]);
+              return datamodel.getSCurrent(gMininput +
+                  "{" +
+                  item.value[gMinLength] +
+                  "}{" +
+                  item.value[gUnit] +
+                  "}");
             }
-            if (item.value[gLength] != '0' &&
+            if (item.value[gLength] != null &&
+                item.value[gLength] != '0' &&
                 value.length > item.value[gLength]) {
-              return datamodel.getSCurrent(
-                  [gMaxinput, item.value[gLength], item.value[gUnit]]);
+              return datamodel.getSCurrent(gMaxinput +
+                  "{" +
+                  item.value[gLength] +
+                  "}{" +
+                  item.value[gUnit] +
+                  "}");
               /*return S
                   .of(context)
                   .maxinput(item.value[gLength], item.value[gUnit]);*/

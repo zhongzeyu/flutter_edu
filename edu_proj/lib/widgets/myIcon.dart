@@ -11,7 +11,12 @@ class MyIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       return IconButton(
-        icon: Icon(IconData(_param[gValue], fontFamily: 'MaterialIcons')),
+        icon: Icon(
+            IconData(
+              _param[gValue],
+              fontFamily: 'MaterialIcons',
+            ),
+            color: _param[gColor] ?? Colors.green),
         tooltip: (_param[gLabel] != null)
             ? (datamodel.getSCurrent(_param[gLabel]))
             : "",

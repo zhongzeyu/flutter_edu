@@ -1,7 +1,6 @@
-//import 'package:edu_proj/config/constants.dart';
-//import 'package:edu_proj/generated/l10n.dart';
 import 'package:edu_proj/models/DataModel.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:edu_proj/widgets/myLabel.dart';
+//import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,9 +12,9 @@ class MyDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       //Size size = MediaQuery.of(context).size;
-
       return Scaffold(
         //backgroundColor: _param[gBackgroundColor],
+
         appBar: AppBar(
           //backgroundColor: _param[gColor],
           elevation: 0,
@@ -25,11 +24,12 @@ class MyDetail extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
+          title: MyLabel(_param),
           actions:
               //other icons
               datamodel.getActionIcons(_param, context),
         ),
-        body: datamodel.getDetailWidget(_param),
+        body: datamodel.getDetailWidget(_param, context),
       );
     });
   }

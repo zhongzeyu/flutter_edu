@@ -19,7 +19,7 @@ class MyPaginatedDataTable extends StatelessWidget {
     DataTableSource tabledata;
     int actionBtnCnts = 0;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      String tableName = _param[gName];
+      String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
 
       Map tableInfo = datamodel.tableList[tableName];
       //tableInfo.[gData].length;
@@ -30,8 +30,6 @@ class MyPaginatedDataTable extends StatelessWidget {
         datamodel.tableSort(tableName, sortIndex, ascending);
 
         print('============columnIndex is $sortIndex, ascending is $ascending');
-        tableInfo[gAscending] = ascending;
-        tableInfo[gSortColumnIndex] = sortIndex;
         datamodel.notifyListeners();
       }
 
@@ -64,7 +62,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         if (attr[gCanInsert]) {
           items.add(ElevatedButton(
               onPressed: () {
-                datamodel.showTableForm(tableName, context);
+                datamodel.showTableForm(_param[gData], context);
                 //tableAddNew(tableName);
               },
               child: MyLabel({gLabel: gAddnew})));
@@ -79,6 +77,8 @@ class MyPaginatedDataTable extends StatelessWidget {
         return items;
       }
 
+      //datamodel.initPaginateDataTable(tableName,actionBtnCnts, tabledata, getTableColumns());
+
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: tableTheme,
@@ -92,8 +92,10 @@ class MyPaginatedDataTable extends StatelessWidget {
             actions: getTableBtns(tableInfo, datamodel, context),
           ),
           body: SingleChildScrollView(
-            child: PaginatedDataTable(
+            child: //tableInfo[gPagetable]
+                PaginatedDataTable(
               //header: MyLabel(data),
+              key: tableInfo[gKey],
               rowsPerPage: 5,
               availableRowsPerPage: [5, 10, 20, 50],
               onPageChanged: (e) {},

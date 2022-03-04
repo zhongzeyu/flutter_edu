@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:edu_proj/common/theme.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/foundation.dart';

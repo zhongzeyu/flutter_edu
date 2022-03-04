@@ -10,14 +10,17 @@ class MyLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      return Text(
-        datamodel.getSCurrent(_param[gLabel]),
-        style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: _param[gFontSize],
-            color: _param[gColor],
-            backgroundColor: _param[gBackgroundColor]),
-      );
+      if (_param != null && _param[gLabel] != null) {
+        return Text(
+          datamodel.getSCurrent(_param[gLabel]),
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: _param[gFontSize],
+              color: _param[gColor],
+              backgroundColor: _param[gBackgroundColor]),
+        );
+      }
+      return Text("");
     });
   }
 }
