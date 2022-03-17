@@ -44,6 +44,7 @@ const gCreateAccount = 'createAccount';
 const gCreatenewpassword = 'createnewpassword';
 
 const gData = 'data';
+const gDataSearch = 'datasearch';
 const gDate = 'date';
 const gDateformat = 'yyyy-MM-dd';
 const gDatetime = 'datetime';
@@ -67,6 +68,7 @@ const gExpanded = 'Expanded';
 
 const gFinishme = 'finishme';
 const gFirstPage = 'firstPage';
+const gFocus = 'focus';
 const gFontSize = 'fontSize';
 const gFontStyle = 'fontStyle';
 const gFontWeight = 'fontWeight';
@@ -158,6 +160,7 @@ const gResetpassword = 'resetpassword';
 const gRole = 'role';
 const gRow = 'row';
 
+const gSearch = 'Search';
 const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';

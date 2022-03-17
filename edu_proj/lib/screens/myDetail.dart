@@ -25,6 +25,7 @@ class MyDetail extends StatelessWidget {
             },
           ),
           title: MyLabel(_param),
+          //title: const TextBox(),
           actions:
               //other icons
               datamodel.getActionIcons(_param, context),

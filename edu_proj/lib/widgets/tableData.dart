@@ -20,7 +20,8 @@ class TableData extends DataTableSource {
 */
   bool get isRowCountApproximate => false;
   //int get rowCount => _data.length;
-  int get rowCount => _param[gData].length;
+
+  int get rowCount => (_param[gDataSearch] ?? _param[gData]).length;
   int get selectedRowCount => _selectRowCount;
 
   DataRow getRow(int index) {
@@ -34,6 +35,7 @@ class TableData extends DataTableSource {
         gRow: index,
         gContext: _context
       })));
+
       /*dataCellList.add(DataCell(MyButton({
         gLabel: gEdit,
         gAction: gLocalAction,
@@ -72,7 +74,7 @@ class TableData extends DataTableSource {
 
     for (int i = 0; i < _param[gColumns].length; i++) {
       var colname = _param[gColumns][i][gId];
-      var dataI = _param[gData][index][colname];
+      var dataI = (_param[gDataSearch] ?? _param[gData])[index][colname];
       dataCellList.add(DataCell(Text(dataI.toString())));
     }
     return DataRow(cells: dataCellList);

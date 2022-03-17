@@ -5,8 +5,11 @@ import 'package:edu_proj/models/DataModel.dart';
 //import 'package:edu_proj/screens/myDetail.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/tableData.dart';
+//import 'package:edu_proj/widgets/textfieldWidgetOne.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'textfieldWidget.dart';
 
 class MyPaginatedDataTable extends StatelessWidget {
   final dynamic _param;
@@ -23,6 +26,28 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       Map tableInfo = datamodel.tableList[tableName];
       //tableInfo.[gData].length;
+      List tableData = tableInfo[gData];
+      List columns = tableInfo[gColumns];
+      String searchValue = tableInfo[gSearch] ?? '';
+      List newData = [];
+      if (searchValue == '') {
+        newData = tableData;
+      } else {
+        for (int i = 0; i < tableData.length; i++) {
+          Map ti = tableData[i];
+          bool searchTxtExists = false;
+          for (MapEntry element in ti.entries) {
+            if ((element.value ?? '').indexOf(searchValue) > -1) {
+              searchTxtExists = true;
+              break;
+            }
+          }
+          if (searchTxtExists) {
+            newData.add(ti);
+          }
+        }
+      }
+      tableInfo[gDataSearch] = newData;
       tabledata = TableData(tableInfo, context);
 
       sortTable(int columnIndex, bool ascending) {
@@ -34,7 +59,6 @@ class MyPaginatedDataTable extends StatelessWidget {
       }
 
       getTableColumns() {
-        List columns = tableInfo[gColumns];
         List<DataColumn> result = [];
         actionBtnCnts = 0;
         if (tableInfo[gAttr][gCanEdit]) {
@@ -58,7 +82,21 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       getTableBtns(tableInfo, datamodel, context) {
         Map attr = tableInfo[gAttr];
+        var value = tableInfo[gSearch] ?? '';
+
+        MapEntry searchItem =
+            datamodel.getTableItemByName(tableInfo, gSearch, value);
+        Map searchItemValue = searchItem.value;
+        searchItemValue.putIfAbsent(gAction, () => gLocalAction);
+        searchItemValue.putIfAbsent(gContext, () => context);
+        searchItemValue.putIfAbsent(gTableID, () => tableInfo[gTableID]);
+        searchItemValue.putIfAbsent(gOldvalue, () => value);
+        /*searchItem.value[gAction] = gLocalAction;
+        searchItem.value[gContext] = context;
+        searchItem.value[gTableID] = tableInfo[gTableID];*/
         List<Widget> items = [];
+        items.add(TextFieldWidget(item: searchItem));
+
         if (attr[gCanInsert]) {
           items.add(ElevatedButton(
               onPressed: () {
@@ -74,16 +112,26 @@ class MyPaginatedDataTable extends StatelessWidget {
               },
               child: MyLabel({gLabel: gDelete})));
         }
+        //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+
         return items;
       }
 
       //datamodel.initPaginateDataTable(tableName,actionBtnCnts, tabledata, getTableColumns());
-
+      //dynamic item = datamodel.getTableSearchItem(tableInfo);
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: tableTheme,
         home: Scaffold(
           appBar: AppBar(
+            /*title: TextFieldWidgetOne(
+              item: item,
+            ),
+            title: const TextField(
+              decoration:
+                  InputDecoration(border: InputBorder.none, hintText: 'Search'),
+            ),*/
+
             /*IconButton(
               icon: Icon(Icons.menu),
               onPressed: null,

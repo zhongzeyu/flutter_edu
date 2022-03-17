@@ -18,7 +18,7 @@ import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
 import 'package:edu_proj/widgets/myPic.dart';
 //import 'package:edu_proj/widgets/myTree.dart';
 import 'package:edu_proj/widgets/picsAndButtons.dart';
-import 'package:flutter/foundation.dart';
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
@@ -1154,6 +1154,20 @@ class DataModel extends ChangeNotifier {
     return -1;
   }
 
+  getTableItemByName(tableInfo, itemName, value) {
+    MapEntry item = MapEntry(itemName, {
+      gWidth: 150,
+      gType: itemName,
+      gLabel: itemName,
+      gFocus: false,
+      gValue: value,
+      gInputType: getInputType(itemName),
+      gTxtEditingController: TextEditingController(text: value)
+    });
+
+    return item;
+  }
+
   getTreeNodesFromTable(tableName, context, level) {
     /*List<Node> nodes = [];
     if (tableName == null || _tableList[tableName] == null) {
@@ -1370,7 +1384,14 @@ class DataModel extends ChangeNotifier {
   
   }*/
   localAction(requestFirst, context) {
-    Map data = requestFirst[gData];
+    Map data;
+    try {
+      data = requestFirst[gData];
+    } catch (e) {
+      MapEntry me = requestFirst[gData];
+      data = me.value;
+    }
+
     if (data[gLabel] != null &&
         data[gLabel] == gEdit &&
         data[gTableID] != null) {
@@ -1476,6 +1497,10 @@ class DataModel extends ChangeNotifier {
           }
         }
       }
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gSearch &&
+        data[gTableID] != null) {
+      searchTable(data, context);
     }
   }
 
@@ -1675,6 +1700,13 @@ class DataModel extends ChangeNotifier {
 
   saveTableOneAt0(tableData, data0, context) {
     tableData.insert(0, Map.of(data0[gBody]));
+  }
+
+  searchTable(data, context) {
+    var tableId = data[gTableID];
+    var searchTxt = data[gSearch];
+    _tableList[tableId][gSearch] = searchTxt;
+    notifyListeners();
   }
 
   processTap(context, element, tabName) {
