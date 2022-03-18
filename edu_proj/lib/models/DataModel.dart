@@ -23,6 +23,8 @@ import 'package:flutter/material.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DataModel extends ChangeNotifier {
@@ -296,7 +298,9 @@ class DataModel extends ChangeNotifier {
         //}
       }
     }
+
     _tableList[data[gActionid]][gTableID] = data[gActionid];
+    initTableData(data[gActionid]);
     Map param = {
       gType: gForm,
       gFormdetail: {
@@ -524,6 +528,8 @@ class DataModel extends ChangeNotifier {
             value = value.format(gDateformat);
             //data[objI[gDbid]] =
             //  DateFormat(gDateformat).format(value);
+          } else if (type == gDatetime) {
+            value = toUTCTime(value);
           }
           var oldValue = '';
           if (objI[gOldvalue] != null) {
@@ -1383,6 +1389,53 @@ class DataModel extends ChangeNotifier {
       );
   
   }*/
+  toLocalTime(atime) {
+    try {
+      //return DateTime.fromMillisecondsSinceEpoch(int.parse('1639181163816'))
+      //  .toLocal();
+      DateTime dt =
+          DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
+      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+      return formattedDate;
+      //return DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
+      /*DateTime _nowDate = DateTime.now();
+      return DateTime.fromMillisecondsSinceEpoch(
+              _nowDate.millisecondsSinceEpoch)
+          .toLocal();*/
+
+    } catch (e) {
+      return "";
+    }
+  }
+
+  toUTCTime(adate) {
+    try {
+      return DateTime.parse(adate).millisecondsSinceEpoch;
+      //return DateTime.parse('2021-12-10 16:06:03').millisecondsSinceEpoch;
+
+    } catch (e) {
+      return "";
+    }
+  }
+
+  initTableData(tableid) {
+    Map tableInfo = _tableList[tableid];
+    List tableData = tableInfo[gData];
+    List colList = tableInfo[gColumns];
+    if (colList != null && colList.length > 0) {
+      for (Map ci in colList) {
+        if (ci[gInputType] == gDatetime) {
+          //translate to Local Time
+          for (Map item in tableData) {
+            if (item[ci[gId]] != null && item[ci[gId]] != '') {
+              item[ci[gId]] = toLocalTime(item[ci[gId]]);
+            }
+          }
+        }
+      }
+    }
+  }
+
   localAction(requestFirst, context) {
     Map data;
     try {
