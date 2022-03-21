@@ -438,10 +438,12 @@ class DataModel extends ChangeNotifier {
   }
 
   deleteTableOne(data, context) {
-    int row = data[gRow];
+    Map rowData = data[gRow];
     var dataDelete = {};
     dataDelete[gFormid] = data[gTableID];
-    dataDelete[gId] = _tableList[data[gTableID]][gData][row][gId];
+    //dataDelete[gId] = _tableList[data[gTableID]][gData][row][gId];
+    dataDelete[gId] = rowData[gId];
+
     sendRequestOne('formchange', [dataDelete], context);
   }
 
@@ -1265,10 +1267,10 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getTableValueKey(tableId, row) {
+  getTableValueKey(tableId, data) {
     var table = _tableList[tableId];
 
-    var data = table[gData][row];
+    //var data = table[gData][row];
     List columns = table[gColumns];
     var result = "";
     var sep = "";
@@ -1281,10 +1283,10 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getTableValuePrimary(tableId, row) {
+  getTableValuePrimary(tableId, data) {
     var table = _tableList[tableId];
 
-    var data = table[gData][row];
+    //var data = table[gData][row];
     List columns = table[gColumns];
     var result = "";
     var sep = "";
@@ -1366,6 +1368,13 @@ class DataModel extends ChangeNotifier {
     return digest1.toString();
   }
 
+  isHiddenColumn(columns, i) {
+    if (columns[i][gInputType] == gHidden) {
+      return true;
+    }
+    return false;
+  }
+
   /*initPaginateDataTable(tableName, actionBtnCnts, tabledata, columns){
 
     
@@ -1414,7 +1423,8 @@ class DataModel extends ChangeNotifier {
       //return DateTime.parse('2021-12-10 16:06:03').millisecondsSinceEpoch;
 
     } catch (e) {
-      return "";
+      DateTime _nowDate = DateTime.now();
+      return _nowDate.millisecondsSinceEpoch;
     }
   }
 
@@ -1456,8 +1466,8 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gDelete &&
         data[gTableID] != null) {
       var tableId = data[gTableID];
-      int row = data[gRow];
-      var keyValue = getTableValueKey(tableId, row);
+      Map rowData = data[gRow];
+      var keyValue = getTableValueKey(tableId, rowData);
       data[gLabel] = gSureDelete;
       showAlertDialog(context, gAlert,
           gRemove + " [" + keyValue + "], areyousure ?", requestFirst);
@@ -1479,8 +1489,8 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gDetail &&
         data[gTableID] != null) {
       var tableId = data[gTableID];
-      int row = data[gRow];
-      var primaryValue = getTableValueKey(tableId, row);
+      Map rowData = data[gRow];
+      var primaryValue = getTableValueKey(tableId, rowData);
       var transpass = '';
       if (data[gTranspass] != null) {
         transpass = data[gTranspass];
@@ -1495,7 +1505,7 @@ class DataModel extends ChangeNotifier {
             " ]",
         gType: gTable,
         gActionid: getTableValueAttr(tableId, gDetail),
-        gWhere: gParentid + "='" + getTableValue(tableId, row, gId) + "'",
+        gWhere: gParentid + "='" + getTableValue(tableId, rowData, gId) + "'",
         gColorIndex: 0,
         gTranspass: transpass
       };
@@ -2318,11 +2328,20 @@ class DataModel extends ChangeNotifier {
       return;
     }
     String colName = tableList[tableName][gColumns][columnIndex][gId];
+    String inputType = tableList[tableName][gColumns][columnIndex][gInputType];
 
     if (ascending) {
-      data.sort((a, b) => a[colName].compareTo(b[colName]));
+      if (inputType == gDatetime) {
+        data.sort((a, b) => toUTCTime(a[colName]) - toUTCTime(b[colName]));
+      } else {
+        data.sort((a, b) => a[colName].compareTo(b[colName]));
+      }
     } else {
-      data.sort((a, b) => b[colName].compareTo(a[colName]));
+      if (inputType == gDatetime) {
+        data.sort((a, b) => toUTCTime(b[colName]) - toUTCTime(a[colName]));
+      } else {
+        data.sort((a, b) => b[colName].compareTo(a[colName]));
+      }
     }
     tableList[tableName][gAscending] = ascending;
     tableList[tableName][gSortColumnIndex] = columnIndex;

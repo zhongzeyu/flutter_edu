@@ -52,6 +52,18 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       sortTable(int columnIndex, bool ascending) {
         int sortIndex = columnIndex - actionBtnCnts;
+        int index = 0;
+        for (int i = 0; i < columns.length; i++) {
+          if (datamodel.isHiddenColumn(columns, i)) {
+            continue;
+          }
+          if (index == sortIndex) {
+            sortIndex = i;
+            break;
+          }
+          index++;
+        }
+
         datamodel.tableSort(tableName, sortIndex, ascending);
 
         print('============columnIndex is $sortIndex, ascending is $ascending');
@@ -73,10 +85,13 @@ class MyPaginatedDataTable extends StatelessWidget {
           result.add(DataColumn(label: Text("")));
           actionBtnCnts++;
         }
-        columns.forEach((element) {
+        for (int i = 0; i < columns.length; i++) {
+          if (datamodel.isHiddenColumn(columns, i)) {
+            continue;
+          }
           result.add(DataColumn(
-              label: MyLabel({gLabel: element[gLabel]}), onSort: sortTable));
-        });
+              label: MyLabel({gLabel: columns[i][gLabel]}), onSort: sortTable));
+        }
         return result;
       }
 
@@ -117,8 +132,23 @@ class MyPaginatedDataTable extends StatelessWidget {
         return items;
       }
 
+      getShowIndex(sortColumnIndex) {
+        int result = 0;
+        for (int i = 0; i < columns.length; i++) {
+          if (datamodel.isHiddenColumn(columns, i)) {
+            continue;
+          }
+          if (i == sortColumnIndex) {
+            return result;
+          }
+          result++;
+        }
+        return result;
+      }
+
       //datamodel.initPaginateDataTable(tableName,actionBtnCnts, tabledata, getTableColumns());
       //dynamic item = datamodel.getTableSearchItem(tableInfo);
+
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: tableTheme,
@@ -156,7 +186,8 @@ class MyPaginatedDataTable extends StatelessWidget {
               source: tabledata,
               showCheckboxColumn: true,
               sortAscending: tableInfo[gAscending],
-              sortColumnIndex: tableInfo[gSortColumnIndex] + actionBtnCnts,
+              sortColumnIndex:
+                  actionBtnCnts + getShowIndex(tableInfo[gSortColumnIndex]),
             ),
           ),
         ),

@@ -32,7 +32,7 @@ class TableData extends DataTableSource {
         gLabel: gEdit,
         gAction: gLocalAction,
         gTableID: _param[gTableID],
-        gRow: index,
+        gRow: (_param[gDataSearch] ?? _param[gData])[index],
         gContext: _context
       })));
 
@@ -50,7 +50,7 @@ class TableData extends DataTableSource {
         gLabel: gDelete,
         gAction: gLocalAction,
         gTableID: _param[gTableID],
-        gRow: index,
+        gRow: (_param[gDataSearch] ?? _param[gData])[index],
         gContext: _context
       })));
 
@@ -67,12 +67,15 @@ class TableData extends DataTableSource {
         gLabel: gDetail,
         gAction: gLocalAction,
         gTableID: _param[gTableID],
-        gRow: index,
+        gRow: (_param[gDataSearch] ?? _param[gData])[index],
         gContext: _context
       })));
     }
 
     for (int i = 0; i < _param[gColumns].length; i++) {
+      if (_param[gColumns][i][gInputType] == gHidden) {
+        continue;
+      }
       var colname = _param[gColumns][i][gId];
       var dataI = (_param[gDataSearch] ?? _param[gData])[index][colname];
       dataCellList.add(DataCell(Text(dataI.toString())));
