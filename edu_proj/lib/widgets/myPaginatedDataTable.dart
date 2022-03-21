@@ -52,7 +52,7 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       sortTable(int columnIndex, bool ascending) {
         int sortIndex = columnIndex - actionBtnCnts;
-        int index = 0;
+        /*int index = 0;
         for (int i = 0; i < columns.length; i++) {
           if (datamodel.isHiddenColumn(columns, i)) {
             continue;
@@ -62,7 +62,7 @@ class MyPaginatedDataTable extends StatelessWidget {
             break;
           }
           index++;
-        }
+        }*/
 
         datamodel.tableSort(tableName, sortIndex, ascending);
 
@@ -138,7 +138,7 @@ class MyPaginatedDataTable extends StatelessWidget {
           if (datamodel.isHiddenColumn(columns, i)) {
             continue;
           }
-          if (i == sortColumnIndex) {
+          if (result == sortColumnIndex) {
             return result;
           }
           result++;

@@ -285,9 +285,12 @@ class DataModel extends ChangeNotifier {
         var columnIndex = 0;
         for (var i = 0; i < colList.length; i++) {
           if (colList[i][gId] == orderbyOne[0]) {
-            columnIndex = i;
             break;
           }
+          if (isHiddenColumn(colList, i)) {
+            continue;
+          }
+          columnIndex++;
         }
         tableSort(data[gActionid], columnIndex, ascending);
         /*if (i == 0) {
@@ -1251,10 +1254,12 @@ class DataModel extends ChangeNotifier {
     });
     return items;
   }*/
-  getTableValue(tableId, row, colid) {
-    var table = _tableList[tableId];
+  //getTableValue(tableId, row, colid) {
+  getTableValue(row, colid) {
+    //var table = _tableList[tableId];
 
-    var result = table[gData][row][colid];
+    //var result = table[gData][row][colid];
+    var result = row[colid];
 
     return result;
   }
@@ -1505,7 +1510,7 @@ class DataModel extends ChangeNotifier {
             " ]",
         gType: gTable,
         gActionid: getTableValueAttr(tableId, gDetail),
-        gWhere: gParentid + "='" + getTableValue(tableId, rowData, gId) + "'",
+        gWhere: gParentid + "='" + getTableValue(rowData, gId) + "'",
         gColorIndex: 0,
         gTranspass: transpass
       };
@@ -2327,8 +2332,20 @@ class DataModel extends ChangeNotifier {
     if (data == null || data.length < 2) {
       return;
     }
-    String colName = tableList[tableName][gColumns][columnIndex][gId];
-    String inputType = tableList[tableName][gColumns][columnIndex][gInputType];
+    int dataColumnIndex = 0;
+    List columns = tableList[tableName][gColumns];
+    for (int i = 0; i < columns.length; i++) {
+      if (isHiddenColumn(columns, i)) {
+        continue;
+      }
+      if (columnIndex == dataColumnIndex) {
+        dataColumnIndex = i;
+        break;
+      }
+      dataColumnIndex++;
+    }
+    String colName = columns[dataColumnIndex][gId];
+    String inputType = columns[dataColumnIndex][gInputType];
 
     if (ascending) {
       if (inputType == gDatetime) {
