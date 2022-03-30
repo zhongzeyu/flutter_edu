@@ -44,6 +44,7 @@ const gCreateAccount = 'createAccount';
 const gCreatenewpassword = 'createnewpassword';
 
 const gData = 'data';
+const gDataIDMap = 'dataidmap';
 const gDataSearch = 'datasearch';
 const gDate = 'date';
 const gDateformat = 'yyyy-MM-dd';
@@ -56,6 +57,7 @@ const gDelete = 'Delete';
 const gSureDelete = 'Sure delete';
 const gDetail = 'detail';
 const gDetailPage = 'detailPage';
+const gDroplist = 'droplist';
 
 const gEdit = 'Edit';
 const gEmail = 'email';
@@ -131,6 +133,7 @@ const gNochange = 'nochange';
 const gNode = 'node';
 const gNoecrypted = 'noecrypted';
 const gNumber = 'number';
+const gNull = 'null';
 
 const gOldvalue = 'oldvalue';
 const gOrderby = "orderby";

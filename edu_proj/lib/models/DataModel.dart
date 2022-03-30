@@ -85,6 +85,7 @@ class DataModel extends ChangeNotifier {
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
   Map get systemParams => _systemParams;
+  Set _loadingTable = {};
   Size _sceenSize = new Size(800, 1000);
   Size get sceenSize => _sceenSize;
   setScreenSize(Size size) {
@@ -95,92 +96,6 @@ class DataModel extends ChangeNotifier {
   setTabIndex(index) {
     _tabIndex = index;
   }*/
-
-  getTabByIndex(int index, tabName) {
-    List<Widget> titleWidgets = [];
-    var dataThis = _tabList[tabName][gData][index];
-    if (!(dataThis[gVisible] ?? true)) {
-      return null;
-    }
-    titleWidgets.add(Text(getSCurrent(dataThis[gLabel]),
-        style: TextStyle(
-            fontSize: 30.0,
-            fontWeight: index == _tabList[tabName][gTabIndex]
-                ? FontWeight.bold
-                : FontWeight.normal,
-            color: index == _tabList[tabName][gTabIndex]
-                ? Colors.black
-                : Colors.grey)));
-    if ((dataThis[gCanRefresh] ?? "true") != "false") {
-      titleWidgets.add(MyIcon({
-        gValue: 0xf2f7,
-        gLabel: gRefresh,
-        gColor: Colors.green,
-        gAction: gLocalAction,
-        gTabIndex: index,
-        gTabName: tabName
-      }));
-    }
-    if ((dataThis[gCanClose] ?? "true") != "false") {
-      titleWidgets.add(MyIcon({
-        gValue: 63467,
-        gLabel: gRemove,
-        gColor: Colors.green,
-        gAction: gLocalAction,
-        gTabIndex: index,
-        gTabName: tabName
-      }));
-    }
-
-    return GestureDetector(
-      onTap: () {
-        _tabList[tabName][gTabIndex] = index;
-        //_tabIndex = index;
-        notifyListeners();
-      },
-      child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: titleWidgets,
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 20 / 4),
-                height: 2,
-                width: 30,
-                color: index == _tabList[tabName][gTabIndex]
-                    ? Colors.black
-                    : Colors.transparent,
-              ),
-            ],
-          )),
-    );
-  }
-
-  getTableByIndex(int index, tableid) {
-    dynamic tableData = _tableList[tableid][gData][index];
-    return tableData;
-  }
-
-  getTableByTableID(tableid, where) {
-    dynamic tableData = _tableList[tableid] ?? null;
-    if (tableData == null) {
-      getTableFromDB(tableData, where);
-    }
-    if (where ?? null == null) {
-      return tableData;
-    }
-    return getTableDataFromWhere(tableData, where);
-  }
-
-  getTableDataFromWhere(tableData, where) {
-    //filter the table data by where condition
-  }
-  getTableFromDB(tableData, where) {
-    //send a request for the table data
-  }
 
   //TabController _tabController;
 
@@ -223,6 +138,9 @@ class DataModel extends ChangeNotifier {
   }
 
   addTab(data, context, tabName) {
+    if (isNull(data[gLabel])) {
+      return;
+    }
     bool tabExists = showTab(data[gLabel], context, tabName);
     if (tabExists) {
       refreshTab(data, context, tabName);
@@ -247,7 +165,7 @@ class DataModel extends ChangeNotifier {
     _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;
   }
 
-  addTable(data) {
+  addTable(data, context) {
     var isNew = false;
     if (_tableList[data[gActionid]] == null) {
       isNew = true;
@@ -292,7 +210,7 @@ class DataModel extends ChangeNotifier {
           }
           columnIndex++;
         }
-        tableSort(data[gActionid], columnIndex, ascending);
+        tableSort(data[gActionid], columnIndex, ascending, context);
         /*if (i == 0) {
           _tableList[data[gActionid]][gAscending] = ascending;
           _tableList[data[gActionid]][gSortColumnIndex] = columnIndex;
@@ -303,7 +221,7 @@ class DataModel extends ChangeNotifier {
     }
 
     _tableList[data[gActionid]][gTableID] = data[gActionid];
-    initTableData(data[gActionid]);
+    initTableData(data[gActionid], context);
     Map param = {
       gType: gForm,
       gFormdetail: {
@@ -1165,6 +1083,91 @@ class DataModel extends ChangeNotifier {
     return -1;
   }
 
+  getTabByIndex(int index, tabName) {
+    List<Widget> titleWidgets = [];
+    var dataThis = _tabList[tabName][gData][index];
+    if (!(dataThis[gVisible] ?? true)) {
+      return null;
+    }
+    titleWidgets.add(Text(getSCurrent(dataThis[gLabel]),
+        style: TextStyle(
+            fontSize: 30.0,
+            fontWeight: index == _tabList[tabName][gTabIndex]
+                ? FontWeight.bold
+                : FontWeight.normal,
+            color: index == _tabList[tabName][gTabIndex]
+                ? Colors.black
+                : Colors.grey)));
+    if ((dataThis[gCanRefresh] ?? "true") != "false") {
+      titleWidgets.add(MyIcon({
+        gValue: 0xf2f7,
+        gLabel: gRefresh,
+        gColor: Colors.green,
+        gAction: gLocalAction,
+        gTabIndex: index,
+        gTabName: tabName
+      }));
+    }
+    if ((dataThis[gCanClose] ?? "true") != "false") {
+      titleWidgets.add(MyIcon({
+        gValue: 63467,
+        gLabel: gRemove,
+        gColor: Colors.green,
+        gAction: gLocalAction,
+        gTabIndex: index,
+        gTabName: tabName
+      }));
+    }
+
+    return GestureDetector(
+      onTap: () {
+        _tabList[tabName][gTabIndex] = index;
+        //_tabIndex = index;
+        notifyListeners();
+      },
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: titleWidgets,
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 20 / 4),
+                height: 2,
+                width: 30,
+                color: index == _tabList[tabName][gTabIndex]
+                    ? Colors.black
+                    : Colors.transparent,
+              ),
+            ],
+          )),
+    );
+  }
+
+  getTableByIndex(int index, tableid) {
+    dynamic tableData = _tableList[tableid][gData][index];
+    return tableData;
+  }
+
+  getTableByTableID(tableid, where) {
+    dynamic tableData = _tableList[tableid] ?? null;
+    if (tableData == null) {
+      getTableFromDB(tableData, where);
+    }
+    if (where ?? null == null) {
+      return tableData;
+    }
+    return getTableDataFromWhere(tableData, where);
+  }
+
+  getTableDataFromWhere(tableData, where) {
+    //filter the table data by where condition
+  }
+  getTableFromDB(tableData, where) {
+    //send a request for the table data
+  }
   getTableItemByName(tableInfo, itemName, value) {
     MapEntry item = MapEntry(itemName, {
       gWidth: 150,
@@ -1272,17 +1275,127 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getTableValueKey(tableId, data) {
-    var table = _tableList[tableId];
+  getTableKeyword(tableId, dataid, context) {
+    var table = _tableList[tableId] ?? null;
+    if (table == null) {
+      retrieveTableFromDB(tableId, context);
 
+      return dataid;
+    }
+    var dataRow = getTableIDMap(table)[dataid];
+    if (dataRow == null) {
+      return dataid;
+    }
+    return getTableValueKeyFromTable(table, dataRow);
+  }
+
+  getTableIDMap(table) {
+    if (table != null && table[gDataIDMap] != null) {
+      return table[gDataIDMap];
+    }
+    Map dataIDMap = {};
+    for (int i = 0; i < table[gData].length; i++) {
+      var dataRow = table[gData][i];
+      dataIDMap[dataRow[gId]] = dataRow;
+    }
+    table[gDataIDMap] = dataIDMap;
+
+    return dataIDMap;
+  }
+
+  getTableCellValueFromTable(tableName, colIndex, rowIndex, context) {
+    List data = tableList[tableName][gData];
+    List columns = tableList[tableName][gColumns];
+    return getTableCellValueFromData(
+        data, columns, colIndex, rowIndex, context);
+  }
+
+  getTableCellValueFromData(data, columns, colIndex, rowIndex, context) {
+    var dataRow = data[rowIndex];
+    return getTableCellValueFromDataRow(dataRow, columns, colIndex, context);
+  }
+
+  getTableCellValueFromDataRow(dataRow, columns, colIndex, context) {
+    String colName = columns[colIndex][gId];
+    var result = dataRow[colName];
+    if (isNull(result)) {
+      return result;
+    }
+    String inputType = columns[colIndex][gInputType];
+
+    if (inputType == gDatetime) {
+      return toLocalTime(result);
+    }
+    String droplist = columns[colIndex][gDroplist];
+    if (!isNull(droplist)) {
+      //getTableValueKeyFromColumns(columns, dataRow)
+      return getTableKeyword(droplist, result, context);
+    }
+    return result;
+  }
+
+  getTableRowShowValue(item, colList, context) {
+    return getTableRowShowValueFilter(item, colList, context, null);
+  }
+
+  getTableRowShowValueFilter(item, colList, context, filterValue) {
+    Map result = {};
+    if (colList == null || colList.length < 1) {
+      return item;
+    }
+    bool filterValueExists = false;
+    if (isNull(filterValue)) {
+      filterValueExists = true;
+    }
+    for (int i = 0; i < colList.length; i++) {
+      var ci = colList[i];
+      var colIndex = i;
+      if (!isNull(item[ci[gId]])) {
+        result[ci[gId]] =
+            getTableCellValueFromDataRow(item, colList, colIndex, context);
+        if (!filterValueExists) {
+          if (!isHiddenColumn(colList, i)) {
+            if (!isNull(result[ci[gId]]) &&
+                result[ci[gId]].indexOf(filterValue) > -1) {
+              filterValueExists = true;
+            }
+          }
+        }
+      }
+    }
+    if (!filterValueExists) {
+      return null;
+    }
+    return result;
+  }
+
+  getTableRowShowValueByTablename(item, tablename, context) {
+    Map tableInfo = _tableList[tablename];
+    List colList = tableInfo[gColumns];
+    return getTableRowShowValue(item, colList, context);
+  }
+
+  getTableValueKey(tableid, dataRow) {
+    var table = _tableList[tableid];
+    return getTableValueKeyFromTable(table, dataRow);
+  }
+
+  getTableValueKeyFromTable(table, dataRow) {
     //var data = table[gData][row];
     List columns = table[gColumns];
+    return getTableValueKeyFromColumns(columns, dataRow);
+  }
+
+  getTableValueKeyFromColumns(columns, dataRow) {
     var result = "";
     var sep = "";
     columns.forEach((element) {
       if ((element[gIsKeyword] ?? false)) {
-        result += sep + data[element[gId]];
-        sep = ",";
+        var value = dataRow[element[gId]];
+        if (!isNull(value)) {
+          result += sep + dataRow[element[gId]];
+          sep = ",";
+        }
       }
     });
     return result;
@@ -1343,11 +1456,11 @@ class DataModel extends ChangeNotifier {
     String formID = param[gFormdetail][gFormName];
 
     setFormListOne(formID, param);
-    int index = -1;
+    /*int index = -1;
     if (param[gIndex] != null) {
       index = param[gIndex];
-    }
-    return MyForm(formID, index);
+    }*/
+    return MyForm(formID, param);
   }
 
   getWidgetTitle(param) {
@@ -1403,6 +1516,13 @@ class DataModel extends ChangeNotifier {
       );
   
   }*/
+  isNull(aValue) {
+    if (aValue == null || aValue == '' || aValue == gNull) {
+      return true;
+    }
+    return false;
+  }
+
   toLocalTime(atime) {
     try {
       //return DateTime.fromMillisecondsSinceEpoch(int.parse('1639181163816'))
@@ -1433,22 +1553,22 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  initTableData(tableid) {
-    Map tableInfo = _tableList[tableid];
+  initTableData(tableid, context) {
+    /*Map tableInfo = _tableList[tableid];
     List tableData = tableInfo[gData];
     List colList = tableInfo[gColumns];
     if (colList != null && colList.length > 0) {
-      for (Map ci in colList) {
-        if (ci[gInputType] == gDatetime) {
-          //translate to Local Time
-          for (Map item in tableData) {
-            if (item[ci[gId]] != null && item[ci[gId]] != '') {
-              item[ci[gId]] = toLocalTime(item[ci[gId]]);
-            }
+      for (int i = 0; i < colList.length; i++) {
+        var ci = colList[i];
+        var colIndex = i;
+        for (Map item in tableData) {
+          if (item[ci[gId]] != null && item[ci[gId]] != '') {
+            item[ci[gId]] =
+                getTableCellValueFromDataRow(item, colList, colIndex, context);
           }
         }
       }
-    }
+    }*/
   }
 
   localAction(requestFirst, context) {
@@ -1466,7 +1586,7 @@ class DataModel extends ChangeNotifier {
       //var tableId = data[gTableID];
       //int index = data[gRow];
       //showFormEdit
-      showTableFormByIndex(data, context);
+      showTableForm(data, context);
     } else if (data[gLabel] != null &&
         data[gLabel] == gDelete &&
         data[gTableID] != null) {
@@ -1494,7 +1614,7 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gDetail &&
         data[gTableID] != null) {
       var tableId = data[gTableID];
-      Map rowData = data[gRow];
+      Map rowData = Map.of(data[gRow]);
       var primaryValue = getTableValueKey(tableId, rowData);
       var transpass = '';
       if (data[gTranspass] != null) {
@@ -1686,7 +1806,7 @@ class DataModel extends ChangeNotifier {
         } else if (action == 'setSessionkey') {
           await setSessionkey(actionData[0]['key']);
         } else if (action == 'setTableList') {
-          await setTableList(actionData);
+          await setTableList(actionData, context);
         } else if (action == 'showErr') {
           actionData[0] = Map.of(actionData[0]);
           showMsg(context, actionData[0]['errMsg']);
@@ -1709,7 +1829,7 @@ class DataModel extends ChangeNotifier {
     data.forEach((data0) {
       data0 = Map.of(data0);
       if (data0[gType] == gTable || data0[gType] == gTabletree) {
-        addTable(data0);
+        addTable(data0, context);
         if (data0[gWhere] != null && data0[gWhere].indexOf("=") > 0) {
           showTable(
               data0[gActionid], context, data0[gLabel], data0[gTranspass]);
@@ -1719,7 +1839,7 @@ class DataModel extends ChangeNotifier {
       addTab(data0, context, data0[gParam0]);
     });
 
-    //notifyListeners();
+    notifyListeners();
   }
 
   processTableSave(List data, context) {
@@ -1729,52 +1849,6 @@ class DataModel extends ChangeNotifier {
     });
 
     //notifyListeners();
-  }
-
-  saveTableOne(data0, context) {
-    //formid = data0[gFormid];
-    List tableData = tableList[data0[gTableID]][gData];
-    if (data0[gActionid] == gTableAdd) {
-      //tableData.insert(0, Map.of(data0[gBody]));
-      finishme(context);
-      saveTableOneAt0(tableData, data0, context);
-      tableList[data0[gTableID]][gKey] = UniqueKey();
-      //if table have detail, popup the detail page
-      Map tableAttr = tableList[data0[gTableID]][gAttr];
-      var detail = tableAttr[gDetail];
-      if (detail != null && detail.length > 0) {
-        var param = {
-          gLabel: gDetail,
-          gAction: gLocalAction,
-          gTableID: data0[gTableID],
-          gRow: 0,
-          gTranspass: gPopupnew
-        };
-        sendRequestOne(param[gAction], param, context);
-      }
-    } else if (data0[gActionid] == gTableUpdate) {
-      finishme(context);
-      var updateID = data0[gBody][gId];
-      tableData.removeWhere((element) => element[gId] == updateID);
-      //tableData.insert(0, Map.of(data0[gBody]));
-      saveTableOneAt0(tableData, data0, context);
-    } else if (data0[gActionid] == gTableDelete) {
-      var deletedID = data0[gBody][gId];
-      tableData.removeWhere((element) => element[gId] == deletedID);
-    }
-
-    notifyListeners();
-  }
-
-  saveTableOneAt0(tableData, data0, context) {
-    tableData.insert(0, Map.of(data0[gBody]));
-  }
-
-  searchTable(data, context) {
-    var tableId = data[gTableID];
-    var searchTxt = data[gSearch];
-    _tableList[tableId][gSearch] = searchTxt;
-    notifyListeners();
   }
 
   processTap(context, element, tabName) {
@@ -1870,18 +1944,80 @@ class DataModel extends ChangeNotifier {
   }
 
   retrieveTableFromDB(tableid, context) {
+    if (_loadingTable.contains(tableid)) {
+      return;
+    }
+    _loadingTable.add(tableid);
     try {
       sendRequestOne(
+          gProcess,
+          [
+            {
+              "label": gNull,
+              "type": "table",
+              "actionid": tableid,
+              "colorIndex": 0
+            }
+          ],
+          context);
+
+      /*sendRequestOne(
           gGetTableData,
           {
             gTableID: tableid,
-            gEmail: getFormValue(gLogin, gEmail, gValue),
+            gEmail: _myId, //getFormValue(gLogin, gEmail, gValue),
             gCompany: _globalCompanyid
           },
-          context);
+          context);*/
     } catch (e) {
       throw e;
     }
+  }
+
+  saveTableOne(data0, context) {
+    //formid = data0[gFormid];
+    List tableData = tableList[data0[gTableID]][gData];
+    if (data0[gActionid] == gTableAdd) {
+      //tableData.insert(0, Map.of(data0[gBody]));
+      finishme(context);
+      saveTableOneAt0(tableData, data0, context);
+      tableList[data0[gTableID]][gKey] = UniqueKey();
+      //if table have detail, popup the detail page
+      Map tableAttr = tableList[data0[gTableID]][gAttr];
+      var detail = tableAttr[gDetail];
+      if (detail != null && detail.length > 0) {
+        var param = {
+          gLabel: gDetail,
+          gAction: gLocalAction,
+          gTableID: data0[gTableID],
+          gRow: (Map.of(data0))[gBody],
+          gTranspass: gPopupnew
+        };
+        sendRequestOne(param[gAction], param, context);
+      }
+    } else if (data0[gActionid] == gTableUpdate) {
+      finishme(context);
+      var updateID = data0[gBody][gId];
+      tableData.removeWhere((element) => element[gId] == updateID);
+      //tableData.insert(0, Map.of(data0[gBody]));
+      saveTableOneAt0(tableData, data0, context);
+    } else if (data0[gActionid] == gTableDelete) {
+      var deletedID = data0[gBody][gId];
+      tableData.removeWhere((element) => element[gId] == deletedID);
+    }
+
+    notifyListeners();
+  }
+
+  saveTableOneAt0(tableData, data0, context) {
+    tableData.insert(0, Map.of(data0[gBody]));
+  }
+
+  searchTable(data, context) {
+    var tableId = data[gTableID];
+    var searchTxt = data[gSearch];
+    _tableList[tableId][gSearch] = searchTxt;
+    notifyListeners();
   }
 
   sendRequestFormChange(data, context) {
@@ -2090,13 +2226,12 @@ class DataModel extends ChangeNotifier {
   }
 
   showTableForm(data, context) {
-    showTableFormByIndex(data, context);
-  }
-
-  showTableFormByIndex(data, context) {
-    int index = data[gRow] ?? -1;
+    //int index = data[gRow] ?? -1;
     var tableName = data[gActionid] ?? data[gTableID];
     Map<String, dynamic> formdetail = _formLists[tableName];
+
+    //Map ti = getTableRowShowValueByTablename(data[gRow], tableName, context);
+    Map dataRow = data[gRow];
     /*String title = tableName;
     if (formdetail[gImgTitle] != null) {
       if (formdetail[gImgTitle][gTitle] != null) {
@@ -2113,7 +2248,7 @@ class DataModel extends ChangeNotifier {
           gBottomImgs: [],
           gTitle: formdetail[gImgTitle], // {gType: gLabel, gValue: tableName},
           gBtns: [],
-          gIndex: index
+          gData: dataRow
         },
       }
     ];
@@ -2224,10 +2359,10 @@ class DataModel extends ChangeNotifier {
     //notifyListeners();
   }
 
-  setTableList(List<dynamic> data) {
+  setTableList(List<dynamic> data, context) {
     data.forEach((element) {
       element.entries.forEach((element1) {
-        addTable(element1);
+        addTable(element1, context);
       });
     });
   }
@@ -2327,7 +2462,7 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  tableSort(tableName, columnIndex, ascending) {
+  tableSort(tableName, columnIndex, ascending, context) {
     List data = tableList[tableName][gData];
     if (data == null || data.length < 2) {
       return;
@@ -2344,24 +2479,36 @@ class DataModel extends ChangeNotifier {
       }
       dataColumnIndex++;
     }
-    String colName = columns[dataColumnIndex][gId];
-    String inputType = columns[dataColumnIndex][gInputType];
+    data.sort((a, b) =>
+        tableSortCompare(a, b, columns, dataColumnIndex, ascending, context));
 
+    tableList[tableName][gAscending] = ascending;
+    tableList[tableName][gSortColumnIndex] = columnIndex;
+  }
+
+  tableSortCompare(a, b, columns, colindex, ascending, context) {
+    String inputType = columns[colindex][gInputType];
     if (ascending) {
       if (inputType == gDatetime) {
-        data.sort((a, b) => toUTCTime(a[colName]) - toUTCTime(b[colName]));
+        return getTableCellValueFromDataRow(a, columns, colindex, context) -
+            getTableCellValueFromDataRow(b, columns, colindex, context);
       } else {
-        data.sort((a, b) => a[colName].compareTo(b[colName]));
+        //data.sort((a, b) => a[colName].compareTo(b[colName]));
+        return getTableCellValueFromDataRow(a, columns, colindex, context)
+            .compareTo(
+                getTableCellValueFromDataRow(b, columns, colindex, context));
       }
     } else {
       if (inputType == gDatetime) {
-        data.sort((a, b) => toUTCTime(b[colName]) - toUTCTime(a[colName]));
+        return getTableCellValueFromDataRow(b, columns, colindex, context) -
+            getTableCellValueFromDataRow(a, columns, colindex, context);
       } else {
-        data.sort((a, b) => b[colName].compareTo(a[colName]));
+        //data.sort((a, b) => a[colName].compareTo(b[colName]));
+        return getTableCellValueFromDataRow(b, columns, colindex, context)
+            .compareTo(
+                getTableCellValueFromDataRow(a, columns, colindex, context));
       }
     }
-    tableList[tableName][gAscending] = ascending;
-    tableList[tableName][gSortColumnIndex] = columnIndex;
   }
 
   wait(waitSeconds) async {

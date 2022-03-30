@@ -7,9 +7,9 @@ import 'package:provider/provider.dart';
 
 class MyForm extends StatelessWidget {
   final String _param;
-  final int _tableIndex;
+  final Map _paramData;
 
-  MyForm(this._param, this._tableIndex);
+  MyForm(this._param, this._paramData);
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +26,7 @@ class MyForm extends StatelessWidget {
         List<Widget> _showItems() {
           List<Widget> result = [];
           dynamic dataRow;
-          if (_tableIndex != null && _tableIndex > -1) {
-            //get table data by index
-            dataRow = datamodel.getTableByIndex(_tableIndex, _formName);
-          }
+          dataRow = _paramData[gData];
 
           items.entries.forEach((item) {
             item.value[gOldvalue] =
@@ -92,6 +89,19 @@ class MyForm extends StatelessWidget {
             ),
           );
           datamodel.beforeSubmit(context, _formName, result);
+          /*if (_formKey == null ||
+              _formKey.currentState == null ||
+              !(_formKey.currentState.validate() ?? true)) {
+            result.add(
+              ElevatedButton(
+                child: Text(datamodel.getSCurrent(formDefine[gSubmit])),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.grey,
+                ),
+                onPressed: () {},
+              ),
+            );
+          } else {*/
           result.add(
             ElevatedButton(
               child: Text(datamodel.getSCurrent(formDefine[gSubmit])),
@@ -107,6 +117,7 @@ class MyForm extends StatelessWidget {
               ),
             ),
           );
+          //}
 
           datamodel.afterSubmit(context, _formName, result);
           return result;

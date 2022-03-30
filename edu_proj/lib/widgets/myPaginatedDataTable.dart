@@ -30,24 +30,32 @@ class MyPaginatedDataTable extends StatelessWidget {
       List columns = tableInfo[gColumns];
       String searchValue = tableInfo[gSearch] ?? '';
       List newData = [];
-      if (searchValue == '') {
-        newData = tableData;
-      } else {
-        for (int i = 0; i < tableData.length; i++) {
-          Map ti = tableData[i];
-          bool searchTxtExists = false;
-          for (MapEntry element in ti.entries) {
-            if ((element.value ?? '').indexOf(searchValue) > -1) {
-              searchTxtExists = true;
-              break;
-            }
-          }
-          if (searchTxtExists) {
-            newData.add(ti);
+
+      for (int i = 0; i < tableData.length; i++) {
+        Map dataRow = tableData[i];
+        //get updated value
+        Map ti = datamodel.getTableRowShowValueFilter(
+            dataRow, columns, context, searchValue);
+        if (ti != null) {
+          newData.add(ti);
+        }
+        /*bool searchTxtExists = false;
+        for (MapEntry element in ti.entries) {
+          var elementKey = element.key;
+
+          if (searchValue == '' ||
+              (element.value ?? '').indexOf(searchValue) > -1) {
+            searchTxtExists = true;
+            break;
           }
         }
+        if (searchTxtExists) {
+          newData.add(ti);
+        }*/
       }
+
       tableInfo[gDataSearch] = newData;
+
       tabledata = TableData(tableInfo, context);
 
       sortTable(int columnIndex, bool ascending) {
@@ -64,7 +72,7 @@ class MyPaginatedDataTable extends StatelessWidget {
           index++;
         }*/
 
-        datamodel.tableSort(tableName, sortIndex, ascending);
+        datamodel.tableSort(tableName, sortIndex, ascending, context);
 
         print('============columnIndex is $sortIndex, ascending is $ascending');
         datamodel.notifyListeners();
