@@ -251,6 +251,7 @@ class DataModel extends ChangeNotifier {
       Map ti = Map.of(_tableList[data[gActionid]][gColumns][i]);
       param[gFormdetail][gItems][ti[gDbid]] = ti;
     }
+    _formLists[data[gActionid]] = null;
     setFormListOne(data[gActionid], param);
   }
 
@@ -434,6 +435,7 @@ class DataModel extends ChangeNotifier {
       var data = {};
       data[gFormid] = formid;
       data[gId] = (obj[gId] != null) ? obj[gId][gValue] : '';
+      data[gOptLock] = (obj[gOptLock] != null) ? obj[gOptLock][gValue] : '';
       obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
         //var key = element.entries.first.key;
         var objI = element.value;
@@ -486,7 +488,7 @@ class DataModel extends ChangeNotifier {
         }
 
         //set to default value if empty
-        obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
+        /*obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
           //var key = element.entries.first.key;
           var objI = element.value;
           if (objI[gId] != '' &&
@@ -495,7 +497,7 @@ class DataModel extends ChangeNotifier {
               (data[objI[gId]] == null || data[objI[gId]] == '')) {
             data[objI[gId]] = objI[gOldvalue] ?? objI[gDefaultValue];
           }
-        });
+        });*/
         //send request;
         sendRequestFormChange(data, context); //refresh Form
 
@@ -706,6 +708,29 @@ class DataModel extends ChangeNotifier {
         child: Column(
             mainAxisAlignment: MainAxisAlignment.end, children: bottom)));
     return Column(children: result);
+  }
+
+  getDropdownMenuItem(tableid, filterStr, context) {
+    dynamic tabledata = getTableByTableID(tableid, null, context);
+    if (tabledata == null) {
+      return null;
+    }
+    List<String> result = [];
+    result.add('');
+    List tabledataList = tabledata[gData];
+    tabledataList.forEach((element) {
+      String value = element[gLabel];
+      result.add(value);
+    });
+
+    return result.map<DropdownMenuItem<String>>((String value) {
+      return DropdownMenuItem<String>(
+        value: value,
+        child: MyLabel({
+          gLabel: value,
+        }),
+      );
+    }).toList();
   }
 
   getDynamicWidgets(List param, context) {
@@ -1151,10 +1176,10 @@ class DataModel extends ChangeNotifier {
     return tableData;
   }
 
-  getTableByTableID(tableid, where) {
+  getTableByTableID(tableid, where, context) {
     dynamic tableData = _tableList[tableid] ?? null;
     if (tableData == null) {
-      getTableFromDB(tableData, where);
+      getTableFromDB(tableid, where, context);
     }
     if (where ?? null == null) {
       return tableData;
@@ -1165,9 +1190,17 @@ class DataModel extends ChangeNotifier {
   getTableDataFromWhere(tableData, where) {
     //filter the table data by where condition
   }
-  getTableFromDB(tableData, where) {
-    //send a request for the table data
+  getTableFromDB(tableid, where, context) {
+    Map element = {
+      gLabel: '',
+      gType: gTable,
+      gActionid: tableid,
+      gWhere: "",
+      gColorIndex: 0
+    };
+    sendRequestOne(gProcess, [element], context);
   }
+
   getTableItemByName(tableInfo, itemName, value) {
     MapEntry item = MapEntry(itemName, {
       gWidth: 150,
@@ -1460,7 +1493,7 @@ class DataModel extends ChangeNotifier {
     if (param[gIndex] != null) {
       index = param[gIndex];
     }*/
-    return MyForm(formID, param);
+    return MyForm(formID);
   }
 
   getWidgetTitle(param) {
@@ -1585,7 +1618,7 @@ class DataModel extends ChangeNotifier {
         data[gTableID] != null) {
       //var tableId = data[gTableID];
       //int index = data[gRow];
-      //showFormEdit
+      showFormEdit(data, context);
       showTableForm(data, context);
     } else if (data[gLabel] != null &&
         data[gLabel] == gDelete &&
@@ -2096,6 +2129,25 @@ class DataModel extends ChangeNotifier {
     }
   }
 
+  setDropdownMenuItem(_param, newValue, context, _formName) {
+    setFormValue(_formName, _param[gId], newValue);
+
+    /*Map<String, dynamic> formDefine = formLists[_formName];
+    Map<dynamic, dynamic> items = formDefine[gItems];
+
+    items.entries.forEach((item) {
+      if (item.value[gId] == _param[gId]) {
+        item.value[gValue] = newValue;
+      }
+      
+    });*/
+    /*Map<dynamic, dynamic> items1 = formDefine[gItems];
+    notifyListeners();
+    Map<dynamic, dynamic> items2 = formDefine[gItems];*/
+    //formDefine[gItems] = items;
+    notifyListeners();
+  }
+
   setFormList(actionData) {
     List<dynamic> thisList = actionData;
     for (int i = 0; i < thisList.length; i++) {
@@ -2108,6 +2160,9 @@ class DataModel extends ChangeNotifier {
   }
 
   setFormListOne(formID, param) {
+    if (_formLists[formID] != null) {
+      return;
+    }
     var formDetail = param[gFormdetail];
     var btns = param[gBtns];
     Map<String, dynamic> formValue = Map.from(formDetail);
@@ -2162,6 +2217,17 @@ class DataModel extends ChangeNotifier {
     });
 
     formValue[gBtns] = btns;
+    /*if (_formLists[formID] != null) {
+      //copy original defaultvalue
+      Map<String, dynamic> formDefine = _formLists[formID];
+      Map<dynamic, dynamic> oldItems = formDefine[gItems];
+      oldItems.entries.forEach((item) {
+        if (!isNull(item.value[gDefaultValue])) {
+          formValue[gItems][item.value[gId]][gDefaultValue] =
+              item.value[gDefaultValue];
+        }
+      });
+    }*/
     _formLists[formID] = formValue;
     //print(jsonEncode(_formLists[formID]));
   }
@@ -2225,13 +2291,40 @@ class DataModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  newForm(data, context) {
+    var tableName = data[gActionid] ?? data[gTableID];
+    Map<String, dynamic> formDefine = _formLists[tableName];
+    Map<dynamic, dynamic> items = formDefine[gItems];
+    items.entries.forEach((item) {
+      item.value[gOldvalue] = null;
+
+      item.value[gValue] = item.value[gDefaultValue];
+      item.value[gTxtEditingController]..text = item.value[gDefaultValue];
+    });
+  }
+
+  showFormEdit(data, context) {
+    var tableName = data[gActionid] ?? data[gTableID];
+    Map<String, dynamic> formDefine = _formLists[tableName];
+    Map<dynamic, dynamic> items = formDefine[gItems];
+    dynamic dataRow = data[gRow];
+    items.entries.forEach((item) {
+      item.value[gOldvalue] =
+          (dataRow == null) ? null : dataRow[item.value[gId]];
+
+      item.value[gValue] = item.value[gOldvalue];
+      item.value[gTxtEditingController]
+        ..text = (dataRow == null) ? null : dataRow[item.value[gId]].toString();
+    });
+  }
+
   showTableForm(data, context) {
     //int index = data[gRow] ?? -1;
     var tableName = data[gActionid] ?? data[gTableID];
     Map<String, dynamic> formdetail = _formLists[tableName];
 
     //Map ti = getTableRowShowValueByTablename(data[gRow], tableName, context);
-    Map dataRow = data[gRow];
+    //Map dataRow = data[gRow];
     /*String title = tableName;
     if (formdetail[gImgTitle] != null) {
       if (formdetail[gImgTitle][gTitle] != null) {
@@ -2248,7 +2341,7 @@ class DataModel extends ChangeNotifier {
           gBottomImgs: [],
           gTitle: formdetail[gImgTitle], // {gType: gLabel, gValue: tableName},
           gBtns: [],
-          gData: dataRow
+          //gData: dataRow
         },
       }
     ];
@@ -2277,6 +2370,10 @@ class DataModel extends ChangeNotifier {
   setInitForm(actionData) {
     _firstFormName = actionData[0][gName];
     notifyListeners();
+  }
+
+  setFormDefaultValue(formid, colId, value) {
+    _formLists[formid][gItems][colId][gDefaultValue] = value;
   }
 
   setFormValue(formid, colId, value) {

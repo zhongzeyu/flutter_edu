@@ -123,6 +123,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         if (attr[gCanInsert]) {
           items.add(ElevatedButton(
               onPressed: () {
+                _param[gData][gRow] = datamodel.newForm(_param[gData], context);
                 datamodel.showTableForm(_param[gData], context);
                 //tableAddNew(tableName);
               },

@@ -5,11 +5,14 @@ import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'myDropdown.dart';
+
 class MyForm extends StatelessWidget {
   final String _param;
-  final Map _paramData;
+  //final Map _paramData;
 
-  MyForm(this._param, this._paramData);
+  //MyForm(this._param, this._paramData);
+  MyForm(this._param);
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +28,19 @@ class MyForm extends StatelessWidget {
         //double _top = 10.0;
         List<Widget> _showItems() {
           List<Widget> result = [];
-          dynamic dataRow;
-          dataRow = _paramData[gData];
-
+          //dynamic dataRow;
+          //dataRow = _paramData[gData];
           items.entries.forEach((item) {
-            item.value[gOldvalue] =
+            /*item.value[gOldvalue] =
                 (dataRow == null) ? null : dataRow[item.value[gId]];
 
             item.value[gValue] = item.value[gOldvalue];
             item.value[gTxtEditingController]
               ..text = (dataRow == null)
                   ? null
-                  : dataRow[item.value[gId]].toString();
+                  : dataRow[item.value[gId]].toString();*/
+
+            //datamodel.setFormValue(_formName, item.value[gId], itemValue);
             if (item.value[gIsHidden] != gTrue &&
                 item.value[gType] != gHidden) {
               //_top += 10;
@@ -67,17 +71,42 @@ class MyForm extends StatelessWidget {
                 );
                 //}
               } else {
-                result.add(
-                  TextFieldWidget(
-                    item: item,
-                    /*
+                //if had droplist, use dropdown
+                if (!datamodel.isNull(item.value[gDroplist])) {
+                  /*result.add(DropdownButton<String>(
+                    value: 'One',
+                    icon: const Icon(Icons.arrow_downward),
+                    elevation: 16,
+                    style: const TextStyle(color: Colors.deepPurple),
+                    underline: Container(
+                      height: 2,
+                      color: Colors.deepPurpleAccent,
+                    ),
+                    onChanged: (String newValue) {},
+                    items: <String>['One', 'Two', 'Free', 'Four']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ));*/
+                  result.add(
+                    MyDropdown(item.value, _formName),
+                  );
+                } else {
+                  result.add(
+                    TextFieldWidget(
+                      item: item,
+                      /*
                 onTab: () => {_onTab(item.value['id'], size)},
                 onChanged: (String value) =>
                     {_onChange(item.value['id'], value)},
                 textFieldController: item.value['txtEditingController'],
                 */
-                  ),
-                );
+                    ),
+                  );
+                }
               }
             }
           });

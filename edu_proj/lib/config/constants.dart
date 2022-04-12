@@ -137,6 +137,7 @@ const gNull = 'null';
 
 const gOldvalue = 'oldvalue';
 const gOrderby = "orderby";
+const gOptLock = "zzyoptlock";
 const gOther = 'other';
 
 const gPagetable = 'pagetable';
