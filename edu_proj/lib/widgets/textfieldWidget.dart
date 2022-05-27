@@ -12,7 +12,6 @@ class TextFieldWidget extends StatelessWidget {
   TextFieldWidget({
     this.item,
   });
-
   _getWidth() {
     return item.value[gWidth];
   }
@@ -29,6 +28,23 @@ class TextFieldWidget extends StatelessWidget {
 
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      bool isPassword = (item.value[gType] == gPassword);
+
+      if (isPassword) {
+        item.value[gPasswordShow] = item.value[gPasswordShow] ?? true;
+
+        item.value[gSuffixIcon] = IconButton(
+            icon: Icon(
+              item.value[gPasswordShow]
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+              color: Theme.of(context).disabledColor,
+            ),
+            onPressed: () {
+              item.value[gPasswordShow] = !item.value[gPasswordShow];
+              datamodel.myNotifyListeners();
+            });
+      }
       return Container(
         width: _getWidth(),
         child: TextFormField(
@@ -63,7 +79,7 @@ class TextFieldWidget extends StatelessWidget {
               suffixIcon: item.value[gSuffixIcon],
               //prefixIcon: item.value['prefixIcon'],
             ),
-            obscureText: (item.value[gType] == gPassword),
+            obscureText: isPassword && item.value[gPasswordShow],
             validator: (String value) {
               if (item.value[gRequired] && value.isEmpty) {
                 return datamodel

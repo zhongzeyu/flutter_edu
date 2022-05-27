@@ -1,4 +1,5 @@
 // @dart=2.9
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
@@ -9,22 +10,25 @@ import 'package:edu_proj/screens/MyMain.dart';
 import 'package:edu_proj/screens/firstPage.dart';
 import 'package:edu_proj/screens/mainPage.dart';
 import 'package:edu_proj/screens/myDetail.dart';
+import 'package:edu_proj/screens/myDetailNew.dart';
 import 'package:edu_proj/utils/AES.dart';
 import 'package:edu_proj/widgets/myIcon.dart';
 import 'package:edu_proj/widgets/MyForm.dart';
 import 'package:edu_proj/widgets/myButton.dart';
+import 'package:edu_proj/widgets/myItem.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
 import 'package:edu_proj/widgets/myPic.dart';
+import 'package:edu_proj/widgets/myScreen.dart';
 //import 'package:edu_proj/widgets/myTree.dart';
-import 'package:edu_proj/widgets/picsAndButtons.dart';
+//import 'package:edu_proj/widgets/picsAndButtons.dart';
+import 'package:edu_proj/widgets/radios.dart';
 //import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-//import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DataModel extends ChangeNotifier {
@@ -150,7 +154,7 @@ class DataModel extends ChangeNotifier {
     /*_tabList[tabName][gData].add(
         {gLabel: data[gLabel], gType: data[gType], gActionid: data[gActionid]});
     _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;*/
-    notifyListeners();
+    myNotifyListeners();
 
     //wait(2);
     //_tabController.animateTo(_tabList.length - 1);
@@ -372,7 +376,7 @@ class DataModel extends ChangeNotifier {
   deleteTabOne(tabName, tabIndex) {
     _tabList[tabName][gData][tabIndex][gVisible] = false;
     _tabList[tabName][gTabIndex] = 0;
-    notifyListeners();
+    myNotifyListeners();
   }
 
   encryptByDES(datalist) {
@@ -485,6 +489,8 @@ class DataModel extends ChangeNotifier {
             showMsg(context, getSCurrent(gPasswordnotmatch));
             return;
           }
+          //var loginemail = getFormValue(gLogin, gEmail, gTxtEditingController);
+          data[gEmail] = _myId;
         }
 
         //set to default value if empty
@@ -531,19 +537,30 @@ class DataModel extends ChangeNotifier {
     return Color(intColor);
   }
 
+  getActions(List param, context) {
+    List<Widget> result = getLocalComponentsList(context);
+
+    if (param != null && param.length > 0) {
+      for (int i = 0; i < param.length; i++) {
+        //dynamic pi = _param[gActions][i];
+        result.add(getMyItem(param[i], context));
+        /*if (pi[gType] == gIcon) {
+          result.add(MyIcon(pi));
+          
+        }*/
+      }
+    }
+    return result;
+  }
+
   getActionIcons(_param, context) {
     List<Widget> result = getLocalComponentsList(context);
+
     if (_param[gActions] != null) {
       for (int i = 0; i < _param[gActions].length; i++) {
-        dynamic pi = _param[gActions][i];
-        if (pi[gType] == gIcon) {
-          result.add(MyIcon(pi));
-          /*icon: Icon(IconData(pi[gValue], fontFamily: 'MaterialIcons')),
-            onPressed: () {
-              sendRequestOne(pi[gAction], '', context);
-            },
-          ));*/
-        }
+        Map pi = Map.of(_param[gActions][i]);
+        Widget wi = getMyItem(pi, context);
+        result.add(wi);
       }
     }
     return result;
@@ -654,6 +671,38 @@ class DataModel extends ChangeNotifier {
           data[gLabel], _colorList[data[gColorIndex]], 15.0, 2.0, 2.0);
   }
 
+  getDetailBottom(param, context) {
+    //add  bottomImages
+    List<Widget> bottom = [];
+    if (param[gBottomImgs] != null) {
+      List bottomImages = param[gBottomImgs];
+
+      for (int i = 0; i < bottomImages.length; i++) {
+        Widget wi = MyPic(bottomImages[i]);
+
+        bottom.add(wi);
+      }
+    }
+
+    return Row(children: bottom);
+  }
+
+  getTitle(param, context) {
+    String aLabel = param[gLabel];
+    if (aLabel == null) {
+      if (param[gData] != null) {
+        aLabel = param[gData][gLabel] ?? param[gData][gName];
+      }
+    }
+    if (aLabel == null) {
+      aLabel = "";
+    }
+
+    return MyLabel({
+      gLabel: aLabel,
+    });
+  }
+
   getDetailWidget(param, context) {
     List<Widget> result = [];
 
@@ -662,16 +711,16 @@ class DataModel extends ChangeNotifier {
     }
     result.add(SizedBox(height: gDefaultPaddin));
     //title
-    double otherHeights = 0;
+    //double otherHeights = 0;
     //Widget title = getWidgetTitle(param);
     if (param[gTitle] != null) {
       if (param[gTitle][gHeight] != null) {
-        otherHeights += param[gTitle][gHeight];
+        //otherHeights += param[gTitle][gHeight];
       }
 
       result.add(Center(child: getWidgetTitle(param)));
     }
-    //add  bottomImages
+    /*//add  bottomImages
     List<Widget> bottom = [];
     if (param[gBottomImgs] != null) {
       List bottomImages = param[gBottomImgs];
@@ -690,13 +739,13 @@ class DataModel extends ChangeNotifier {
         _sceenSize.height - bottom.length * 20 - 125 - otherHeights;
     if (bodyheight < 20) {
       bodyheight = 20;
-    }
+    }*/
     //add body
     Widget body = getWidgetBody(param, context);
     if (body != null) {
       result.add(SizedBox(height: gDefaultPaddin));
       result.add(Container(
-        height: bodyheight,
+        //height: bodyheight,
         child: Padding(
           padding: const EdgeInsets.all(gDefaultPaddin),
           child: body,
@@ -704,9 +753,9 @@ class DataModel extends ChangeNotifier {
       ));
     }
 
-    result.add(Expanded(
+    /*result.add(Expanded(
         child: Column(
-            mainAxisAlignment: MainAxisAlignment.end, children: bottom)));
+            mainAxisAlignment: MainAxisAlignment.end, children: bottom)));*/
     return Column(children: result);
   }
 
@@ -799,16 +848,6 @@ class DataModel extends ChangeNotifier {
     return widgetList;
   }
 
-  getFirstPage(name) {
-    Widget result = Text('');
-    if (_screenLists[name][gType] == gPicsAndButtons) {
-      result = new PicsAndButtons(_screenLists[name]);
-    } else if (_screenLists[name][gType] == gLogin) {
-      //result = Login(_screenLists[_name]);
-    }
-    return result;
-  }
-
   getFormDefineImage(formValue) {
     return getTxtImage(
         formValue[gTitle][gLabel],
@@ -860,7 +899,21 @@ class DataModel extends ChangeNotifier {
     return IconData(iconname, fontFamily: 'MaterialIcons');
   }
 
-  getImage(imgName, context) {
+  setForm(formName, context) {
+    if (_formLists[formName] != null) {
+      return;
+    }
+    try {
+      sendRequestOne(
+          gGetForm,
+          {gFormid: formName, gCompany: _globalCompanyid, gEmail: _myId},
+          context);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  setImage(imgName, context) {
     if (_imgList[imgName] != null) {
       return;
     }
@@ -1005,7 +1058,7 @@ class DataModel extends ChangeNotifier {
         child: InkWell(
           onTap: () {
             _picIndex = i;
-            notifyListeners();
+            myNotifyListeners();
           },
           child: MyPic(
               {gImg: _imgList[((i == _picIndex) ? 'bright' : 'dark') + 'dot']}),
@@ -1017,6 +1070,137 @@ class DataModel extends ChangeNotifier {
     }
     result.add(
         Row(mainAxisAlignment: MainAxisAlignment.center, children: dotList));
+    return result;
+  }
+
+  getRadios(param, context) {
+    List list = param;
+    if (_picIndex >= list.length) {
+      _picIndex = 0;
+    }
+
+    List<Widget> result = [];
+    result.add(getMyItem(list[_picIndex], context));
+    List<Widget> dotList = [];
+    for (int i = 0; i < list.length; i++) {
+      dotList.add(Material(
+        child: InkWell(
+          onTap: () {
+            _picIndex = i;
+            myNotifyListeners();
+          },
+          child: /*MyPic(
+              {gImg: _imgList[((i == _picIndex) ? 'bright' : 'dark') + 'dot']}),*/
+              getMyItem({
+            gType: gImg,
+            gValue: ((i == _picIndex) ? 'bright' : 'dark') + 'dot'
+          }, context),
+          /*Image.asset(
+                '/images/' + ((i == _picIndex) ? 'bright' : 'dark') + 'dot.png',
+                package: packageName)*/
+        ),
+      ));
+    }
+    result.add(
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: dotList));
+    return result;
+  }
+
+  getRowsPerPage(tableInfo) {
+    if (tableInfo[gRowsPerPage] == null) {
+      tableInfo[gRowsPerPage] = 15;
+    }
+    return tableInfo[gRowsPerPage];
+  }
+
+  setRowsPerPage(tableInfo, cnt) {
+    tableInfo[gRowsPerPage] = cnt;
+    myNotifyListeners();
+  }
+
+  getScreenItem(Map mItemDetail, context) {
+    Widget result;
+
+    mItemDetail.forEach((key, value) {
+      if (key != gItems && key != gItem) {
+        return null;
+      }
+      Map valueMap = Map.of(jsonDecode(value));
+      if (key == gItems) {
+        //return result;
+        //"{"radios":[{"type":"img","value": "image0","label": "Earn Instant Cashback","fontSize": 20.0,"height": 30.0}, {"type":"img","value": "image1","label": "Build Credit with ease","fontSize": 20.0,"height": 30.0}, {"type":"img","value":"image2","label": "Welcome","fontSize": 20.0,"height": 30.0}]}"
+
+        valueMap.forEach((key1, value1) {
+          if (key1 == gRadios) {
+            List listValue1 = value1;
+            List listValueNew = [];
+
+            listValue1.forEach((data0) {
+              listValueNew.add(Map.of(data0));
+            });
+
+            result = Radios(listValueNew);
+          }
+        });
+      } else if (key == gItem) {
+        result = getMyItem(valueMap, context);
+      }
+    });
+    return result;
+  }
+
+  getScreenItems(param, context) {
+    List<Widget> result = [];
+    //Map map = Map.of(param[gItems]);
+    Map map = Map.of(param);
+    map.forEach((key, value) {
+      Map mapItem = Map.of(value);
+      Widget itemWidget = getScreenItem(mapItem, context);
+      if (itemWidget != null) {
+        result.add(itemWidget);
+        result.add(SizedBox(height: gDefaultPaddin));
+      }
+    });
+    return result;
+    /*return [
+      //Expanded(child: PicsAndLabels(param)),
+      SizedBox(height: 120),
+      MyLabel(getParamTypeValue(param[gTitle])),
+      SizedBox(height: 150),
+      getButtons(Map.of(param)),
+      SizedBox(height: gDefaultPaddin),
+    ];*/
+  }
+
+  getScreenItemsList(List param, context) {
+    List<Widget> result = [];
+    //Map map = Map.of(param[gItems]);
+    for (int i = 0; i < param.length; i++) {
+      Map pi = param[i];
+      Widget wi = getMyItem(pi, context);
+      result.add(wi);
+    }
+    return result;
+  }
+
+  getMyItem(valueMap, context) {
+    if (valueMap[gType] == gImg) {
+      dynamic imageValue = _imgList[valueMap[gValue]];
+      if (imageValue == null) {
+        setImage(valueMap[gValue], context);
+      }
+
+      //valueMap[gValue] = _imgList[valueMap[gValue]] ?? _imgList[gNotavailable];
+    } else if (valueMap[gType] == gForm) {
+      dynamic form = _formLists[valueMap[gValue]];
+      if (form == null) {
+        setForm(valueMap[gValue], context);
+        //getTableByTableID(valueMap[gValue], null, context);
+      }
+
+      //valueMap[gValue] = _imgList[valueMap[gValue]] ?? _imgList[gNotavailable];
+    }
+    Widget result = MyItem(valueMap);
     return result;
   }
 
@@ -1148,7 +1332,7 @@ class DataModel extends ChangeNotifier {
       onTap: () {
         _tabList[tabName][gTabIndex] = index;
         //_tabIndex = index;
-        notifyListeners();
+        myNotifyListeners();
       },
       child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1477,6 +1661,8 @@ class DataModel extends ChangeNotifier {
       return getWidgetForm(param);
     } else if (param[gType] == gTable) {
       return getTableBody(param, context);
+    } else if (param[gType] == gScreen) {
+      return MyScreen(param);
     }
     return Column(
       children: [
@@ -1722,13 +1908,23 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gSearch &&
         data[gTableID] != null) {
       searchTable(data, context);
+    } else if (data[gAction] == gTextLink) {
+      businessFunc(data[gAction1], context);
+
+      //forgetpassword(context);
+    }
+  }
+
+  businessFunc(funcName, context) {
+    if (funcName == "forgetpassword") {
+      forgetpassword(context);
     }
   }
 
   logOff() {
     clear();
 
-    notifyListeners();
+    myNotifyListeners();
   }
 
   onTap(context, Map map) {
@@ -1814,40 +2010,42 @@ class DataModel extends ChangeNotifier {
           await changePassword(context, actionData);
         } else if (action == gFinishme) {
           await finishme(context);
-        } else if (action == 'processTab') {
+        } else if (action == gProcessTab) {
           await processTab(actionData, context);
-        } else if (action == 'processTableSave') {
+        } else if (action == gProcessTableSave) {
           await processTableSave(actionData, context);
-        } else if (action == 'removeAllScreens') {
+        } else if (action == gRemoveAllScreens) {
           await removeAllScreens(context);
-        } else if (action == 'resetpassword') {
+        } else if (action == 'removeLastScreens') {
+          await removeLastScreens(context);
+        } else if (action == gResetpassword) {
           await resetPassword(context, actionData);
-        } else if (action == 'setImgList') {
+        } else if (action == gSetImgList) {
           await setImgList(actionData);
         } else if (action == 'setMyAction') {
           await setMyAction(actionData);
-        } else if (action == 'setMyInfo') {
+        } else if (action == gSetMyInfo) {
           await setMyInfo(actionData[0], context);
         } else if (action == 'setMyMenu') {
           await setMyMenu(actionData);
         } else if (action == 'setMyTab') {
           await setMyTab(actionData);
-        } else if (action == 'setI10n') {
+        } else if (action == gSetI10n) {
           await setI10n(actionData);
         } else if (action == 'setInitForm') {
           await setInitForm(actionData);
-        } else if (action == 'setSessionkey') {
+        } else if (action == gSetSessionkey) {
           await setSessionkey(actionData[0]['key']);
         } else if (action == 'setTableList') {
           await setTableList(actionData, context);
-        } else if (action == 'showErr') {
+        } else if (action == gShowErr) {
           actionData[0] = Map.of(actionData[0]);
           showMsg(context, actionData[0]['errMsg']);
           //throw actionData[0]['errMsg'];
-        } else if (action == 'showScreenPage') {
+        } else if (action == gShowScreenPage) {
           await showScreenPage(actionData, context);
-          /*} else if (action == 'setFormList') {
-          await setFormList(actionData);*/
+        } else if (action == 'setFormList') {
+          await setFormList(actionData);
         } else if (action == 'showTable') {
           await showTable(actionData[0][gTableID], context,
               actionData[0][gLabel] ?? "", "");
@@ -1872,7 +2070,7 @@ class DataModel extends ChangeNotifier {
       addTab(data0, context, data0[gParam0]);
     });
 
-    notifyListeners();
+    myNotifyListeners();
   }
 
   processTableSave(List data, context) {
@@ -1881,7 +2079,7 @@ class DataModel extends ChangeNotifier {
       saveTableOne(data0, context);
     });
 
-    //notifyListeners();
+    //myNotifyListeners();
   }
 
   processTap(context, element, tabName) {
@@ -1905,13 +2103,19 @@ class DataModel extends ChangeNotifier {
     } else {
       addTabSub(data, tabName);
     }
-    notifyListeners();
+    myNotifyListeners();
   }
 
   removeAllScreens(context) {
     Navigator.of(context)
         .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-    notifyListeners();
+    myNotifyListeners();
+  }
+
+  removeLastScreens(context) {
+    Navigator.of(context).pop();
+
+    myNotifyListeners();
   }
 
   requestListAddFirst(data) {
@@ -2026,6 +2230,7 @@ class DataModel extends ChangeNotifier {
           gRow: (Map.of(data0))[gBody],
           gTranspass: gPopupnew
         };
+
         sendRequestOne(param[gAction], param, context);
       }
     } else if (data0[gActionid] == gTableUpdate) {
@@ -2039,7 +2244,7 @@ class DataModel extends ChangeNotifier {
       tableData.removeWhere((element) => element[gId] == deletedID);
     }
 
-    notifyListeners();
+    myNotifyListeners();
   }
 
   saveTableOneAt0(tableData, data0, context) {
@@ -2050,7 +2255,7 @@ class DataModel extends ChangeNotifier {
     var tableId = data[gTableID];
     var searchTxt = data[gSearch];
     _tableList[tableId][gSearch] = searchTxt;
-    notifyListeners();
+    myNotifyListeners();
   }
 
   sendRequestFormChange(data, context) {
@@ -2142,35 +2347,40 @@ class DataModel extends ChangeNotifier {
       
     });*/
     /*Map<dynamic, dynamic> items1 = formDefine[gItems];
-    notifyListeners();
+    myNotifyListeners();
     Map<dynamic, dynamic> items2 = formDefine[gItems];*/
     //formDefine[gItems] = items;
-    notifyListeners();
+    myNotifyListeners();
   }
 
   setFormList(actionData) {
     List<dynamic> thisList = actionData;
     for (int i = 0; i < thisList.length; i++) {
       Map<String, dynamic> thisListI = thisList[i];
-      thisListI.entries.forEach((element) {
+      var formID = thisListI[gFormName];
+      setFormListOne(formID, thisListI);
+      /*thisListI.entries.forEach((element) {
         String formID = element.key;
         setFormListOne(formID, element.value);
-      });
+      });*/
     }
+    myNotifyListeners();
   }
 
-  setFormListOne(formID, param) {
+  //setFormListOne(formID, param) {
+  setFormListOne(formID, formDetail) {
     if (_formLists[formID] != null) {
       return;
     }
-    var formDetail = param[gFormdetail];
-    var btns = param[gBtns];
+    //var formDetail = param[gFormdetail];
+    // var btns = param[gBtns];
     Map<String, dynamic> formValue = Map.from(formDetail);
 
     //formValue['submit'] = getSCurrent(formValue['submit']);
     //String title = getSCurrent(formValue[gTitle][gLabel]);
 
-    formValue[gsBackgroundColor] = Color(_lastBackGroundColor);
+    //formValue[gsBackgroundColor] = Color(_lastBackGroundColor);
+    //formValue[gsBackgroundColor] = Colors.white;
     /*formValue['image'] = Text(
           getSCurrent(formValue[gTitle][gLabel]),
           style: TextStyle(
@@ -2216,7 +2426,7 @@ class DataModel extends ChangeNotifier {
       formValue[gItems][key] = Map.of(value);
     });
 
-    formValue[gBtns] = btns;
+    //formValue[gBtns] = btns;
     /*if (_formLists[formID] != null) {
       //copy original defaultvalue
       Map<String, dynamic> formDefine = _formLists[formID];
@@ -2269,26 +2479,40 @@ class DataModel extends ChangeNotifier {
     for (int i = 0; i < actionData.length; i++) {
       Map<String, dynamic> ai = actionData[i];
       String name = '';
+      String type = '';
       dynamic data;
       ai.entries.forEach((element) {
         if (element.key == gName) {
           name = element.value;
-        } else if (element.key == gData) {
+        } else if (element.key == gType) {
+          type = element.value;
+        } else if (element.key == gItems) {
           data = element.value;
         }
       });
+      _screenLists[name] = Map.of(data);
+      if (type == gScreen) {
+        if (name == gFirstPage) {
+          _firstFormName = name;
 
-      if (name == gFirstPage) {
-        _screenLists[name] = Map.of(data);
-        _firstFormName = name;
-        _firstPage = FirstPage(_firstFormName);
-      } else if (name == gDetailPage) {
-        //deailPage(_firstFormName);
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MyDetail(Map.of(data))));
+          MyScreen aScreen = MyScreen(_screenLists[name]);
+          _firstPage = FirstPage(aScreen);
+        } else {
+          //MyScreen aScreen = MyScreen(_screenLists[name]);
+          //Map param = {gLabel: name, gScreen: aScreen};
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MyDetailNew(_screenLists[name])));
+        }
+      } else if (type == gDetailPage) {
+        MyScreen aScreen = MyScreen(_screenLists[name]);
+        Map param = {gLabel: name, gScreen: aScreen};
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => MyDetail(param)));
       }
     }
-    notifyListeners();
+    myNotifyListeners();
   }
 
   newForm(data, context) {
@@ -2364,12 +2588,12 @@ class DataModel extends ChangeNotifier {
         _i10nMap[element.key] = mValue;
       });
     }
-    notifyListeners();
+    myNotifyListeners();
   }
 
   setInitForm(actionData) {
     _firstFormName = actionData[0][gName];
-    notifyListeners();
+    myNotifyListeners();
   }
 
   setFormDefaultValue(formid, colId, value) {
@@ -2387,7 +2611,7 @@ class DataModel extends ChangeNotifier {
     //S.load(_locale);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('locallan', value);
-    notifyListeners();
+    myNotifyListeners();
   }
 
   setImgList(data) {
@@ -2397,6 +2621,23 @@ class DataModel extends ChangeNotifier {
         _imgList[element.key] = element.value;
       });
     }
+    myNotifyListeners();
+  }
+
+  /*debounce(fn, [int t = 30]) {
+    Timer _debounce;
+    return () {
+      if (_debounce?.isActive ?? false) {
+        _debounce.cancel();
+      }
+      _debounce = Timer(Duration(milliseconds: t), () {
+        fn();
+      });
+    };
+  }*/
+  final _debouncer = Debouncer(milliseconds: 300);
+  myNotifyListeners() {
+    _debouncer.run(() => notifyListeners());
   }
 
   setMyAction(data) {
@@ -2410,7 +2651,7 @@ class DataModel extends ChangeNotifier {
     _token = data[gToken];
     _myId = data[gEmail];
     _globalCompanyid = data[gCompanyid];
-    //notifyListeners();
+    //myNotifyListeners();
   }
 
   setMyMenu(List data) {
@@ -2446,14 +2687,14 @@ class DataModel extends ChangeNotifier {
 
     _tabList[gMain][gTabIndex] = 0;
 
-    notifyListeners();
+    myNotifyListeners();
   }
 
   setSessionkey(data) {
     int key = int.parse(data);
     String sessionkey = getMod(key, _arandomsession, _zzyprime).toString();
     _sessionkey = hash(sessionkey);
-    //notifyListeners();
+    //myNotifyListeners();
   }
 
   setTableList(List<dynamic> data, context) {
@@ -2479,10 +2720,41 @@ class DataModel extends ChangeNotifier {
     showModalBottomSheet(
         context: context,
         builder: (context) {
-          return Container(
-            child: Text(
-              result.toString(),
-              style: TextStyle(fontSize: 15),
+          final double _screenHeight = MediaQuery.of(context).size.height;
+          var _screenPadding = MediaQuery.of(context).viewPadding;
+          final double _scrollHeight =
+              (_screenHeight - _screenPadding.top - kToolbarHeight) * 0.7;
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    constraints: BoxConstraints(maxHeight: _scrollHeight),
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Text(
+                        result.toString(),
+                        style: TextStyle(fontSize: 15),
+                      ),
+                    ),
+                  ),
+                  Divider(),
+//取消按钮
+                  //添加个点击事件
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Center(
+                      child: MyLabel({
+                        gLabel: gClose,
+                      }),
+                    ),
+                  )
+                ],
+              ),
             ),
           );
         });
@@ -2495,7 +2767,7 @@ class DataModel extends ChangeNotifier {
         if (_tabList[tabName][gTabIndex] != i) {
           _tabList[tabName][gTabIndex] = i;
 
-          notifyListeners();
+          myNotifyListeners();
         }
         return true;
       }
@@ -2513,7 +2785,7 @@ class DataModel extends ChangeNotifier {
         tablExists = true;
         if (_tabList[tabName][gTabIndex] != i) {
           _tabList[tabName][gTabIndex] = i;
-          notifyListeners();
+          myNotifyListeners();
         }
 
         //DefaultTabController.of(context).animateTo(i);
@@ -2529,7 +2801,7 @@ class DataModel extends ChangeNotifier {
     return tablExists;
 
     //addTab();
-    //notifyListeners();*/
+    //myNotifyListeners();*/
   }
 
   showTable(String tableid, context, title, transpass) {
@@ -2546,6 +2818,7 @@ class DataModel extends ChangeNotifier {
           context, MaterialPageRoute(builder: (context) => MyDetail(param)));
       if (strSubexists(transpass, gPopupnew)) {
         //trigger add new
+        newForm(param, context);
         showTableForm(param, context);
       }
     }
@@ -3087,5 +3360,21 @@ class DataModel extends ChangeNotifier {
       return MyDynamicBody(objList);
     }
     return null;
+  }
+}
+
+class Debouncer {
+  final int milliseconds;
+  VoidCallback action;
+  Timer _timer;
+
+  Debouncer({this.milliseconds});
+
+  run(VoidCallback action) {
+    if (_timer != null) {
+      _timer.cancel();
+    }
+
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
 }

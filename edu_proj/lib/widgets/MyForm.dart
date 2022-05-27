@@ -1,14 +1,18 @@
 // @dart=2.9
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
+import 'package:edu_proj/widgets/myLabel.dart';
+import 'package:edu_proj/widgets/myPinCode.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+//import 'package:places_service/places_service.dart';
 
 import 'myDropdown.dart';
 
 class MyForm extends StatelessWidget {
   final String _param;
+
   //final Map _paramData;
 
   //MyForm(this._param, this._paramData);
@@ -21,6 +25,9 @@ class MyForm extends StatelessWidget {
         final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
         final String _formName = _param;
         //['name'];
+        if (datamodel.formLists[_formName] == null) {
+          return MyLabel({gLabel: gNotavailable, gFontSize: 20.0});
+        }
         Map<String, dynamic> formDefine = datamodel.formLists[_formName];
         Map<dynamic, dynamic> items = formDefine[gItems];
 
@@ -70,6 +77,10 @@ class MyForm extends StatelessWidget {
                   ),
                 );
                 //}
+              } else if (item.value[gType] == gPincode) {
+                result.add(
+                  MyPinCode(item.value, _formName),
+                );
               } else {
                 //if had droplist, use dropdown
                 if (!datamodel.isNull(item.value[gDroplist])) {
@@ -94,6 +105,7 @@ class MyForm extends StatelessWidget {
                   result.add(
                     MyDropdown(item.value, _formName),
                   );
+                } else if (!datamodel.isNull(item.value[gStreetAddress])) {
                 } else {
                   result.add(
                     TextFieldWidget(
@@ -142,7 +154,14 @@ class MyForm extends StatelessWidget {
                 datamodel.formSubmit(context, _formName);
               },
               style: ElevatedButton.styleFrom(
-                primary: Colors.yellow,
+                //primary: Colors.yellow,
+                //primary: Colors.green,
+                //onPrimary: Colors.white,
+                //shadowColor: Colors.greenAccent,
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32.0)),
+                minimumSize: Size(200, 40),
               ),
             ),
           );

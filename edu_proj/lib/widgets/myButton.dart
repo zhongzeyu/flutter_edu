@@ -16,11 +16,17 @@ class MyButton extends StatelessWidget {
         padding: const EdgeInsets.all(18.0),
         child: SizedBox(
           child: ElevatedButton(
-              onPressed: () {
-                datamodel.sendRequestOne(
-                    _param[gAction], _param, this._param[gContext] ?? context);
-              },
-              child: MyLabel(_param)),
+            onPressed: () {
+              datamodel.sendRequestOne(
+                  _param[gAction], _param, this._param[gContext] ?? context);
+            },
+            child: MyLabel(_param),
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
+              minimumSize: Size(200, 40),
+            ),
+          ),
         ),
       );
     });

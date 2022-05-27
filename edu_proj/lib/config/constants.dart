@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const gAction = 'action';
+const gAction1 = 'action1';
 const gActionid = 'actionid';
 const gActions = 'actions';
 const gAddnew = 'Addnew';
@@ -13,7 +14,9 @@ const gAttr = 'attr';
 const gBackgroundColor = Colors.white;
 const gBackbtn = 'backbtn';
 const gBody = 'body';
+const gBottoms = 'bottoms';
 const gBottomImgs = 'bottomImgs';
+const gBtn = 'btn';
 const gBtns = 'btns';
 const gsBackgroundColor = 'backgroundColor';
 const gButton = 'button';
@@ -54,7 +57,8 @@ const gDbname = 'dbname';
 const gDefaultPaddin = 20.0;
 const gDefaultValue = 'defaultValue';
 const gDelete = 'Delete';
-const gSureDelete = 'Sure delete';
+const gDelimeterItem = '~';
+
 const gDetail = 'detail';
 const gDetailPage = 'detailPage';
 const gDroplist = 'droplist';
@@ -80,6 +84,7 @@ const gFormid = 'formid';
 const gFormdetail = 'formdetail';
 const gFormName = 'formName';
 
+const gGetForm = 'getForm';
 const gGetImageLink = 'getImageLink';
 const gGetTableData = 'getTableData';
 const gGetsessionkey = 'getsessionkey';
@@ -104,6 +109,7 @@ const gIsPrimary = 'isPrimary';
 const gIsrequired = 'isrequired';
 const gIsselected = 'isselected';
 const gIsUnique = 'isunique';
+const gItem = 'item';
 const gItems = 'items';
 
 const gKey = 'key';
@@ -132,6 +138,8 @@ const gName = 'name';
 const gNochange = 'nochange';
 const gNode = 'node';
 const gNoecrypted = 'noecrypted';
+const gNotavailable = 'not available';
+
 const gNumber = 'number';
 const gNull = 'null';
 
@@ -146,34 +154,52 @@ const gParentid = 'parentid';
 const gPassword = 'password';
 const gPassword1 = 'password1';
 const gPasswordnotmatch = 'passwordnotmatch';
+const gPasswordShow = 'passwordshow';
 const gPicsAndButtons = 'PicsAndButtons';
 const gPlaceHolder = 'placeholder';
-const gPlsenteremail = 'plsenteremail';
+const gPlsenteremail = 'pls enter email';
 const gPhone = 'phone';
 const gPics = 'pics';
+const gPincode = 'code';
 const gPopupnew = 'popupnew';
 const gPreFixIcon = 'preFixIcon';
 const gPrice = 'price';
 const gProcess = 'process';
+const gProcessTab = 'processTab';
+const gProcessTableSave = 'processTableSave';
 const gProgram = 'program';
 
+const gRadios = 'radios';
 const gRefresh = 'Refresh';
 const gRemove = 'Remove';
+const gRemoveAllScreens = 'removeAllScreens';
 const gRequired = 'required';
 const gResetpassword = 'resetpassword';
 const gRole = 'role';
 const gRow = 'row';
+const gRowsPerPage = 'rowsPerPage';
 
+const gScreen = 'screen';
 const gSearch = 'Search';
 const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';
+const gSetMyInfo = 'setMyInfo';
+const gSetI10n = 'setI10n';
+const gSetImgList = 'setImgList';
+const gSetSessionkey = 'setSessionkey';
+const gShowErr = 'showErr';
+const gShowScreenPage = 'showScreenPage';
+
 const gSidb = 'sidb';
+const gSizedbox = 'sizedbox';
+
 const gSortColumnIndex = 'sortColumnIndex';
 const gStreetAddress = 'streetAddress';
 const gStudent = 'student';
 const gSubmit = 'submit';
 const gSuffixIcon = 'suffixIcon';
+const gSureDelete = 'Sure delete';
 const gSystem = 'system';
 const gSystemTitle = 'systemtitle';
 
@@ -189,6 +215,7 @@ const gTableID = 'tableid';
 const gTextColor = Color(0xFF535353);
 const gTextFontColor = 'textFontColor';
 const gTextLightColor = Color(0xFFACACAC);
+const gTextLink = 'textlink';
 const gTitle = 'title';
 const gToken = 'token';
 const gTop = 'top';

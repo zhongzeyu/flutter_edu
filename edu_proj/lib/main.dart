@@ -1,4 +1,4 @@
-import 'package:edu_proj/common/theme.dart';
+import 'package:edu_proj/common/app_theme.dart';
 import 'package:edu_proj/models/DataModel.dart';
 //import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,8 @@ class MyAppState extends State<MyApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: '',
-        theme: appTheme,
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
         home: MyHomePage(title: ''),
       );
     });

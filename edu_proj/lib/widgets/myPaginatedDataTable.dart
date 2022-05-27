@@ -75,7 +75,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         datamodel.tableSort(tableName, sortIndex, ascending, context);
 
         print('============columnIndex is $sortIndex, ascending is $ascending');
-        datamodel.notifyListeners();
+        datamodel.myNotifyListeners();
       }
 
       getTableColumns() {
@@ -183,11 +183,12 @@ class MyPaginatedDataTable extends StatelessWidget {
                 PaginatedDataTable(
               //header: MyLabel(data),
               key: tableInfo[gKey],
-              rowsPerPage: 5,
-              availableRowsPerPage: [5, 10, 20, 50],
+              rowsPerPage: datamodel.getRowsPerPage(tableInfo),
+              availableRowsPerPage: [5, 10, 15, 20, 50],
               onPageChanged: (e) {},
               onRowsPerPageChanged: (int v) {
                 //widget.onRowsPerPageChanged?.call(v ?? 10);
+                datamodel.setRowsPerPage(tableInfo, v);
               },
               columns: getTableColumns(),
               columnSpacing: 30,
