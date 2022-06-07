@@ -7,6 +7,7 @@ import 'package:edu_proj/widgets/MyForm.dart';
 import 'package:edu_proj/widgets/myButton.dart';
 import 'package:edu_proj/widgets/myIcon.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
+//import 'package:edu_proj/widgets/myTab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -54,6 +55,32 @@ class MyItem extends StatelessWidget {
         result.add(MyLabel(_param));
       } else if (_param[gType] == gSizedbox) {
         result.add(SizedBox(height: _param[gValue]));
+      } else if (_param[gType] == gTab) {
+        String tabID = _param[gValue];
+        var tab = datamodel.getTab(tabID, context);
+        if (tab == null) {
+          result.add(SizedBox(width: 100.0));
+          return result[0];
+        }
+        //var tabData = tab[gData];
+        result.add(Expanded(
+          //height: 50,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 50,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: tab[gData].length,
+                  itemBuilder: (context, index) =>
+                      datamodel.getTabByIndex(index, tabID),
+                ),
+              ),
+              Expanded(child: datamodel.getTabBody(tabID, context))
+            ],
+          ),
+        ));
+        //result.add(Expanded(child: datamodel.getTabBody(tabID, context)));
       } else {
         result.add(MyLabel({gLabel: "not available", gFontSize: 20.0}));
       }

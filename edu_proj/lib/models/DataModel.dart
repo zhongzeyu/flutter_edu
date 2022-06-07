@@ -256,7 +256,8 @@ class DataModel extends ChangeNotifier {
       param[gFormdetail][gItems][ti[gDbid]] = ti;
     }
     _formLists[data[gActionid]] = null;
-    setFormListOne(data[gActionid], param);
+
+    setFormListOne(data[gActionid], param[gFormdetail]);
   }
 
   Future<void> alert(BuildContext context, String msg) async {
@@ -578,34 +579,47 @@ class DataModel extends ChangeNotifier {
   getCard(List data, context, param0) {
     List<Widget> cardLists = [];
     data.forEach((element) {
-      cardLists.add(Card(
-        elevation: 2,
-        color: Color(_colorList[element[gColorIndex]]),
-        child: Scaffold(
-          appBar: AppBar(
-            title: getCardTitle(element),
-          ),
-          body: SingleChildScrollView(
-            child: Column(
-              children: getCardButtons(context, element, param0),
+      cardLists.add(Column(
+        children: [
+          getCardTitle(element),
+          SizedBox(height: 5),
+          /*Expanded(
+            child: ListView(
+              children: [
+                SizedBox(
+                  child: Text("0"),
+                  height: 20,
+                ),
+                SizedBox(
+                  child: Text("0"),
+                  height: 20,
+                ),
+                SizedBox(
+                  child: Text("0"),
+                  height: 20,
+                ),
+              ],
+              padding: EdgeInsets.all(8.0),
+            ),
+          ),*/
+          Expanded(
+            child: Card(
+              elevation: 4,
+              color: Color(_colorList[element[gColorIndex]]),
+              child: Scaffold(
+                body: SingleChildScrollView(
+                  child: Column(
+                    children: getCardButtons(context, element, param0),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-        /*child: Column(
-          children: <Widget>[
-            ListTile(
-              subtitle: getCardTitle(element),
-            ),
-            ButtonBar(
-              alignment: MainAxisAlignment.end,
-              children: getCardButtons(context, element, param0),
-            )
-          ],
-        ),*/
+        ],
       ));
     });
 
-    return GridView.count(crossAxisCount: 3, children: cardLists);
+    return GridView.count(crossAxisCount: 1, children: cardLists);
     /*ListView.builder(
 
     itemCount: data.length,
@@ -645,10 +659,41 @@ class DataModel extends ChangeNotifier {
 
   getCardButtons(context, data, param0) {
     List<Widget> list = [];
+
     if (data[gType] == gProcess) {
       List detail = data[gDetail];
+
       detail.forEach((element) {
-        list.add(TextButton(
+        list.add(Container(
+          padding: const EdgeInsets.all(gDefaultPaddin),
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 32,
+                offset: Offset(0, 8.toDouble()),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Theme.of(context).cardColor,
+            child: ListTile(
+              title: Text(getSCurrent(element[gLabel])),
+              trailing: MyIcon({
+                gValue: 0xf579,
+                gLabel: gExpanded,
+                //gAction: gLocalAction,
+              }),
+              onTap: () {
+                element[gColorIndex] = data[gColorIndex];
+                processTap(context, element, param0);
+              },
+            ),
+          ),
+        )
+            /*TextButton(
             style: TextButton.styleFrom(
               //padding: const EdgeInsets.all(10.0),
               //primary: fromBdckcolor(data[gColorIndex]),
@@ -658,7 +703,9 @@ class DataModel extends ChangeNotifier {
               element[gColorIndex] = data[gColorIndex];
               processTap(context, element, param0);
             },
-            child: Text(getSCurrent(element[gLabel]))));
+            child: Text(getSCurrent(element[gLabel])))*/
+
+            );
       });
     }
 
@@ -811,11 +858,6 @@ class DataModel extends ChangeNotifier {
             child: getTabBody(element[gData], context),
           ),
         );
-        /*widgetList.add(
-          Expanded(
-            child: getTabBody(element[gData], context),
-          ),
-        );*/
       } else if (type == gLabel) {
         Widget widget = MyLabel({
           gLabel: element[gLabel],
@@ -979,7 +1021,15 @@ class DataModel extends ChangeNotifier {
                 //setLocale(Locale('en'));
                 setLocale('en');
               },
-            )
+            ),
+      isNull(_myId)
+          ? Text("")
+          : Material(
+              child: MyIcon({
+              gValue: 0xf199,
+              gLabel: gLogout,
+              gAction: gLocalAction,
+            }))
     ];
   }
 
@@ -989,17 +1039,24 @@ class DataModel extends ChangeNotifier {
     /*for (int i = 0; i < _menuLists[menuName].length; i++) {
       items.add(Text(getSCurrent(_menuLists[menuName][i][gLabel])));
     }*/
+    if (_menuLists[menuName] == null) {
+      return items;
+    }
     _menuLists[menuName].forEach((element) {
       //items.add(Text(getSCurrent(map[gLabel])));
-      items.add(ListTile(
-        leading: Icon(getIconsByName(element[gIcon])),
-        title: Text(getSCurrent(element[
-            gLabel])), //MyLabel({gLabel: map[gLabel] + '', gFontSize: 20.0}),
-        onTap: () {
-          onTap(context, element);
-        },
-        //onTap: datamodel.onTap(context, map),
-      ));
+      if (element[gType] == gDivider) {
+        items.add(Divider());
+      } else {
+        items.add(ListTile(
+          leading: Icon(getIconsByName(element[gIcon])),
+          title: Text(getSCurrent(element[
+              gLabel])), //MyLabel({gLabel: map[gLabel] + '', gFontSize: 20.0}),
+          onTap: () {
+            onTap(context, element);
+          },
+          //onTap: datamodel.onTap(context, map),
+        ));
+      }
     });
     return items;
   }
@@ -1022,12 +1079,13 @@ class DataModel extends ChangeNotifier {
       if (initRequest == '') {
         List objList = [];
         objList.add({gType: gTab, gData: name});
-        return MyDynamicBody(objList);
+        //return MyDynamicBody(objList);
 
         //return MyTab(gMain);
       }
     }
-    return businessMyBody(name);
+    //return businessMyBody(name);
+    return null;
   }
 
   getParamTypeValue(param) {
@@ -1257,7 +1315,22 @@ class DataModel extends ChangeNotifier {
     return source0;
   }
 
+  getTab(tabname, context) {
+    if (_tabList[tabname] != null) {
+      return _tabList[tabname];
+    }
+    try {
+      sendRequestOne(gGetTab,
+          {gId: tabname, gCompany: _globalCompanyid, gEmail: _myId}, context);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   getTabBody(tabname, context) {
+    if (_tabList[tabname] == null) {
+      return Text(gNotavailable);
+    }
     dynamic data = _tabList[tabname][gData][_tabList[tabname][gTabIndex]];
     if (!(data[gVisible] ?? true)) {
       return null;
@@ -1908,6 +1981,8 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gSearch &&
         data[gTableID] != null) {
       searchTable(data, context);
+    } else if (data[gLabel] != null && data[gLabel] == gLogout) {
+      logOff();
     } else if (data[gAction] == gTextLink) {
       businessFunc(data[gAction1], context);
 
@@ -2026,9 +2101,9 @@ class DataModel extends ChangeNotifier {
           await setMyAction(actionData);
         } else if (action == gSetMyInfo) {
           await setMyInfo(actionData[0], context);
-        } else if (action == 'setMyMenu') {
+        } else if (action == gSetMyMenu) {
           await setMyMenu(actionData);
-        } else if (action == 'setMyTab') {
+        } else if (action == gSetMyTab) {
           await setMyTab(actionData);
         } else if (action == gSetI10n) {
           await setI10n(actionData);
@@ -2664,12 +2739,13 @@ class DataModel extends ChangeNotifier {
 
   setMyTab(List data) {
     int i = 0;
-    _tabList[gMain] = {};
-    _tabList[gMain][gData] = [];
 
     data.forEach((element) {
       List databodyNew = [];
       Map data0 = Map.of(element);
+      dynamic tabname = data0[gTabid];
+      _tabList[tabname] = {};
+      _tabList[tabname][gData] = [];
       List<dynamic> data0body = data0[gBody];
       data0body.forEach((element) {
         element = Map.of(element);
@@ -2682,10 +2758,9 @@ class DataModel extends ChangeNotifier {
       });
       data0[gBody] = databodyNew;
       data0[gIsselected] = true;
-      _tabList[gMain][gData].add(data0);
+      _tabList[tabname][gData].add(data0);
+      _tabList[tabname][gTabIndex] = 0;
     });
-
-    _tabList[gMain][gTabIndex] = 0;
 
     myNotifyListeners();
   }

@@ -49,6 +49,9 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
     }*/
 
     getItemActions(List actionItem, DataModel datamodel) {
+      if (actionItem == null) {
+        return null;
+      }
       List<Widget> items = [];
       items.add(datamodel.getLocalComponents(context));
       actionItem.forEach((element) {
@@ -79,11 +82,6 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
 
         return Scaffold(
           appBar: AppBar(
-            /*IconButton(
-              icon: Icon(Icons.menu),
-              onPressed: null,
-            ),*/
-
             title: Text(
                 datamodel.getSCurrent(datamodel.systemParams[gSystemTitle])),
             actions: getItemActions(datamodel.actionLists[gMain], datamodel),

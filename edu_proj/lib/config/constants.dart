@@ -61,6 +61,8 @@ const gDelimeterItem = '~';
 
 const gDetail = 'detail';
 const gDetailPage = 'detailPage';
+const gDivider = 'divider';
+
 const gDroplist = 'droplist';
 
 const gEdit = 'Edit';
@@ -86,6 +88,7 @@ const gFormName = 'formName';
 
 const gGetForm = 'getForm';
 const gGetImageLink = 'getImageLink';
+const gGetTab = 'getTab';
 const gGetTableData = 'getTableData';
 const gGetsessionkey = 'getsessionkey';
 
@@ -184,7 +187,9 @@ const gSearch = 'Search';
 const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';
+const gSetMyMenu = 'setMyMenu';
 const gSetMyInfo = 'setMyInfo';
+const gSetMyTab = 'setMyTab';
 const gSetI10n = 'setI10n';
 const gSetImgList = 'setImgList';
 const gSetSessionkey = 'setSessionkey';
@@ -204,6 +209,8 @@ const gSystem = 'system';
 const gSystemTitle = 'systemtitle';
 
 const gTab = 'tab';
+const gTabid = 'tabid';
+
 const gTabIndex = 'tabIndex';
 const gTabName = 'tabName';
 const gTable = 'table';

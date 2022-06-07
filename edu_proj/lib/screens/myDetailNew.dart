@@ -14,7 +14,14 @@ class MyDetailNew extends StatelessWidget {
     List mapActions = [];
     List mapBottoms = [];
     _param.forEach((key, value) {
+      if (value == null) {
+        return;
+      }
       Map mapItem = Map.of(value);
+      if (mapItem == null) {
+        return;
+      }
+
       mapItem.forEach((key1, value1) {
         if (key1 == gActions) {
           mapActions = value1;
@@ -31,6 +38,14 @@ class MyDetailNew extends StatelessWidget {
     });
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       //Size size = MediaQuery.of(context).size;
+      var aTxt = "";
+      if (!datamodel.isNull(datamodel.formLists[gLogin])) {
+        aTxt = datamodel.formLists[gLogin][gItems][gEmail][gDefaultValue];
+      }
+      Widget aWidget = Text(
+        aTxt,
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
       return Scaffold(
           //backgroundColor: _param[gBackgroundColor],
 
@@ -50,36 +65,69 @@ class MyDetailNew extends StatelessWidget {
                 //datamodel.getScreenItems(mapActions,context),
                 datamodel.getActions(mapActions, context),
           ),
-          body: Stack(
-            //clipBehavior: Clip.none,
-            fit: StackFit.expand,
-            children: [
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 82,
-                child: Container(
-                  //color: Colors.yellow,
-                  child: MyScreen(_param),
-                ),
+          drawer: Drawer(
+            child: MediaQuery.removePadding(
+              context: context,
+              // DrawerHeader consumes top MediaQuery padding.
+              removeTop: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 38.0),
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: ClipOval(
+                            child: Icon(Icons.person_outline),
+                          ),
+                        ),
+                        aWidget
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      children: datamodel.getMenuItems(gMain, context),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  //color: Colors.blueGrey,
-                  //child: datamodel.getDetailBottom(mapBottoms, context),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children:
-                          datamodel.getScreenItemsList(mapBottoms, context)
-                      //datamodel.getActions({gActions: mapBottoms}, context)),
-                      ),
+            ),
+          ),
+          body: SafeArea(
+            child: Stack(
+              //clipBehavior: Clip.none,
+              fit: StackFit.expand,
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 82,
+                  child: Container(
+                    //color: Colors.yellow,
+                    child: MyScreen(_param),
+                  ),
                 ),
-              ),
-            ],
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    //color: Colors.blueGrey,
+                    //child: datamodel.getDetailBottom(mapBottoms, context),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children:
+                            datamodel.getScreenItemsList(mapBottoms, context)
+                        //datamodel.getActions({gActions: mapBottoms}, context)),
+                        ),
+                  ),
+                ),
+              ],
+            ),
           ));
     });
   }
