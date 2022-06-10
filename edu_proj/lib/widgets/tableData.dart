@@ -1,6 +1,5 @@
 import 'package:edu_proj/config/constants.dart';
-//import 'package:edu_proj/widgets/myButton.dart';
-import 'package:edu_proj/widgets/myIcon.dart';
+import 'package:edu_proj/widgets/myButton.dart';
 import 'package:flutter/material.dart';
 
 class TableData extends DataTableSource {
@@ -26,15 +25,20 @@ class TableData extends DataTableSource {
 
   DataRow getRow(int index) {
     List<DataCell> dataCellList = [];
+    Map aparam = {
+      //gValue: 0xf00d,
+      //gLabel: gEdit,
+      gAction: gLocalAction,
+      gPadding: 0.0,
+      gWidth: 0.0,
+      gTableID: _param[gTableID],
+      gRow: (_param[gDataSearch] ?? _param[gData])[index],
+      gContext: _context
+    };
     if (_param[gAttr][gCanEdit]) {
-      dataCellList.add(DataCell(MyIcon({
-        gValue: 0xf00d,
-        gLabel: gEdit,
-        gAction: gLocalAction,
-        gTableID: _param[gTableID],
-        gRow: (_param[gDataSearch] ?? _param[gData])[index],
-        gContext: _context
-      })));
+      Map thisParam = new Map.from(aparam);
+      thisParam[gLabel] = gEdit;
+      dataCellList.add(DataCell(MyButton(thisParam)));
 
       /*dataCellList.add(DataCell(MyButton({
         gLabel: gEdit,
@@ -45,31 +49,22 @@ class TableData extends DataTableSource {
       })));*/
     }
     if (_param[gAttr][gCanDelete]) {
-      dataCellList.add(DataCell(MyIcon({
-        gValue: 0xefaa,
-        gLabel: gDelete,
-        gAction: gLocalAction,
-        gTableID: _param[gTableID],
-        gRow: (_param[gDataSearch] ?? _param[gData])[index],
-        gContext: _context
-      })));
-
-      /*dataCellList.add(DataCell(MyButton({
-        gLabel: gDelete,
-        gAction: gLocalAction,
-        gTableID: _param[gTableID],
-        gRow: index
-      })));*/
+      Map thisParam = new Map.from(aparam);
+      thisParam[gLabel] = gDelete;
+      dataCellList.add(DataCell(MyButton(thisParam)));
     }
     if ((_param[gAttr][gDetail] ?? "") != "") {
-      dataCellList.add(DataCell(MyIcon({
+      Map thisParam = new Map.from(aparam);
+      thisParam[gLabel] = gDetail;
+      dataCellList.add(DataCell(MyButton(thisParam)));
+      /*dataCellList.add(DataCell(MyIcon({
         gValue: 0xee90,
         gLabel: gDetail,
         gAction: gLocalAction,
         gTableID: _param[gTableID],
         gRow: (_param[gDataSearch] ?? _param[gData])[index],
         gContext: _context
-      })));
+      })));*/
     }
 
     for (int i = 0; i < _param[gColumns].length; i++) {

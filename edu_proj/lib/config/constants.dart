@@ -151,6 +151,7 @@ const gOrderby = "orderby";
 const gOptLock = "zzyoptlock";
 const gOther = 'other';
 
+const gPadding = 'padding';
 const gPagetable = 'pagetable';
 const gParam0 = 'param0';
 const gParentid = 'parentid';

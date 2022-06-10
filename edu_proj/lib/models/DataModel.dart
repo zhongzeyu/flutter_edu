@@ -577,84 +577,30 @@ class DataModel extends ChangeNotifier {
   }
 
   getCard(List data, context, param0) {
-    List<Widget> cardLists = [];
+    List<Widget> items = [];
     data.forEach((element) {
-      cardLists.add(Column(
-        children: [
-          getCardTitle(element),
-          SizedBox(height: 5),
-          /*Expanded(
-            child: ListView(
-              children: [
-                SizedBox(
-                  child: Text("0"),
-                  height: 20,
-                ),
-                SizedBox(
-                  child: Text("0"),
-                  height: 20,
-                ),
-                SizedBox(
-                  child: Text("0"),
-                  height: 20,
-                ),
-              ],
-              padding: EdgeInsets.all(8.0),
-            ),
-          ),*/
-          Expanded(
-            child: Card(
-              elevation: 4,
-              color: Color(_colorList[element[gColorIndex]]),
-              child: Scaffold(
-                body: SingleChildScrollView(
-                  child: Column(
-                    children: getCardButtons(context, element, param0),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ));
+      Widget testWidget =
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        getCardTitle(element),
+        SizedBox(height: 5),
+        Wrap(
+          spacing: 8.0, //gap between adjacent items
+          runSpacing: 4.0, //gap between lines
+          direction: Axis.horizontal,
+          children: getCardButtons(context, element, param0),
+        )
+      ]);
+
+      items.add(testWidget);
     });
 
-    return GridView.count(crossAxisCount: 1, children: cardLists);
-    /*ListView.builder(
-
-    itemCount: data.length,
-      scrollDirection: Axis.horizontal,
+    return ListView.builder(
+      itemCount: items.length,
       itemBuilder: (context, index) {
-        GridView.count(
-          crossAxisCount: 4,
-        return Card(
-          elevation: 2,
-          color: Color(_colorList[data[index][gColorIndex]]),
-          child: Padding(
-            padding: EdgeInsets.all(2),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      getCardTitle(data[index]),
-                      //Spacer(),
-                      //cryptoChange(),
-                    ],
-                  ),
-                  ButtonBar(
-                    alignment: MainAxisAlignment.end,
-                    children: getCardButtons(context, data[index], param0),
-                  )
-                ],
-              ),
-            ),
-          ),
-        );
-        
+        final item = items[index];
+        return ListTile(title: item);
       },
-    );*/
+    );
   }
 
   getCardButtons(context, data, param0) {
@@ -662,13 +608,19 @@ class DataModel extends ChangeNotifier {
 
     if (data[gType] == gProcess) {
       List detail = data[gDetail];
-
+      int colorIndex = -1;
       detail.forEach((element) {
+        colorIndex += 1;
+        if (colorIndex >= _colorList.length) {
+          colorIndex = 0;
+        }
         list.add(Container(
-          padding: const EdgeInsets.all(gDefaultPaddin),
+          padding: const EdgeInsets.all(15.0),
+          margin: const EdgeInsets.all(5.0),
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(16),
+            color: Color(_colorList[colorIndex]),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.08),
@@ -677,7 +629,17 @@ class DataModel extends ChangeNotifier {
               ),
             ],
           ),
-          child: Material(
+          child: InkWell(
+            child: MyLabel({
+              gLabel: getSCurrent(element[gLabel]),
+              gColor: fromBdckcolor(_colorList[colorIndex])
+            }),
+            onTap: () {
+              element[gColorIndex] = data[gColorIndex];
+              processTap(context, element, param0);
+            },
+          ),
+          /*Material(
             color: Theme.of(context).cardColor,
             child: ListTile(
               title: Text(getSCurrent(element[gLabel])),
@@ -691,7 +653,7 @@ class DataModel extends ChangeNotifier {
                 processTap(context, element, param0);
               },
             ),
-          ),
+          ),*/
         )
             /*TextButton(
             style: TextButton.styleFrom(
@@ -713,9 +675,12 @@ class DataModel extends ChangeNotifier {
   }
 
   getCardTitle(data) {
-    if (data[gType] == gProcess)
+    /*if (data[gType] == gProcess)
       return getTxtImage(
-          data[gLabel], _colorList[data[gColorIndex]], 15.0, 2.0, 2.0);
+          data[gLabel], _colorList[data[gColorIndex]], 15.0, 2.0, 2.0);*/
+    return MyLabel({
+      gLabel: data[gLabel],
+    });
   }
 
   getDetailBottom(param, context) {
@@ -1141,22 +1106,42 @@ class DataModel extends ChangeNotifier {
     result.add(getMyItem(list[_picIndex], context));
     List<Widget> dotList = [];
     for (int i = 0; i < list.length; i++) {
+      dotList.add(SizedBox(width: 20));
       dotList.add(Material(
         child: InkWell(
-          onTap: () {
-            _picIndex = i;
-            myNotifyListeners();
-          },
-          child: /*MyPic(
+            onTap: () {
+              _picIndex = i;
+              myNotifyListeners();
+            },
+            child: Container(
+              width: 24.0,
+              height: 24.0,
+              margin: EdgeInsets.all(5.0),
+              padding: EdgeInsets.all(2.5),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Color(0xFF356C95)),
+                //color: Colors.transparent,
+              ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: (i == _picIndex) ? Colors.yellow : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              //color: Colors.transparent,
+              //margin: EdgeInsets.all(15.0),
+              /*child: getMyItem({
+                gType: gImg,
+                gValue: ((i == _picIndex) ? 'bright' : 'dark') + 'dot'
+              }, context),*/
+            ) /*MyPic(
               {gImg: _imgList[((i == _picIndex) ? 'bright' : 'dark') + 'dot']}),*/
-              getMyItem({
-            gType: gImg,
-            gValue: ((i == _picIndex) ? 'bright' : 'dark') + 'dot'
-          }, context),
-          /*Image.asset(
+
+            /*Image.asset(
                 '/images/' + ((i == _picIndex) ? 'bright' : 'dark') + 'dot.png',
                 package: packageName)*/
-        ),
+            ),
       ));
     }
     result.add(
@@ -1521,13 +1506,14 @@ class DataModel extends ChangeNotifier {
 
   getTableBody(data, context) {
     //_tableList[tableName][gKey] = UniqueKey();
-    return Column(
+    return MyPaginatedDataTable({gData: data});
+    /*return Column(
       children: [
         Expanded(
           child: MyPaginatedDataTable({gData: data}),
         ),
       ],
-    );
+    );*/
   }
 
   /*getTabItems() {

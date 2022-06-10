@@ -13,9 +13,9 @@ class MyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       return Padding(
-        padding: const EdgeInsets.all(18.0),
+        padding: EdgeInsets.all(this._param[gPadding] ?? 18.0),
         child: SizedBox(
-          child: ElevatedButton(
+          child: /*OutlinedButton(
             onPressed: () {
               datamodel.sendRequestOne(
                   _param[gAction], _param, this._param[gContext] ?? context);
@@ -24,7 +24,21 @@ class MyButton extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50)),
-              minimumSize: Size(200, 40),
+              minimumSize:
+                  Size(this._param[gWidth] ?? 200, this._param[gHeight] ?? 40),
+            ),
+          ),*/
+              ElevatedButton(
+            onPressed: () {
+              datamodel.sendRequestOne(
+                  _param[gAction], _param, this._param[gContext] ?? context);
+            },
+            child: MyLabel(_param),
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
+              minimumSize:
+                  Size(this._param[gWidth] ?? 200, this._param[gHeight] ?? 40),
             ),
           ),
         ),

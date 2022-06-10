@@ -12,8 +12,12 @@ class MainPage extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       datamodel.setScreenSize(size);
-      return Center(
-        child: Image.network(datamodel.imgList[gMain]),
+      return Container(
+        margin: EdgeInsets.all(10.0),
+        color: Colors.white,
+        child: Center(
+          child: Image.network(datamodel.imgList[gMain]),
+        ),
       );
     });
   }

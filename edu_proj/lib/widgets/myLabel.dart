@@ -13,6 +13,7 @@ class MyLabel extends StatelessWidget {
       if (_param != null && (_param[gLabel] ?? _param[gValue]) != null) {
         Text text = Text(
           datamodel.getSCurrent(_param[gLabel] ?? _param[gValue]),
+          //textAlign: TextAlign.left,
           style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: _param[gFontSize],

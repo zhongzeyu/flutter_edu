@@ -26,6 +26,7 @@ class MyAppState extends State<MyApp> {
         title: '',
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
+        //darkTheme: AppTheme.light(),
         home: MyHomePage(title: ''),
       );
     });

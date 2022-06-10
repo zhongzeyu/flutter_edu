@@ -1,5 +1,5 @@
 // @dart=2.9
-import 'package:edu_proj/common/theme.dart';
+//import 'package:edu_proj/common/theme.dart';
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 //import 'package:edu_proj/screens/myDetail.dart';
@@ -160,7 +160,7 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: tableTheme,
+        //theme: tableTheme,
         home: Scaffold(
           appBar: AppBar(
             /*title: TextFieldWidgetOne(
