@@ -13,7 +13,8 @@ class TextFieldWidget extends StatelessWidget {
     this.item,
   });
   _getWidth() {
-    return item.value[gWidth];
+    return null;
+    //item.value[gWidth] ?? null;
   }
 
   textChange(
@@ -45,6 +46,8 @@ class TextFieldWidget extends StatelessWidget {
               datamodel.myNotifyListeners();
             });
       }
+      item.value[gTxtEditingController].selection = TextSelection.fromPosition(
+          TextPosition(offset: item.value[gTxtEditingController].text.length));
       return Container(
         width: _getWidth(),
         child: TextFormField(

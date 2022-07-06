@@ -48,10 +48,9 @@ class MyDetailNew extends StatelessWidget {
       );
       return Scaffold(
           //backgroundColor: _param[gBackgroundColor],
-
           appBar: AppBar(
             //backgroundColor: _param[gColor],
-            elevation: 0,
+            //elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back),
               onPressed: () {
@@ -59,6 +58,7 @@ class MyDetailNew extends StatelessWidget {
               },
             ),
             title: datamodel.getTitle(_param, context),
+
             //title: const TextBox(),
             actions:
                 //other icons
@@ -97,38 +97,48 @@ class MyDetailNew extends StatelessWidget {
             ),
           ),
           body: SafeArea(
-            child: Stack(
-              //clipBehavior: Clip.none,
-              fit: StackFit.expand,
+            child: Column(
               children: [
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 82,
-                  child: Container(
-                    //color: Colors.yellow,
-                    child: MyScreen(_param),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    //color: Colors.blueGrey,
-                    //child: datamodel.getDetailBottom(mapBottoms, context),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children:
-                            datamodel.getScreenItemsList(mapBottoms, context)
-                        //datamodel.getActions({gActions: mapBottoms}, context)),
-                        ),
-                  ),
-                ),
+                //Expanded(child: PicsAndButtons(datamodel.screenLists[_name])),
+                Expanded(child: MyScreen(_param)),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: datamodel.getScreenItemsList(mapBottoms, context)
+                    //datamodel.getActions({gActions: mapBottoms}, context)),
+                    ),
               ],
             ),
-          ));
+          )
+          /*Stack(
+            //clipBehavior: Clip.none,
+            //fit: StackFit.expand,
+            alignment: AlignmentDirectional.topEnd,
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 9,
+                child: MyScreen(_param),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  //color: Colors.blueGrey,
+                  //child: datamodel.getDetailBottom(mapBottoms, context),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children:
+                          datamodel.getScreenItemsList(mapBottoms, context)
+                      //datamodel.getActions({gActions: mapBottoms}, context)),
+                      ),
+                ),
+              ),
+            ],
+          )*/
+          );
     });
   }
 }

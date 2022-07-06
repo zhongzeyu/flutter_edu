@@ -2,14 +2,16 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+//import 'dart:io';
 import 'package:crypto/crypto.dart';
+//import 'package:dio/dio.dart';
 import 'package:edu_proj/config/MyConfig.dart';
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/screens/MyDynamicBody.dart';
-import 'package:edu_proj/screens/MyMain.dart';
+//import 'package:edu_proj/screens/MyMain.dart';
 import 'package:edu_proj/screens/firstPage.dart';
 import 'package:edu_proj/screens/mainPage.dart';
-import 'package:edu_proj/screens/myDetail.dart';
+//import 'package:edu_proj/screens/myDetail.dart';
 import 'package:edu_proj/screens/myDetailNew.dart';
 import 'package:edu_proj/utils/AES.dart';
 import 'package:edu_proj/widgets/myIcon.dart';
@@ -17,7 +19,7 @@ import 'package:edu_proj/widgets/MyForm.dart';
 import 'package:edu_proj/widgets/myButton.dart';
 import 'package:edu_proj/widgets/myItem.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
-import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
+//import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
 import 'package:edu_proj/widgets/myPic.dart';
 import 'package:edu_proj/widgets/myScreen.dart';
 //import 'package:edu_proj/widgets/myTree.dart';
@@ -46,7 +48,7 @@ class DataModel extends ChangeNotifier {
   Map _systemParams = {gSystemTitle: gSystemTitle};
   int _lastBackGroundColor = 4280391411;
   final int _requestCntMax = 10;
-  String _firstFormName = '';
+  //String _firstFormName = '';
   http.Client httpClient = http.Client();
   //Locale _locale = const Locale('en', '');
   String _locale = 'en';
@@ -293,7 +295,7 @@ class DataModel extends ChangeNotifier {
         Map bi = btnList[i];
         result.add(
           SizedBox(
-            height: 10,
+            height: 10.0,
           ),
         );
 
@@ -415,13 +417,13 @@ class DataModel extends ChangeNotifier {
       //return MyWait();
       return MainPage();
     }
-
-    if (_token == '' || _myId == '') {
+    return _firstPage;
+    /*if (_token == '' || _myId == '') {
       if (_firstFormName == gFirstPage) {
         return _firstPage;
       }
     }
-    return MyMain();
+    return MyMain();*/
   }
 
   forgetpassword(context) {
@@ -582,7 +584,7 @@ class DataModel extends ChangeNotifier {
       Widget testWidget =
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         getCardTitle(element),
-        SizedBox(height: 5),
+        SizedBox(height: 5.0),
         Wrap(
           spacing: 8.0, //gap between adjacent items
           runSpacing: 4.0, //gap between lines
@@ -608,54 +610,58 @@ class DataModel extends ChangeNotifier {
 
     if (data[gType] == gProcess) {
       List detail = data[gDetail];
-      int colorIndex = -1;
-      detail.forEach((element) {
-        colorIndex += 1;
-        if (colorIndex >= _colorList.length) {
-          colorIndex = 0;
-        }
-        list.add(Container(
-          padding: const EdgeInsets.all(15.0),
-          margin: const EdgeInsets.all(5.0),
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Color(_colorList[colorIndex]),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 32,
-                offset: Offset(0, 8.toDouble()),
-              ),
-            ],
-          ),
-          child: InkWell(
-            child: MyLabel({
-              gLabel: getSCurrent(element[gLabel]),
-              gColor: fromBdckcolor(_colorList[colorIndex])
-            }),
-            onTap: () {
-              element[gColorIndex] = data[gColorIndex];
-              processTap(context, element, param0);
-            },
-          ),
-          /*Material(
-            color: Theme.of(context).cardColor,
-            child: ListTile(
-              title: Text(getSCurrent(element[gLabel])),
-              trailing: MyIcon({
-                gValue: 0xf579,
-                gLabel: gExpanded,
-                //gAction: gLocalAction,
-              }),
-              onTap: () {
-                element[gColorIndex] = data[gColorIndex];
-                processTap(context, element, param0);
-              },
+      dynamic params = {gType: gTab, gName: param0};
+      list = getButtonsList(context, detail, data[gColorIndex], params);
+    }
+    return list;
+  }
+
+  getButtonsList(context, detail, colorIndex, params) {
+    List<Widget> list = [];
+
+    int colorIndex = -1;
+    detail.forEach((element) {
+      colorIndex += 1;
+      if (colorIndex >= _colorList.length) {
+        colorIndex = 0;
+      }
+      list.add(Container(
+        padding: const EdgeInsets.all(5.0),
+        margin: const EdgeInsets.all(5.0),
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5.0),
+          color: Color(_colorList[colorIndex]),
+          /*boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 32.0,
+              offset: Offset(0, 8.toDouble()),
             ),
-          ),*/
-        )
-            /*TextButton(
+          ],*/
+        ),
+        child: InkWell(
+          child: MyLabel({
+            gLabel: getSCurrent(element[gLabel]),
+            gColor: fromBdckcolor(_colorList[colorIndex])
+          }),
+          onTap: () {
+            element[gColorIndex] = colorIndex;
+            if (params[gType] == gTab) {
+              processTap(context, element, params[gName]);
+            } else if (params[gAction] == gTable) {
+              if (element[gLabel] == gAddnew) {
+                element[gTableID] = params[gValue];
+                tableAddNew(element, context);
+              } else if (element[gLabel] == gPdf) {
+                element[gTableID] = params[gValue];
+                toPdf(element, context);
+              }
+            }
+          },
+        ),
+      )
+          /*TextButton(
             style: TextButton.styleFrom(
               //padding: const EdgeInsets.all(10.0),
               //primary: fromBdckcolor(data[gColorIndex]),
@@ -667,9 +673,8 @@ class DataModel extends ChangeNotifier {
             },
             child: Text(getSCurrent(element[gLabel])))*/
 
-            );
-      });
-    }
+          );
+    });
 
     return list;
   }
@@ -813,9 +818,9 @@ class DataModel extends ChangeNotifier {
             ),
           ),
         );
-        double bodyheight = _sceenSize.height - 125;
-        if (bodyheight < 20) {
-          bodyheight = 20;
+        double bodyheight = _sceenSize.height - 125.0;
+        if (bodyheight < 20.0) {
+          bodyheight = 20.0;
         }
         widgetList.add(
           SizedBox(
@@ -1070,11 +1075,13 @@ class DataModel extends ChangeNotifier {
     }
 
     List<Widget> result = [];
-    result.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-      MyPic(list[_picIndex]),
-      SizedBox(width: gDefaultPaddin),
-      MyLabel(list[_picIndex]),
-    ]));
+    result.add(Expanded(
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        MyPic(list[_picIndex]),
+        SizedBox(width: gDefaultPaddin),
+        MyLabel(list[_picIndex]),
+      ]),
+    ));
     List<Widget> dotList = [];
     for (int i = 0; i < list.length; i++) {
       dotList.add(Material(
@@ -1098,54 +1105,48 @@ class DataModel extends ChangeNotifier {
 
   getRadios(param, context) {
     List list = param;
-    if (_picIndex >= list.length) {
+    /*if (_picIndex >= list.length) {
       _picIndex = 0;
-    }
+    }*/
 
     List<Widget> result = [];
+    for (int i = 0; i < list.length; i++) {
+      result.add(getMyItem(list[i], context));
+    }
+
+    /*
     result.add(getMyItem(list[_picIndex], context));
     List<Widget> dotList = [];
     for (int i = 0; i < list.length; i++) {
       dotList.add(SizedBox(width: 20));
       dotList.add(Material(
-        child: InkWell(
-            onTap: () {
-              _picIndex = i;
-              myNotifyListeners();
-            },
-            child: Container(
-              width: 24.0,
-              height: 24.0,
-              margin: EdgeInsets.all(5.0),
-              padding: EdgeInsets.all(2.5),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Color(0xFF356C95)),
-                //color: Colors.transparent,
-              ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: (i == _picIndex) ? Colors.yellow : Colors.transparent,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              //color: Colors.transparent,
-              //margin: EdgeInsets.all(15.0),
-              /*child: getMyItem({
-                gType: gImg,
-                gValue: ((i == _picIndex) ? 'bright' : 'dark') + 'dot'
-              }, context),*/
-            ) /*MyPic(
-              {gImg: _imgList[((i == _picIndex) ? 'bright' : 'dark') + 'dot']}),*/
-
-            /*Image.asset(
-                '/images/' + ((i == _picIndex) ? 'bright' : 'dark') + 'dot.png',
-                package: packageName)*/
+        child: Container(
+          width: 24.0,
+          height: 24.0,
+          margin: EdgeInsets.all(5.0),
+          padding: EdgeInsets.all(2.5),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Color(0xFF356C95)),
+            //color: Colors.transparent,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: (i == _picIndex) ? Colors.yellow : Colors.transparent,
+              shape: BoxShape.circle,
             ),
+          ),
+          //color: Colors.transparent,
+          //margin: EdgeInsets.all(15.0),
+          /*child: getMyItem({
+            gType: gImg,
+            gValue: ((i == _picIndex) ? 'bright' : 'dark') + 'dot'
+          }, context),*/
+        ),
       ));
     }
     result.add(
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: dotList));
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: dotList));*/
     return result;
   }
 
@@ -1194,14 +1195,15 @@ class DataModel extends ChangeNotifier {
 
   getScreenItems(param, context) {
     List<Widget> result = [];
+    result.add(SizedBox(height: 4.5));
     //Map map = Map.of(param[gItems]);
     Map map = Map.of(param);
     map.forEach((key, value) {
       Map mapItem = Map.of(value);
       Widget itemWidget = getScreenItem(mapItem, context);
       if (itemWidget != null) {
+        //result.add(SizedBox(height: 0.5));
         result.add(itemWidget);
-        result.add(SizedBox(height: gDefaultPaddin));
       }
     });
     return result;
@@ -1248,6 +1250,10 @@ class DataModel extends ChangeNotifier {
   }
 
   getSCurrent(dynamic sourceOriginal) {
+    return getSCurrentLan(sourceOriginal, _locale);
+  }
+
+  getSCurrentLan(dynamic sourceOriginal, lancode) {
     String source0 = sourceOriginal + "";
     String sourceLocase = source0.toLowerCase();
     String source = sourceLocase;
@@ -1256,7 +1262,7 @@ class DataModel extends ChangeNotifier {
       sourceChck = sourceChck.substring(0, sourceChck.indexOf("{"));
     }
     if (_i10nMap[sourceChck] != null) {
-      String result = _i10nMap[sourceChck][_locale];
+      String result = _i10nMap[sourceChck][lancode];
       if (result != null) {
         while ((result.indexOf('}') > 0 && result.indexOf('{') >= 0)) {
           String result0 = result.substring(0, result.indexOf('{'));
@@ -1277,7 +1283,7 @@ class DataModel extends ChangeNotifier {
 
         if (sourceLocase == result.toLowerCase()) {
           return source0;
-        } else if (sourceLocase != source0 && _locale == 'en') {
+        } else if (sourceLocase != source0 && lancode == 'en') {
           //upper case
           return result.substring(0, 1).toUpperCase() + result.substring(1);
         }
@@ -1289,7 +1295,7 @@ class DataModel extends ChangeNotifier {
       String s0Result = getSCurrent(s0);
       String s1Result = getSCurrent(s1);
       String delimiter = ' ';
-      if (_locale == 'zh') {
+      if (lancode == 'zh') {
         if (s0 != s0Result && s1 != s1Result) {
           delimiter = '';
         }
@@ -1324,6 +1330,7 @@ class DataModel extends ChangeNotifier {
       return getCard(data[gBody], context, tabname);
     } else if (data[gType] == gTable) {
       //String tableName = data[gActionid];
+      data[gTabName] = tabname;
       return getTableBody(data, context);
       /*return Column(
         children: [
@@ -1358,7 +1365,7 @@ class DataModel extends ChangeNotifier {
     }
     titleWidgets.add(Text(getSCurrent(dataThis[gLabel]),
         style: TextStyle(
-            fontSize: 30.0,
+            fontSize: 24.0,
             fontWeight: index == _tabList[tabName][gTabIndex]
                 ? FontWeight.bold
                 : FontWeight.normal,
@@ -1393,7 +1400,7 @@ class DataModel extends ChangeNotifier {
         myNotifyListeners();
       },
       child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1401,9 +1408,9 @@ class DataModel extends ChangeNotifier {
                 children: titleWidgets,
               ),
               Container(
-                margin: EdgeInsets.only(top: 20 / 4),
-                height: 2,
-                width: 30,
+                margin: EdgeInsets.only(top: 20.0 / 4),
+                height: 2.0,
+                width: 30.0,
                 color: index == _tabList[tabName][gTabIndex]
                     ? Colors.black
                     : Colors.transparent,
@@ -1445,7 +1452,7 @@ class DataModel extends ChangeNotifier {
 
   getTableItemByName(tableInfo, itemName, value) {
     MapEntry item = MapEntry(itemName, {
-      gWidth: 150,
+      gWidth: 150.0,
       gType: itemName,
       gLabel: itemName,
       gFocus: false,
@@ -1505,8 +1512,51 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableBody(data, context) {
+    return MyScreen(getTableBodyParam(data, context));
+  }
+
+  getTableBodyParam(data, context) {
     //_tableList[tableName][gKey] = UniqueKey();
-    return MyPaginatedDataTable({gData: data});
+    String tableName = data[gActionid] ?? data[gTableID];
+    //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+
+    Map tableInfo = _tableList[tableName];
+    //List tableData = tableInfo[gData];
+    //List columns = tableInfo[gColumns];
+
+    Map param = {};
+    int index = 0;
+    param[index++] = {
+      gItem: jsonEncode({
+        gType: gSearch,
+        gAction: gLocalAction,
+        gTableID: tableName,
+        gLabel: gSearch,
+      })
+    };
+    if (tableInfo[gAttr][gCanEdit]) {
+      List detail = [
+        {gLabel: gAddnew},
+        {gLabel: gPdf}
+      ];
+
+      param[index++] = {
+        gItem: jsonEncode(
+            {gType: gBtns, gAction: gTable, gValue: tableName, gItems: detail})
+      };
+    }
+    param[index++] = {
+      gItem: jsonEncode({gType: gTableEditor, gName: tableName})
+    };
+/*return Column(
+        children: [
+          Expanded(
+            child: MyPaginatedDataTable({gName: tableName}),
+          ),
+        ],
+      );*/
+    return param;
+    //return MyPaginatedDataTable({gData: data});
     /*return Column(
       children: [
         Expanded(
@@ -1615,7 +1665,15 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableRowShowValueFilter(item, colList, context, filterValue) {
+    return getTableRowShowValueFilterMapOrList(
+        item, colList, context, filterValue, true);
+  }
+
+  getTableRowShowValueFilterMapOrList(
+      item, colList, context, filterValue, mapOrList) {
     Map result = {};
+    List resultList = [];
+
     if (colList == null || colList.length < 1) {
       return item;
     }
@@ -1627,8 +1685,13 @@ class DataModel extends ChangeNotifier {
       var ci = colList[i];
       var colIndex = i;
       if (!isNull(item[ci[gId]])) {
-        result[ci[gId]] =
-            getTableCellValueFromDataRow(item, colList, colIndex, context);
+        var oneValue =
+            getTableCellValueFromDataRow(item, colList, colIndex, context) ??
+                '';
+        result[ci[gId]] = oneValue;
+        if (!isHiddenColumn(colList, i)) {
+          resultList.add(oneValue);
+        }
         if (!filterValueExists) {
           if (!isHiddenColumn(colList, i)) {
             if (!isNull(result[ci[gId]]) &&
@@ -1642,7 +1705,10 @@ class DataModel extends ChangeNotifier {
     if (!filterValueExists) {
       return null;
     }
-    return result;
+    if (mapOrList) {
+      return result;
+    }
+    return resultList;
   }
 
   getTableRowShowValueByTablename(item, tablename, context) {
@@ -1665,6 +1731,10 @@ class DataModel extends ChangeNotifier {
   getTableValueKeyFromColumns(columns, dataRow) {
     var result = "";
     var sep = "";
+    if (dataRow == null) {
+      result = gAddnew;
+      return result;
+    }
     columns.forEach((element) {
       if ((element[gIsKeyword] ?? false)) {
         var value = dataRow[element[gId]];
@@ -1866,6 +1936,10 @@ class DataModel extends ChangeNotifier {
       showFormEdit(data, context);
       showTableForm(data, context);
     } else if (data[gLabel] != null &&
+        data[gLabel] == gAddnew &&
+        data[gTableID] != null) {
+      tableAddNew(data, context);
+    } else if (data[gLabel] != null &&
         data[gLabel] == gDelete &&
         data[gTableID] != null) {
       var tableId = data[gTableID];
@@ -2019,7 +2093,7 @@ class DataModel extends ChangeNotifier {
       gType: gForm
     };
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => MyDetail(param)));
+        context, MaterialPageRoute(builder: (context) => MyDetailNew(param)));
   }
 
   processRequest(dataRequest, context) async {
@@ -2097,17 +2171,19 @@ class DataModel extends ChangeNotifier {
           await setInitForm(actionData);
         } else if (action == gSetSessionkey) {
           await setSessionkey(actionData[0]['key']);
-        } else if (action == 'setTableList') {
+        } else if (action == gSetTableList) {
           await setTableList(actionData, context);
         } else if (action == gShowErr) {
           actionData[0] = Map.of(actionData[0]);
           showMsg(context, actionData[0]['errMsg']);
           //throw actionData[0]['errMsg'];
+        } else if (action == gShowpdf) {
+          await showPDF(actionData, context);
         } else if (action == gShowScreenPage) {
           await showScreenPage(actionData, context);
-        } else if (action == 'setFormList') {
+        } else if (action == gSetFormList) {
           await setFormList(actionData);
-        } else if (action == 'showTable') {
+        } else if (action == gShowTable) {
           await showTable(actionData[0][gTableID], context,
               actionData[0][gLabel] ?? "", "");
         }
@@ -2536,6 +2612,47 @@ class DataModel extends ChangeNotifier {
     );
   }
 
+  showPDF(actionData, context) {
+    String filename = '';
+    for (int i = 0; i < actionData.length; i++) {
+      Map<String, dynamic> ai = Map.of(actionData[i]);
+      filename = ai[gFilename];
+    }
+    if (filename == '') {
+      return;
+    }
+
+    //download file
+    sendRequestOne(gFiledownload, {gFilename: filename}, context);
+  }
+
+  downloadFile(actionData, context) async {
+    String filename = '';
+    for (int i = 0; i < actionData.length; i++) {
+      Map<String, dynamic> ai = Map.of(actionData[i]);
+      filename = ai[gFilename];
+    }
+    if (filename == '') {
+      return;
+    }
+    sendRequestOne('filedownload', {gFilename: filename}, context);
+
+    /*//save file to local
+    var dio = Dio();
+    Response response = await dio.get('');
+    print(response.data);
+    File file = new File(filename);
+    file.writeAsBytesSync(response.data);
+
+    /// 写入文件
+
+    //show file
+    if (filename.indexOf(".pdf") > 0) {
+      //pdfviewer
+    }
+    return file;*/
+  }
+
   showScreenPage(actionData, context) {
     for (int i = 0; i < actionData.length; i++) {
       Map<String, dynamic> ai = actionData[i];
@@ -2554,7 +2671,7 @@ class DataModel extends ChangeNotifier {
       _screenLists[name] = Map.of(data);
       if (type == gScreen) {
         if (name == gFirstPage) {
-          _firstFormName = name;
+          //_firstFormName = name;
 
           MyScreen aScreen = MyScreen(_screenLists[name]);
           _firstPage = FirstPage(aScreen);
@@ -2566,11 +2683,11 @@ class DataModel extends ChangeNotifier {
               MaterialPageRoute(
                   builder: (context) => MyDetailNew(_screenLists[name])));
         }
-      } else if (type == gDetailPage) {
+      } else {
         MyScreen aScreen = MyScreen(_screenLists[name]);
         Map param = {gLabel: name, gScreen: aScreen};
-        Navigator.push(
-            context, MaterialPageRoute(builder: (context) => MyDetail(param)));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => MyDetailNew(param)));
       }
     }
     myNotifyListeners();
@@ -2606,20 +2723,14 @@ class DataModel extends ChangeNotifier {
   showTableForm(data, context) {
     //int index = data[gRow] ?? -1;
     var tableName = data[gActionid] ?? data[gTableID];
-    Map<String, dynamic> formdetail = _formLists[tableName];
 
     //Map ti = getTableRowShowValueByTablename(data[gRow], tableName, context);
     //Map dataRow = data[gRow];
-    /*String title = tableName;
-    if (formdetail[gImgTitle] != null) {
-      if (formdetail[gImgTitle][gTitle] != null) {
-        title = formdetail[gImgTitle][gTitle];
-      }
-    }*/
-    List actionData = [
+
+    /*List actionData = [
       {
         gName: gDetailPage,
-        gData: {
+        gItems: {
           gType: gForm,
           gFormdetail: Map.of(formdetail),
           gActions: [],
@@ -2629,7 +2740,24 @@ class DataModel extends ChangeNotifier {
           //gData: dataRow
         },
       }
+    ];*/
+    var keyValue = getTableValueKey(tableName, data[gRow]);
+    List actionData = [
+      {
+        gName: tableName,
+        gType: gScreen,
+        gItems: {
+          0: {
+            gItem:
+                jsonEncode({gType: gLabel, gValue: keyValue, gFontSize: 24.0})
+          },
+          1: {
+            gItem: jsonEncode({gType: gForm, gValue: tableName})
+          }
+        },
+      }
     ];
+
     showScreenPage(actionData, context);
   }
 
@@ -2653,7 +2781,7 @@ class DataModel extends ChangeNotifier {
   }
 
   setInitForm(actionData) {
-    _firstFormName = actionData[0][gName];
+    //_firstFormName = actionData[0][gName];
     myNotifyListeners();
   }
 
@@ -2797,7 +2925,7 @@ class DataModel extends ChangeNotifier {
                       physics: const ClampingScrollPhysics(),
                       child: Text(
                         result.toString(),
-                        style: TextStyle(fontSize: 15),
+                        style: TextStyle(fontSize: 15.0),
                       ),
                     ),
                   ),
@@ -2869,19 +2997,36 @@ class DataModel extends ChangeNotifier {
     if (_tableList[tableid] == null) {
       retrieveTableFromDB(tableid, context);
     } else {
-      Map param = {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MyDetailNew(
+                  getTableBodyParam({gTableID: tableid}, context))));
+      if (strSubexists(transpass, gPopupnew)) {
+        Map param = {
+          gTableID: tableid,
+          gType: gTable,
+          gLabel: title,
+          gTranspass: transpass
+        };
+        //trigger add new
+        newForm(param, context);
+        showTableForm(param, context);
+      }
+
+      /*Map param = {
         gTableID: tableid,
         gType: gTable,
         gLabel: title,
         gTranspass: transpass
       };
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MyDetail(param)));
+          context, MaterialPageRoute(builder: (context) => MyDetailNew(param)));
       if (strSubexists(transpass, gPopupnew)) {
         //trigger add new
         newForm(param, context);
         showTableForm(param, context);
-      }
+      }*/
     }
   }
 
@@ -2891,6 +3036,67 @@ class DataModel extends ChangeNotifier {
       return str.indexOf(sub) > -1;
     }
     return result;
+  }
+
+  tableAddNew(data, context) {
+    data[gRow] = newForm(data, context);
+    showTableForm(data, context);
+  }
+
+  toPdf(data, context) {
+    String tableName = data[gTableID];
+    List header = [];
+    List body = [];
+
+    Map tableInfo = _tableList[tableName];
+    //tableInfo.[gData].length;
+    List tableData = tableInfo[gData];
+    List columns = tableInfo[gColumns];
+
+    for (int i = 0; i < columns.length; i++) {
+      if (isHiddenColumn(columns, i)) {
+        continue;
+      }
+
+      header.add(getSCurrentLan(columns[i][gLabel], 'en'));
+    }
+
+    String searchValue = tableInfo[gSearch] ?? '';
+    List newData = [];
+
+    for (int i = 0; i < tableData.length; i++) {
+      Map dataRow = tableData[i];
+      //get updated value
+      List ti = getTableRowShowValueFilterMapOrList(
+          dataRow, columns, context, searchValue, false);
+      if (ti != null) {
+        body.add(ti);
+      }
+      /*bool searchTxtExists = false;
+        for (MapEntry element in ti.entries) {
+          var elementKey = element.key;
+
+          if (searchValue == '' ||
+              (element.value ?? '').indexOf(searchValue) > -1) {
+            searchTxtExists = true;
+            break;
+          }
+        }
+        if (searchTxtExists) {
+          newData.add(ti);
+        }*/
+    }
+
+    tableInfo[gDataSearch] = newData;
+    //header
+    //body
+    //request
+    var filename = _token ?? "atmpfile";
+    if (filename.indexOf("-") > 0) {
+      filename = filename.substring(0, filename.indexOf("-"));
+    }
+    sendRequestOne('pdf',
+        {gHeader: header, gBody: body, gFilename: 'pdf' + filename}, context);
   }
 
   tableSort(tableName, columnIndex, ascending, context) {

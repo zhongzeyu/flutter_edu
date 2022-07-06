@@ -81,6 +81,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
             datamodel.getSCurrent(datamodel.systemParams['systemTitle']);*/
 
         return Scaffold(
+          backgroundColor: Colors.red,
           appBar: AppBar(
             title: Text(
                 datamodel.getSCurrent(datamodel.systemParams[gSystemTitle])),

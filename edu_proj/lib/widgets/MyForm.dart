@@ -171,13 +171,11 @@ class MyForm extends StatelessWidget {
           return result;
         }
 
-        return SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: _showItems(),
-            ),
+        return Form(
+          key: _formKey,
+          child: Column(
+            //mainAxisAlignment: MainAxisAlignment.center,
+            children: _showItems(),
           ),
         );
       },

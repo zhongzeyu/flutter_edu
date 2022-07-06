@@ -9,7 +9,7 @@ import 'package:edu_proj/widgets/tableData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'textfieldWidget.dart';
+//import 'textfieldWidget.dart';
 
 class MyPaginatedDataTable extends StatelessWidget {
   final dynamic _param;
@@ -22,7 +22,8 @@ class MyPaginatedDataTable extends StatelessWidget {
     DataTableSource tabledata;
     int actionBtnCnts = 0;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+      //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+      String tableName = _param[gName];
 
       Map tableInfo = datamodel.tableList[tableName];
       //tableInfo.[gData].length;
@@ -103,7 +104,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         return result;
       }
 
-      getTableBtns(tableInfo, datamodel, context) {
+      /*getTableBtns(tableInfo, datamodel, context) {
         Map attr = tableInfo[gAttr];
         var value = tableInfo[gSearch] ?? '';
 
@@ -114,9 +115,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         searchItemValue.putIfAbsent(gContext, () => context);
         searchItemValue.putIfAbsent(gTableID, () => tableInfo[gTableID]);
         searchItemValue.putIfAbsent(gOldvalue, () => value);
-        /*searchItem.value[gAction] = gLocalAction;
-        searchItem.value[gContext] = context;
-        searchItem.value[gTableID] = tableInfo[gTableID];*/
+        
         List<Widget> items = [];
         items.add(TextFieldWidget(item: searchItem));
 
@@ -129,6 +128,7 @@ class MyPaginatedDataTable extends StatelessWidget {
               },
               child: MyLabel({gLabel: gAddnew})));
         }
+        attr[gCanDelete] = false;
         if (attr[gCanDelete]) {
           items.add(ElevatedButton(
               onPressed: () {
@@ -139,7 +139,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
 
         return items;
-      }
+      }*/
 
       getShowIndex(sortColumnIndex) {
         int result = 0;
@@ -158,50 +158,32 @@ class MyPaginatedDataTable extends StatelessWidget {
       //datamodel.initPaginateDataTable(tableName,actionBtnCnts, tabledata, getTableColumns());
       //dynamic item = datamodel.getTableSearchItem(tableInfo);
 
-      return MaterialApp(
+      return /*MaterialApp(
         debugShowCheckedModeBanner: false,
         //theme: tableTheme,
         home: Scaffold(
-          appBar: AppBar(
-            /*title: TextFieldWidgetOne(
-              item: item,
-            ),
-            title: const TextField(
-              decoration:
-                  InputDecoration(border: InputBorder.none, hintText: 'Search'),
-            ),*/
-
-            /*IconButton(
-              icon: Icon(Icons.menu),
-              onPressed: null,
-            ),*/
-
-            actions: getTableBtns(tableInfo, datamodel, context),
-          ),
-          body: SingleChildScrollView(
-            child: //tableInfo[gPagetable]
-                PaginatedDataTable(
-              //header: MyLabel(data),
-              key: tableInfo[gKey],
-              rowsPerPage: datamodel.getRowsPerPage(tableInfo),
-              availableRowsPerPage: [5, 10, 15, 20, 50],
-              onPageChanged: (e) {},
-              onRowsPerPageChanged: (int v) {
-                //widget.onRowsPerPageChanged?.call(v ?? 10);
-                datamodel.setRowsPerPage(tableInfo, v);
-              },
-              columns: getTableColumns(),
-              columnSpacing: 30,
-              horizontalMargin: 5,
-              source: tabledata,
-              showCheckboxColumn: true,
-              sortAscending: tableInfo[gAscending],
-              sortColumnIndex:
-                  actionBtnCnts + getShowIndex(tableInfo[gSortColumnIndex]),
-            ),
-          ),
-        ),
+          body: */
+          PaginatedDataTable(
+        //header: MyLabel(data),
+        key: tableInfo[gKey],
+        rowsPerPage: datamodel.getRowsPerPage(tableInfo),
+        availableRowsPerPage: [5, 10, 15, 20, 50],
+        onPageChanged: (e) {},
+        onRowsPerPageChanged: (int v) {
+          //widget.onRowsPerPageChanged?.call(v ?? 10);
+          datamodel.setRowsPerPage(tableInfo, v);
+        },
+        columns: getTableColumns(),
+        columnSpacing: 30,
+        horizontalMargin: 5,
+        source: tabledata,
+        showCheckboxColumn: true,
+        sortAscending: tableInfo[gAscending],
+        sortColumnIndex:
+            actionBtnCnts + getShowIndex(tableInfo[gSortColumnIndex]),
       );
+      //),
+      //);
     });
   }
 }

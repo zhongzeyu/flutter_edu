@@ -7,6 +7,8 @@ import 'package:edu_proj/widgets/MyForm.dart';
 import 'package:edu_proj/widgets/myButton.dart';
 import 'package:edu_proj/widgets/myIcon.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
+import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
+import 'package:edu_proj/widgets/textfieldWidget.dart';
 //import 'package:edu_proj/widgets/myTab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,12 +26,25 @@ class MyItem extends StatelessWidget {
       List<Widget> result = [];
       if (_param[gType] == gBtn) {
         result.add(MyButton(_param));
+      } else if (_param[gType] == gBtns) {
+        if (_param[gAction] == gTable) {
+          List detail = _param[gItems];
+
+          List list = datamodel.getButtonsList(context, detail, 0, _param);
+
+          result.add(Wrap(
+            spacing: 8.0, //gap between adjacent items
+            runSpacing: 4.0, //gap between lines
+            direction: Axis.horizontal,
+            children: list,
+          ));
+        }
       } else if (_param[gType] == gForm) {
         String formID = _param[gValue];
 
         //datamodel.setFormListOne(formID, _param);
 
-        result.add(Expanded(child: MyForm(formID)));
+        result.add(MyForm(formID));
       } else if (_param[gType] == gIcon) {
         result.add(MyIcon(_param));
       } else if (_param[gType] == gImg) {
@@ -49,6 +64,24 @@ class MyItem extends StatelessWidget {
         }
       } else if (_param[gType] == gLabel) {
         result.add(MyLabel(_param));
+      } else if (_param[gType] == gTableEditor) {
+        /*dynamic tableName = _param[gName];
+        dynamic data = datamodel.tableList[tableName][gData]
+            [datamodel.tableList[tableName][gTabIndex]];*/
+        result.add(MyPaginatedDataTable(_param));
+      } else if (_param[gType] == gSearch) {
+        dynamic tableName = _param[gTableID];
+        Map tableInfo = datamodel.tableList[tableName];
+
+        MapEntry searchItem = datamodel.getTableItemByName(
+            tableInfo, gSearch, tableInfo[gSearch] ?? '');
+        Map searchItemValue = searchItem.value;
+        searchItemValue.putIfAbsent(gAction, () => gLocalAction);
+        searchItemValue.putIfAbsent(gWidth, () => 250.0);
+        searchItemValue.putIfAbsent(gContext, () => context);
+        searchItemValue.putIfAbsent(gTableID, () => tableName);
+        searchItemValue.putIfAbsent(gOldvalue, () => tableInfo[gSearch] ?? '');
+        result.add(TextFieldWidget(item: searchItem));
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
         _param[gAction] = gTextLink;
@@ -59,26 +92,27 @@ class MyItem extends StatelessWidget {
         String tabID = _param[gValue];
         var tab = datamodel.getTab(tabID, context);
         if (tab == null) {
-          result.add(SizedBox(width: 100.0));
+          result.add(SizedBox());
           return result[0];
         }
         //var tabData = tab[gData];
-        result.add(Expanded(
-          //height: 50,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: tab[gData].length,
-                  itemBuilder: (context, index) =>
-                      datamodel.getTabByIndex(index, tabID),
-                ),
+        final double _screenHeight = MediaQuery.of(context).size.height;
+        result.add(Column(
+          children: [
+            SizedBox(
+              height: 60,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: tab[gData].length,
+                itemBuilder: (context, index) =>
+                    datamodel.getTabByIndex(index, tabID),
               ),
-              Expanded(child: datamodel.getTabBody(tabID, context))
-            ],
-          ),
+            ),
+            SizedBox(
+              height: _screenHeight - 200.0,
+              child: datamodel.getTabBody(tabID, context),
+            )
+          ],
         ));
         //result.add(Expanded(child: datamodel.getTabBody(tabID, context)));
       } else {
@@ -86,8 +120,9 @@ class MyItem extends StatelessWidget {
       }
 
       if (result.length > 1) {
-        Widget aRow =
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: result);
+        result[0] = Expanded(child: result[0]);
+        Widget aRow = Column(
+            mainAxisAlignment: MainAxisAlignment.center, children: result);
         return aRow;
       }
       return result[0];

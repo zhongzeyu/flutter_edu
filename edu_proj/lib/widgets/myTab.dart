@@ -18,7 +18,7 @@ class MyTab extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
-                height: 50,
+                height: 40.0,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: datamodel.tabList[_param][gData].length,

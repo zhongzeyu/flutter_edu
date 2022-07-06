@@ -40,6 +40,10 @@ dependencies:
   intl: ^0.17.0
   jiffy: ^5.0.0
   pin_code_fields: ^7.3.0
+  smooth_page_indicator:
+  #dio:
+
+  
   #flutter_treeview: ^1.0.6+1
   
   

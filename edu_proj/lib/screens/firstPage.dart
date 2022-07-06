@@ -12,17 +12,22 @@ class FirstPage extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       //Widget aScreen = datamodel.getFirstPage(_name);
       return SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [datamodel.getLocalComponents(context)]),
-            ),
-            //Expanded(child: PicsAndButtons(datamodel.screenLists[_name])),
-            Expanded(child: _aScreen),
-          ],
+        child: Container(
+          color: Colors.white,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [datamodel.getLocalComponents(context)]),
+              ),
+              //Expanded(child: PicsAndButtons(datamodel.screenLists[_name])),
+              Expanded(
+                  child:
+                      Scaffold(body: SingleChildScrollView(child: _aScreen))),
+            ],
+          ),
         ),
       );
     });
