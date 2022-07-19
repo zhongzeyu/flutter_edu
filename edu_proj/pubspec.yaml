@@ -36,14 +36,20 @@ dependencies:
   flutter_string_encryption: ^0.3.1
   encrypt: ^5.0.0
   flutter_svg: ^0.22.0
-  shared_preferences: 0.5.12+4
+  #shared_preferences: 0.5.12+4
   intl: ^0.17.0
   jiffy: ^5.0.0
   pin_code_fields: ^7.3.0
   smooth_page_indicator:
   #dio:
+  path_provider:
+  uc_pdfview:
+  share_plus: ^4.0.3
+  shared_preferences:
 
-  
+
+    
+    
   #flutter_treeview: ^1.0.6+1
   
   

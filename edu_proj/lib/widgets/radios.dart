@@ -5,14 +5,15 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class Radios extends StatelessWidget {
   final List _param;
-  Radios(this._param);
+  final int _backcolor;
+  Radios(this._param, this._backcolor);
 
   @override
   Widget build(BuildContext context) {
     final controller = PageController(viewportFraction: 0.8, keepPage: true);
 
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      final pages = datamodel.getRadios(_param, context);
+      final pages = datamodel.getRadios(_param, context, _backcolor);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[

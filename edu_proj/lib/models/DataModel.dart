@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 //import 'dart:io';
 import 'package:crypto/crypto.dart';
 //import 'package:dio/dio.dart';
@@ -25,13 +26,16 @@ import 'package:edu_proj/widgets/myScreen.dart';
 //import 'package:edu_proj/widgets/myTree.dart';
 //import 'package:edu_proj/widgets/picsAndButtons.dart';
 import 'package:edu_proj/widgets/radios.dart';
-//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../widgets/pdfScreen.dart';
 
 class DataModel extends ChangeNotifier {
   //String _email;
@@ -73,7 +77,7 @@ class DataModel extends ChangeNotifier {
   Map<String, dynamic> _screenLists = {};
   Map<String, String> _imgList = {
     gMain:
-        'https://cdna.artstation.com/p/assets/images/images/010/039/240/large/liu-x-160.jpg?1522232709'
+        'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   };
   Map get imgList => _imgList;
   Map<String, dynamic> _i10nMap = {};
@@ -336,11 +340,11 @@ class DataModel extends ChangeNotifier {
     }*/
   }
 
-  changePassword(context, data) async {
+  changePassword(context, data, backcolor) async {
     if (data != null && data.length > 0 && data[0][gLastaction] == gFinishme) {
       await finishme(context);
     }
-    await openDetailForm(gChangepassword, context);
+    await openDetailForm(gChangepassword, context, backcolor);
   }
 
   clear() {
@@ -401,8 +405,8 @@ class DataModel extends ChangeNotifier {
     return Uri.encodeComponent(result);
   }
 
-  enterUserCode(context) {
-    openDetailForm(gVerifycode, context);
+  enterUserCode(context, backcolor) {
+    openDetailForm(gVerifycode, context, backcolor);
   }
 
   finishme(context) async {
@@ -431,7 +435,7 @@ class DataModel extends ChangeNotifier {
     if (data != null && data.length > 0) {
       this.sendRequestOne(gForgetpassword, data, context);
     } else {
-      showMsg(context, getSCurrent(gPlsenteremail));
+      showMsg(context, getSCurrent(gPlsenteremail), null);
     }
   }
 
@@ -489,7 +493,7 @@ class DataModel extends ChangeNotifier {
               getFormValue(formid, gPassword1, gTxtEditingController);
 
           if (password1 != password) {
-            showMsg(context, getSCurrent(gPasswordnotmatch));
+            showMsg(context, getSCurrent(gPasswordnotmatch), null);
             return;
           }
           //var loginemail = getFormValue(gLogin, gEmail, gTxtEditingController);
@@ -516,11 +520,14 @@ class DataModel extends ChangeNotifier {
     } catch (e) {
       print('======exception is ' + e.toString());
       //throw e;
-      showMsg(context, e);
+      showMsg(context, e, null);
     }
   }
 
   fromBdckcolor(iColor) {
+    if (iColor == null) {
+      return Colors.white;
+    }
     Color result = _bdBackColorList[iColor];
     if (result != null) {
       return result;
@@ -540,13 +547,13 @@ class DataModel extends ChangeNotifier {
     return Color(intColor);
   }
 
-  getActions(List param, context) {
-    List<Widget> result = getLocalComponentsList(context);
+  getActions(List param, context, int backcolor) {
+    List<Widget> result = getLocalComponentsList(context, backcolor);
 
     if (param != null && param.length > 0) {
       for (int i = 0; i < param.length; i++) {
         //dynamic pi = _param[gActions][i];
-        result.add(getMyItem(param[i], context));
+        result.add(getMyItem(param[i], context, backcolor));
         /*if (pi[gType] == gIcon) {
           result.add(MyIcon(pi));
           
@@ -556,13 +563,13 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getActionIcons(_param, context) {
-    List<Widget> result = getLocalComponentsList(context);
+  getActionIcons(_param, context, backcolor) {
+    List<Widget> result = getLocalComponentsList(context, backcolor);
 
     if (_param[gActions] != null) {
       for (int i = 0; i < _param[gActions].length; i++) {
         Map pi = Map.of(_param[gActions][i]);
-        Widget wi = getMyItem(pi, context);
+        Widget wi = getMyItem(pi, context, backcolor);
         result.add(wi);
       }
     }
@@ -578,12 +585,12 @@ class DataModel extends ChangeNotifier {
     return Column(children: result);
   }
 
-  getCard(List data, context, param0) {
+  getCard(List data, context, param0, backcolor) {
     List<Widget> items = [];
     data.forEach((element) {
       Widget testWidget =
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        getCardTitle(element),
+        getCardTitle(element, backcolor),
         SizedBox(height: 5.0),
         Wrap(
           spacing: 8.0, //gap between adjacent items
@@ -643,8 +650,7 @@ class DataModel extends ChangeNotifier {
         child: InkWell(
           child: MyLabel({
             gLabel: getSCurrent(element[gLabel]),
-            gColor: fromBdckcolor(_colorList[colorIndex])
-          }),
+          }, _colorList[colorIndex]),
           onTap: () {
             element[gColorIndex] = colorIndex;
             if (params[gType] == gTab) {
@@ -679,13 +685,13 @@ class DataModel extends ChangeNotifier {
     return list;
   }
 
-  getCardTitle(data) {
+  getCardTitle(data, backcolor) {
     /*if (data[gType] == gProcess)
       return getTxtImage(
           data[gLabel], _colorList[data[gColorIndex]], 15.0, 2.0, 2.0);*/
     return MyLabel({
       gLabel: data[gLabel],
-    });
+    }, backcolor);
   }
 
   getDetailBottom(param, context) {
@@ -704,7 +710,7 @@ class DataModel extends ChangeNotifier {
     return Row(children: bottom);
   }
 
-  getTitle(param, context) {
+  getTitle(param, context, backcolor) {
     String aLabel = param[gLabel];
     if (aLabel == null) {
       if (param[gData] != null) {
@@ -717,10 +723,10 @@ class DataModel extends ChangeNotifier {
 
     return MyLabel({
       gLabel: aLabel,
-    });
+    }, backcolor);
   }
 
-  getDetailWidget(param, context) {
+  getDetailWidget(param, context, backcolor) {
     List<Widget> result = [];
 
     if (param == null) {
@@ -735,7 +741,7 @@ class DataModel extends ChangeNotifier {
         //otherHeights += param[gTitle][gHeight];
       }
 
-      result.add(Center(child: getWidgetTitle(param)));
+      result.add(Center(child: getWidgetTitle(param, backcolor)));
     }
     /*//add  bottomImages
     List<Widget> bottom = [];
@@ -758,7 +764,7 @@ class DataModel extends ChangeNotifier {
       bodyheight = 20;
     }*/
     //add body
-    Widget body = getWidgetBody(param, context);
+    Widget body = getWidgetBody(param, context, backcolor);
     if (body != null) {
       result.add(SizedBox(height: gDefaultPaddin));
       result.add(Container(
@@ -776,7 +782,7 @@ class DataModel extends ChangeNotifier {
     return Column(children: result);
   }
 
-  getDropdownMenuItem(tableid, filterStr, context) {
+  getDropdownMenuItem(tableid, filterStr, context, backcolor) {
     dynamic tabledata = getTableByTableID(tableid, null, context);
     if (tabledata == null) {
       return null;
@@ -794,12 +800,12 @@ class DataModel extends ChangeNotifier {
         value: value,
         child: MyLabel({
           gLabel: value,
-        }),
+        }, backcolor),
       );
     }).toList();
   }
 
-  getDynamicWidgets(List param, context) {
+  getDynamicWidgets(List param, context, backcolor) {
     List<Widget> widgetList = [];
     param.forEach((element) {
       String type = element[gType];
@@ -825,7 +831,7 @@ class DataModel extends ChangeNotifier {
         widgetList.add(
           SizedBox(
             height: bodyheight,
-            child: getTabBody(element[gData], context),
+            child: getTabBody(element[gData], context, backcolor),
           ),
         );
       } else if (type == gLabel) {
@@ -833,7 +839,7 @@ class DataModel extends ChangeNotifier {
           gLabel: element[gLabel],
           gFontSize: element[gFontSize],
           gColor: element[gColor]
-        });
+        }, backcolor);
         if (element[gAlign] == gCenter) {
           widget = Center(child: widget);
         }
@@ -965,13 +971,11 @@ class DataModel extends ChangeNotifier {
     return TextInputType.text;
   }
 
-  getLocalComponents(context) {
-    return Row(children: getLocalComponentsList(context));
+  getLocalComponents(context, aColor) {
+    return Row(children: getLocalComponentsList(context, aColor));
   }
 
-  getLocalComponentsList(context) {
-    ThemeData themeData = Theme.of(context);
-    int valueColor = themeData.backgroundColor.value;
+  getLocalComponentsList(context, valueColor) {
     return [
       Icon(Icons.public_outlined),
       //(_locale.languageCode == 'en')
@@ -979,6 +983,7 @@ class DataModel extends ChangeNotifier {
           ? TextButton(
               child: Text('中文',
                   style: TextStyle(color: fromBdckcolor(valueColor))),
+              //style: TextStyle(color: Colors.white)),
               onPressed: () {
                 //setLocale(Locale('zh'));
                 setLocale('zh');
@@ -987,6 +992,7 @@ class DataModel extends ChangeNotifier {
           : TextButton(
               child: Text('EN',
                   style: TextStyle(color: fromBdckcolor(valueColor))),
+              //style: TextStyle(color: Colors.white)),
               onPressed: () {
                 //setLocale(Locale('en'));
                 setLocale('en');
@@ -1003,7 +1009,7 @@ class DataModel extends ChangeNotifier {
     ];
   }
 
-  getMenuItems(String menuName, context) {
+  getMenuItems(String menuName, context, backcolor) {
     List<Widget> items = [];
 
     /*for (int i = 0; i < _menuLists[menuName].length; i++) {
@@ -1022,7 +1028,7 @@ class DataModel extends ChangeNotifier {
           title: Text(getSCurrent(element[
               gLabel])), //MyLabel({gLabel: map[gLabel] + '', gFontSize: 20.0}),
           onTap: () {
-            onTap(context, element);
+            onTap(context, element, backcolor);
           },
           //onTap: datamodel.onTap(context, map),
         ));
@@ -1068,7 +1074,7 @@ class DataModel extends ChangeNotifier {
   }
 
   int _picIndex = 0;
-  getPics(param) {
+  getPics(param, backcolor) {
     List<dynamic> list = param[gPics];
     if (_picIndex >= list.length) {
       _picIndex = 0;
@@ -1079,7 +1085,7 @@ class DataModel extends ChangeNotifier {
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         MyPic(list[_picIndex]),
         SizedBox(width: gDefaultPaddin),
-        MyLabel(list[_picIndex]),
+        MyLabel(list[_picIndex], backcolor),
       ]),
     ));
     List<Widget> dotList = [];
@@ -1103,7 +1109,7 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getRadios(param, context) {
+  getRadios(param, context, _backcolor) {
     List list = param;
     /*if (_picIndex >= list.length) {
       _picIndex = 0;
@@ -1111,7 +1117,7 @@ class DataModel extends ChangeNotifier {
 
     List<Widget> result = [];
     for (int i = 0; i < list.length; i++) {
-      result.add(getMyItem(list[i], context));
+      result.add(getMyItem(list[i], context, _backcolor));
     }
 
     /*
@@ -1162,7 +1168,7 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  getScreenItem(Map mItemDetail, context) {
+  getScreenItem(Map mItemDetail, context, int backcolor) {
     Widget result;
 
     mItemDetail.forEach((key, value) {
@@ -1183,24 +1189,24 @@ class DataModel extends ChangeNotifier {
               listValueNew.add(Map.of(data0));
             });
 
-            result = Radios(listValueNew);
+            result = Radios(listValueNew, backcolor);
           }
         });
       } else if (key == gItem) {
-        result = getMyItem(valueMap, context);
+        result = getMyItem(valueMap, context, backcolor);
       }
     });
     return result;
   }
 
-  getScreenItems(param, context) {
+  getScreenItems(param, context, int backcolor) {
     List<Widget> result = [];
     result.add(SizedBox(height: 4.5));
     //Map map = Map.of(param[gItems]);
     Map map = Map.of(param);
     map.forEach((key, value) {
       Map mapItem = Map.of(value);
-      Widget itemWidget = getScreenItem(mapItem, context);
+      Widget itemWidget = getScreenItem(mapItem, context, backcolor);
       if (itemWidget != null) {
         //result.add(SizedBox(height: 0.5));
         result.add(itemWidget);
@@ -1217,18 +1223,18 @@ class DataModel extends ChangeNotifier {
     ];*/
   }
 
-  getScreenItemsList(List param, context) {
+  getScreenItemsList(List param, context, backcolor) {
     List<Widget> result = [];
     //Map map = Map.of(param[gItems]);
     for (int i = 0; i < param.length; i++) {
       Map pi = param[i];
-      Widget wi = getMyItem(pi, context);
+      Widget wi = getMyItem(pi, context, backcolor);
       result.add(wi);
     }
     return result;
   }
 
-  getMyItem(valueMap, context) {
+  getMyItem(valueMap, context, backcolor) {
     if (valueMap[gType] == gImg) {
       dynamic imageValue = _imgList[valueMap[gValue]];
       if (imageValue == null) {
@@ -1245,7 +1251,7 @@ class DataModel extends ChangeNotifier {
 
       //valueMap[gValue] = _imgList[valueMap[gValue]] ?? _imgList[gNotavailable];
     }
-    Widget result = MyItem(valueMap);
+    Widget result = MyItem(valueMap, backcolor);
     return result;
   }
 
@@ -1318,7 +1324,7 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  getTabBody(tabname, context) {
+  getTabBody(tabname, context, backcolor) {
     if (_tabList[tabname] == null) {
       return Text(gNotavailable);
     }
@@ -1327,11 +1333,11 @@ class DataModel extends ChangeNotifier {
       return null;
     }
     if (data[gType] == gCard) {
-      return getCard(data[gBody], context, tabname);
+      return getCard(data[gBody], context, tabname, backcolor);
     } else if (data[gType] == gTable) {
       //String tableName = data[gActionid];
       data[gTabName] = tabname;
-      return getTableBody(data, context);
+      return getTableBody(data, context, backcolor);
       /*return Column(
         children: [
           Expanded(
@@ -1342,7 +1348,7 @@ class DataModel extends ChangeNotifier {
     } else if (data[gType] == gTabletree) {
       //String tableName = data[gActionid];
       setTreeNode(data, context);
-      return getTreeBody(data, context);
+      return getTreeBody(data, context, backcolor);
     }
 
     return Text(data[gType] + ' will be available soon');
@@ -1500,10 +1506,10 @@ class DataModel extends ChangeNotifier {
     */
   }
 
-  getTreeBody(data, context) {
+  getTreeBody(data, context, backcolor) {
     return Column(
       children: [
-        Expanded(child: MyLabel({gLabel: gWelcome, gFontSize: 20.0})
+        Expanded(child: MyLabel({gLabel: gWelcome, gFontSize: 20.0}, backcolor)
 
             //MyTree({gData: data, gAction: gLocalAction, gContext: context}),
             ),
@@ -1511,8 +1517,8 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  getTableBody(data, context) {
-    return MyScreen(getTableBodyParam(data, context));
+  getTableBody(data, context, backcolor) {
+    return MyScreen(getTableBodyParam(data, context), backcolor);
   }
 
   getTableBodyParam(data, context) {
@@ -1785,22 +1791,22 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  getWidgetBody(param, context) {
+  getWidgetBody(param, context, backcolor) {
     if (param[gType] == gForm) {
-      return getWidgetForm(param);
+      return getWidgetForm(param, backcolor);
     } else if (param[gType] == gTable) {
-      return getTableBody(param, context);
+      return getTableBody(param, context, backcolor);
     } else if (param[gType] == gScreen) {
-      return MyScreen(param);
+      return MyScreen(param, backcolor);
     }
     return Column(
       children: [
-        MyLabel({gLabel: gWelcome, gFontSize: 20.0})
+        MyLabel({gLabel: gWelcome, gFontSize: 20.0}, backcolor)
       ],
     );
   }
 
-  getWidgetForm(param) {
+  getWidgetForm(param, backcolor) {
     String formID = param[gFormdetail][gFormName];
 
     setFormListOne(formID, param);
@@ -1808,14 +1814,14 @@ class DataModel extends ChangeNotifier {
     if (param[gIndex] != null) {
       index = param[gIndex];
     }*/
-    return MyForm(formID);
+    return MyForm(formID, backcolor);
   }
 
-  getWidgetTitle(param) {
+  getWidgetTitle(param, backcolor) {
     Widget title;
     param[gTitle] = getParamTypeValue(param[gTitle]);
     if (param[gTitle][gType] == gLabel) {
-      title = MyLabel(param[gTitle]);
+      title = MyLabel(param[gTitle], backcolor);
     } else if (param[gTitle][gType] == gIcon) {
       title = MyIcon(param[gTitle]);
     } else if (param[gTitle][gType] == gImg) {
@@ -1823,7 +1829,7 @@ class DataModel extends ChangeNotifier {
 
       //MyImg(getParamTypeValue(param[gTitle]));
     } else {
-      title = MyLabel({gLabel: param[gTitle][gTitle]});
+      title = MyLabel({gLabel: param[gTitle][gTitle]}, backcolor);
     }
     return title;
   }
@@ -1934,7 +1940,7 @@ class DataModel extends ChangeNotifier {
       //var tableId = data[gTableID];
       //int index = data[gRow];
       showFormEdit(data, context);
-      showTableForm(data, context);
+      showTableForm(data, context, null);
     } else if (data[gLabel] != null &&
         data[gLabel] == gAddnew &&
         data[gTableID] != null) {
@@ -2062,22 +2068,22 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  onTap(context, Map map) {
+  onTap(context, Map map, backcolor) {
     try {
       if (map[gType] == gAction) {
         if (map[gActionid] == gLogout) {
           logOff();
         } else if (map[gActionid] == gChangepassword) {
-          changePassword(context, null);
+          changePassword(context, null, backcolor);
         } else if (map[gActionid] == gRole) {}
       } else if (map[gType] == gTable) {
         var tableid = map[gActionid];
         _lastBackGroundColor = _defaultBackGroundColor;
 
-        showTable(tableid, context, map[gLabel] ?? "", "");
+        showTable(tableid, context, map[gLabel] ?? "", "", backcolor);
       }
     } catch (e) {
-      showMsg(context, e);
+      showMsg(context, e, null);
     }
     if (map[gLabel] == "Test") {
       //showTab("role", context);
@@ -2085,15 +2091,15 @@ class DataModel extends ChangeNotifier {
     print('=====typed ' + map[gLabel]);
   }
 
-  openDetailForm(formname, context) {
+  openDetailForm(formname, context, backcolor) {
     Map param = {
       gsBackgroundColor: _formLists[formname][gsBackgroundColor],
       gColor: _formLists[formname][gColor],
       gName: formname,
       gType: gForm
     };
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => MyDetailNew(param)));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => MyDetailNew(param, backcolor)));
   }
 
   processRequest(dataRequest, context) async {
@@ -2142,7 +2148,7 @@ class DataModel extends ChangeNotifier {
           }
         });
         if (action == gChangepassword) {
-          await changePassword(context, actionData);
+          await changePassword(context, actionData, null);
         } else if (action == gFinishme) {
           await finishme(context);
         } else if (action == gProcessTab) {
@@ -2175,17 +2181,17 @@ class DataModel extends ChangeNotifier {
           await setTableList(actionData, context);
         } else if (action == gShowErr) {
           actionData[0] = Map.of(actionData[0]);
-          showMsg(context, actionData[0]['errMsg']);
+          showMsg(context, actionData[0]['errMsg'], null);
           //throw actionData[0]['errMsg'];
         } else if (action == gShowpdf) {
           await showPDF(actionData, context);
         } else if (action == gShowScreenPage) {
-          await showScreenPage(actionData, context);
+          await showScreenPage(actionData, context, Colors.black.value);
         } else if (action == gSetFormList) {
           await setFormList(actionData);
         } else if (action == gShowTable) {
           await showTable(actionData[0][gTableID], context,
-              actionData[0][gLabel] ?? "", "");
+              actionData[0][gLabel] ?? "", "", null);
         }
       });
     } catch (e) {
@@ -2199,8 +2205,8 @@ class DataModel extends ChangeNotifier {
       if (data0[gType] == gTable || data0[gType] == gTabletree) {
         addTable(data0, context);
         if (data0[gWhere] != null && data0[gWhere].indexOf("=") > 0) {
-          showTable(
-              data0[gActionid], context, data0[gLabel], data0[gTranspass]);
+          showTable(data0[gActionid], context, data0[gLabel], data0[gTranspass],
+              null);
           return;
         }
       }
@@ -2297,7 +2303,7 @@ class DataModel extends ChangeNotifier {
         data.length > 0 &&
         data[0][gMsg] != null &&
         data[0][gMsg] == gEnterusercode) {
-      enterUserCode(context);
+      enterUserCode(context, null);
     }
     //check password
   }
@@ -2449,7 +2455,7 @@ class DataModel extends ChangeNotifier {
       var dataRequest = encryptByDES(requestFirst);
       await processRequest(dataRequest, context);
     } catch (e) {
-      showMsg(context, e);
+      showMsg(context, e, null);
       //throw e;
       //print('=====exception is ' + e);
     } finally {
@@ -2580,15 +2586,16 @@ class DataModel extends ChangeNotifier {
   }
 
   showAlertDialog(BuildContext context, title, msg, requestFirst) {
+    int backcolor = Colors.black.value;
     // set up the buttons
     Widget cancelButton = ElevatedButton(
-      child: MyLabel({gLabel: gCancel}),
+      child: MyLabel({gLabel: gCancel}, backcolor),
       onPressed: () {
         Navigator.of(context).pop();
       },
     );
     Widget continueButton = ElevatedButton(
-      child: MyLabel({gLabel: gContinue}),
+      child: MyLabel({gLabel: gContinue}, backcolor),
       onPressed: () {
         localAction(requestFirst, context);
         Navigator.of(context).pop();
@@ -2596,8 +2603,8 @@ class DataModel extends ChangeNotifier {
     );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: MyLabel({gLabel: title}),
-      content: MyLabel({gLabel: msg}),
+      title: MyLabel({gLabel: title}, backcolor),
+      content: MyLabel({gLabel: msg}, backcolor),
       actions: [
         cancelButton,
         continueButton,
@@ -2612,48 +2619,73 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  showPDF(actionData, context) {
+  showPDF(actionData, context) async {
     String filename = '';
+    String subject = '';
     for (int i = 0; i < actionData.length; i++) {
       Map<String, dynamic> ai = Map.of(actionData[i]);
       filename = ai[gFilename];
+      subject = ai[gSubject];
     }
     if (filename == '') {
       return;
     }
 
     //download file
-    sendRequestOne(gFiledownload, {gFilename: filename}, context);
+    try {
+      await downloadFile(filename, context, true, subject);
+    } catch (e) {
+      showMsg(context, e, null);
+      //throw e;
+      //print('=====exception is ' + e);
+    } finally {
+      // await sendRequestList(context);
+    }
+
+    //sendRequestOne(gFiledownload, {gFilename: filename}, context);
   }
 
-  downloadFile(actionData, context) async {
-    String filename = '';
-    for (int i = 0; i < actionData.length; i++) {
-      Map<String, dynamic> ai = Map.of(actionData[i]);
-      filename = ai[gFilename];
-    }
-    if (filename == '') {
-      return;
-    }
-    sendRequestOne('filedownload', {gFilename: filename}, context);
+  Future downloadFile(filename, context, needRemove, subject) async {
+    String filePath = '';
 
-    /*//save file to local
-    var dio = Dio();
-    Response response = await dio.get('');
-    print(response.data);
-    File file = new File(filename);
-    file.writeAsBytesSync(response.data);
+    try {
+      String myUrl = 'http://' +
+          MyConfig.URL.name +
+          '/' +
+          MyConfig.DOWNLOAD.name +
+          '?filename=$filename&needRemove=$needRemove';
 
-    /// 写入文件
+      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //var response = await request;
+      if (response.statusCode == 200) {
+        var bytes = response.bodyBytes;
+        //await consolidateHttpClientResponseBytes(response);
+        //Directory dir = await getApplicationDocumentsDirectory();
+        Directory dir = await getTemporaryDirectory();
+        String tempPath = dir.path;
+        //showMsg(context, tempPath);
 
-    //show file
-    if (filename.indexOf(".pdf") > 0) {
-      //pdfviewer
+        filePath = '$tempPath/$filename';
+        File file = File(filePath);
+        await file.writeAsBytes(bytes);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                PDFScreen({gPath: filePath, gSubject: subject}),
+          ),
+        );
+      } else {
+        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
+      }
+    } catch (ex) {
+      showMsg(context, ex.toString(), null);
     }
-    return file;*/
+    //print('======== filePath is $filePath');
   }
 
-  showScreenPage(actionData, context) {
+  showScreenPage(actionData, context, backcolor) {
     for (int i = 0; i < actionData.length; i++) {
       Map<String, dynamic> ai = actionData[i];
       String name = '';
@@ -2673,21 +2705,23 @@ class DataModel extends ChangeNotifier {
         if (name == gFirstPage) {
           //_firstFormName = name;
 
-          MyScreen aScreen = MyScreen(_screenLists[name]);
-          _firstPage = FirstPage(aScreen);
+          _firstPage = FirstPage();
         } else {
           //MyScreen aScreen = MyScreen(_screenLists[name]);
           //Map param = {gLabel: name, gScreen: aScreen};
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => MyDetailNew(_screenLists[name])));
+                  builder: (context) =>
+                      MyDetailNew(_screenLists[name], backcolor)));
         }
       } else {
-        MyScreen aScreen = MyScreen(_screenLists[name]);
+        MyScreen aScreen = MyScreen(_screenLists[name], backcolor);
         Map param = {gLabel: name, gScreen: aScreen};
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => MyDetailNew(param)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MyDetailNew(param, backcolor)));
       }
     }
     myNotifyListeners();
@@ -2720,7 +2754,7 @@ class DataModel extends ChangeNotifier {
     });
   }
 
-  showTableForm(data, context) {
+  showTableForm(data, context, backcolor) {
     //int index = data[gRow] ?? -1;
     var tableName = data[gActionid] ?? data[gTableID];
 
@@ -2758,7 +2792,7 @@ class DataModel extends ChangeNotifier {
       }
     ];
 
-    showScreenPage(actionData, context);
+    showScreenPage(actionData, context, backcolor);
   }
 
   setI10n(actionData) {
@@ -2903,7 +2937,7 @@ class DataModel extends ChangeNotifier {
     data[gNode] = nodes;*/
   }
 
-  showMsg(context, dynamic result) {
+  showMsg(context, dynamic result, backcolor) {
     /*Navigator.of(context)
         .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);*/
     showModalBottomSheet(
@@ -2939,7 +2973,7 @@ class DataModel extends ChangeNotifier {
                     child: Center(
                       child: MyLabel({
                         gLabel: gClose,
-                      }),
+                      }, backcolor),
                     ),
                   )
                 ],
@@ -2993,7 +3027,7 @@ class DataModel extends ChangeNotifier {
     //myNotifyListeners();*/
   }
 
-  showTable(String tableid, context, title, transpass) {
+  showTable(String tableid, context, title, transpass, backcolor) {
     if (_tableList[tableid] == null) {
       retrieveTableFromDB(tableid, context);
     } else {
@@ -3001,7 +3035,7 @@ class DataModel extends ChangeNotifier {
           context,
           MaterialPageRoute(
               builder: (context) => MyDetailNew(
-                  getTableBodyParam({gTableID: tableid}, context))));
+                  getTableBodyParam({gTableID: tableid}, context), backcolor)));
       if (strSubexists(transpass, gPopupnew)) {
         Map param = {
           gTableID: tableid,
@@ -3011,7 +3045,7 @@ class DataModel extends ChangeNotifier {
         };
         //trigger add new
         newForm(param, context);
-        showTableForm(param, context);
+        showTableForm(param, context, backcolor);
       }
 
       /*Map param = {
@@ -3040,7 +3074,7 @@ class DataModel extends ChangeNotifier {
 
   tableAddNew(data, context) {
     data[gRow] = newForm(data, context);
-    showTableForm(data, context);
+    showTableForm(data, context, null);
   }
 
   toPdf(data, context) {
@@ -3049,9 +3083,11 @@ class DataModel extends ChangeNotifier {
     List body = [];
 
     Map tableInfo = _tableList[tableName];
+
     //tableInfo.[gData].length;
     List tableData = tableInfo[gData];
     List columns = tableInfo[gColumns];
+    String subject = tableInfo[gAttr][gLabel] ?? '';
 
     for (int i = 0; i < columns.length; i++) {
       if (isHiddenColumn(columns, i)) {
@@ -3095,8 +3131,15 @@ class DataModel extends ChangeNotifier {
     if (filename.indexOf("-") > 0) {
       filename = filename.substring(0, filename.indexOf("-"));
     }
-    sendRequestOne('pdf',
-        {gHeader: header, gBody: body, gFilename: 'pdf' + filename}, context);
+    sendRequestOne(
+        'pdf',
+        {
+          gHeader: header,
+          gBody: body,
+          gFilename: 'pdf' + filename,
+          gSubject: subject
+        },
+        context);
   }
 
   tableSort(tableName, columnIndex, ascending, context) {
@@ -3411,7 +3454,7 @@ class DataModel extends ChangeNotifier {
             }
           }
         };
-        getWidgetForm(param);
+        getWidgetForm(param, null);
       }
       {
         dynamic data = {

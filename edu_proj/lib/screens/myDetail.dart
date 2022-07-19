@@ -6,7 +6,8 @@ import 'package:provider/provider.dart';
 
 class MyDetail extends StatelessWidget {
   final Map _param;
-  MyDetail(this._param);
+  final int backcolor;
+  MyDetail(this._param, this.backcolor);
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +25,13 @@ class MyDetail extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          title: MyLabel(_param),
+          title: MyLabel(_param, backcolor),
           //title: const TextBox(),
           actions:
               //other icons
-              datamodel.getActionIcons(_param, context),
+              datamodel.getActionIcons(_param, context, backcolor),
         ),
-        body: datamodel.getDetailWidget(_param, context),
+        body: datamodel.getDetailWidget(_param, context, backcolor),
       );
     });
   }

@@ -1,5 +1,6 @@
 import 'package:edu_proj/config/constants.dart';
-import 'package:edu_proj/widgets/myButton.dart';
+//import 'package:edu_proj/widgets/myButton.dart';
+import 'package:edu_proj/widgets/myIcon.dart';
 import 'package:flutter/material.dart';
 
 class TableData extends DataTableSource {
@@ -25,6 +26,7 @@ class TableData extends DataTableSource {
 
   DataRow getRow(int index) {
     List<DataCell> dataCellList = [];
+    List<Widget> actionList = [];
     Map aparam = {
       //gValue: 0xf00d,
       //gLabel: gEdit,
@@ -38,7 +40,9 @@ class TableData extends DataTableSource {
     if (_param[gAttr][gCanEdit]) {
       Map thisParam = new Map.from(aparam);
       thisParam[gLabel] = gEdit;
-      dataCellList.add(DataCell(MyButton(thisParam)));
+      thisParam[gValue] = 0xe21a;
+      actionList.add(MyIcon(thisParam));
+      //dataCellList.add(DataCell(MyIcon(thisParam)));
 
       /*dataCellList.add(DataCell(MyButton({
         gLabel: gEdit,
@@ -51,12 +55,16 @@ class TableData extends DataTableSource {
     if (_param[gAttr][gCanDelete]) {
       Map thisParam = new Map.from(aparam);
       thisParam[gLabel] = gDelete;
-      dataCellList.add(DataCell(MyButton(thisParam)));
+      thisParam[gValue] = 0xe1b9;
+      actionList.add(MyIcon(thisParam));
+      //dataCellList.add(DataCell(MyIcon(thisParam)));
     }
     if ((_param[gAttr][gDetail] ?? "") != "") {
       Map thisParam = new Map.from(aparam);
       thisParam[gLabel] = gDetail;
-      dataCellList.add(DataCell(MyButton(thisParam)));
+      thisParam[gValue] = 0xe1ff;
+      actionList.add(MyIcon(thisParam));
+      //dataCellList.add(DataCell(MyIcon(thisParam)));
       /*dataCellList.add(DataCell(MyIcon({
         gValue: 0xee90,
         gLabel: gDetail,
@@ -65,6 +73,11 @@ class TableData extends DataTableSource {
         gRow: (_param[gDataSearch] ?? _param[gData])[index],
         gContext: _context
       })));*/
+    }
+    if (actionList.length > 0) {
+      dataCellList.add(DataCell(Row(
+        children: actionList,
+      )));
     }
 
     for (int i = 0; i < _param[gColumns].length; i++) {

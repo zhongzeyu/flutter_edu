@@ -82,24 +82,30 @@ class MyPaginatedDataTable extends StatelessWidget {
       getTableColumns() {
         List<DataColumn> result = [];
         actionBtnCnts = 0;
-        if (tableInfo[gAttr][gCanEdit]) {
+        if (tableInfo[gAttr][gCanEdit] ||
+            tableInfo[gAttr][gCanDelete] ||
+            (tableInfo[gAttr][gDetail] ?? "") != "") {
           result.add(DataColumn(label: Text("")));
-          actionBtnCnts++;
+          //actionBtnCnts++;
+          actionBtnCnts = 1;
         }
-        if (tableInfo[gAttr][gCanDelete]) {
+        /*if (tableInfo[gAttr][gCanDelete]) {
           result.add(DataColumn(label: Text("")));
-          actionBtnCnts++;
+          //actionBtnCnts++;
+          actionBtnCnts = 1;
         }
         if ((tableInfo[gAttr][gDetail] ?? "") != "") {
           result.add(DataColumn(label: Text("")));
-          actionBtnCnts++;
-        }
+          //actionBtnCnts++;
+          actionBtnCnts = 1;
+        }*/
         for (int i = 0; i < columns.length; i++) {
           if (datamodel.isHiddenColumn(columns, i)) {
             continue;
           }
           result.add(DataColumn(
-              label: MyLabel({gLabel: columns[i][gLabel]}), onSort: sortTable));
+              label: MyLabel({gLabel: columns[i][gLabel]}, null),
+              onSort: sortTable));
         }
         return result;
       }

@@ -15,7 +15,8 @@ import 'package:provider/provider.dart';
 
 class MyItem extends StatelessWidget {
   final dynamic _param;
-  MyItem(this._param);
+  final int backcolor;
+  MyItem(this._param, this.backcolor);
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +45,7 @@ class MyItem extends StatelessWidget {
 
         //datamodel.setFormListOne(formID, _param);
 
-        result.add(MyForm(formID));
+        result.add(MyForm(formID, backcolor));
       } else if (_param[gType] == gIcon) {
         result.add(MyIcon(_param));
       } else if (_param[gType] == gImg) {
@@ -60,10 +61,10 @@ class MyItem extends StatelessWidget {
         ));
         if (_param[gLabel] != null) {
           result.add(SizedBox(width: gDefaultPaddin));
-          result.add(MyLabel(_param));
+          result.add(MyLabel(_param, backcolor));
         }
       } else if (_param[gType] == gLabel) {
-        result.add(MyLabel(_param));
+        result.add(MyLabel(_param, backcolor));
       } else if (_param[gType] == gTableEditor) {
         /*dynamic tableName = _param[gName];
         dynamic data = datamodel.tableList[tableName][gData]
@@ -85,7 +86,7 @@ class MyItem extends StatelessWidget {
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
         _param[gAction] = gTextLink;
-        result.add(MyLabel(_param));
+        result.add(MyLabel(_param, backcolor));
       } else if (_param[gType] == gSizedbox) {
         result.add(SizedBox(height: _param[gValue]));
       } else if (_param[gType] == gTab) {
@@ -110,13 +111,14 @@ class MyItem extends StatelessWidget {
             ),
             SizedBox(
               height: _screenHeight - 200.0,
-              child: datamodel.getTabBody(tabID, context),
+              child: datamodel.getTabBody(tabID, context, backcolor),
             )
           ],
         ));
         //result.add(Expanded(child: datamodel.getTabBody(tabID, context)));
       } else {
-        result.add(MyLabel({gLabel: "not available", gFontSize: 20.0}));
+        result.add(
+            MyLabel({gLabel: "not available", gFontSize: 20.0}, backcolor));
       }
 
       if (result.length > 1) {

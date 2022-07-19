@@ -6,7 +6,8 @@ import 'package:provider/provider.dart';
 class MyDropdown extends StatelessWidget {
   final dynamic _param;
   final String _formName;
-  MyDropdown(this._param, this._formName);
+  final int backcolor;
+  MyDropdown(this._param, this._formName, this.backcolor);
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class MyDropdown extends StatelessWidget {
                     _param, newValue, context, _formName);
               },
               items: datamodel.getDropdownMenuItem(
-                  _param[gDroplist], null, context),
+                  _param[gDroplist], null, context, backcolor),
             ),
           ));
     });

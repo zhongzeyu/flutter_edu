@@ -1,6 +1,7 @@
 enum MyConfig {
   URL,
   PROJ,
+  DOWNLOAD,
 }
 
 extension MyConfigExtension on MyConfig {
@@ -8,6 +9,7 @@ extension MyConfigExtension on MyConfig {
     return [
       '192.168.50.239',
       'smilesmart',
+      'download',
     ][this.index];
   }
 }

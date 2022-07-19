@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 
 class MyTab extends StatelessWidget {
   final dynamic _param;
-  MyTab(this._param);
+  final int backcolor;
+  MyTab(this._param, this.backcolor);
   //final _scrollController = ScrollController();
 
   @override
@@ -29,7 +30,7 @@ class MyTab extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: datamodel.getTabBody(_param, context),
+            child: datamodel.getTabBody(_param, context, backcolor),
           ),
         ],
       );

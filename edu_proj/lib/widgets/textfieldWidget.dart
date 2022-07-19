@@ -8,10 +8,9 @@ import 'package:provider/provider.dart';
 
 class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
+  final int backcolor;
   final _debouncer = Debouncer(milliseconds: 500);
-  TextFieldWidget({
-    this.item,
-  });
+  TextFieldWidget({this.item, this.backcolor});
   _getWidth() {
     return null;
     //item.value[gWidth] ?? null;
@@ -48,6 +47,7 @@ class TextFieldWidget extends StatelessWidget {
       }
       item.value[gTxtEditingController].selection = TextSelection.fromPosition(
           TextPosition(offset: item.value[gTxtEditingController].text.length));
+      Color cBackColor = datamodel.fromBdckcolor(backcolor);
       return Container(
         width: _getWidth(),
         child: TextFormField(
@@ -56,7 +56,7 @@ class TextFieldWidget extends StatelessWidget {
             keyboardType: item.value[gInputType],
             maxLength: item.value[gLength],
             style: TextStyle(
-              //color: item.value[gTextFontColor],
+              color: cBackColor,
               fontSize: item.value[gFontSize],
               fontStyle: item.value[gFontStyle],
               fontWeight: item.value[gFontWeight],
@@ -65,7 +65,7 @@ class TextFieldWidget extends StatelessWidget {
             decoration: InputDecoration(
               labelText: datamodel.getSCurrent(item.value[gLabel]),
               labelStyle: TextStyle(
-                //color: item.value[gTextFontColor],
+                color: cBackColor,
                 fontSize: item.value[gFontSize],
                 fontStyle: item.value[gFontStyle],
                 fontWeight: item.value[gFontWeight],
@@ -73,7 +73,7 @@ class TextFieldWidget extends StatelessWidget {
               ),
               hintText: item.value[gPlaceHolder],
               hintStyle: TextStyle(
-                //color: item.value[gTextFontColor],
+                color: cBackColor,
                 fontSize: item.value[gFontSize],
                 fontStyle: item.value[gFontStyle],
                 fontWeight: item.value[gFontWeight],

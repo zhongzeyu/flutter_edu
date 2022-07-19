@@ -9,14 +9,15 @@ import 'package:provider/provider.dart';
 //import 'package:places_service/places_service.dart';
 
 import 'myDropdown.dart';
+import 'myGlass.dart';
 
 class MyForm extends StatelessWidget {
   final String _param;
-
+  final int backcolor;
   //final Map _paramData;
 
   //MyForm(this._param, this._paramData);
-  MyForm(this._param);
+  MyForm(this._param, this.backcolor);
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +27,11 @@ class MyForm extends StatelessWidget {
         final String _formName = _param;
         //['name'];
         if (datamodel.formLists[_formName] == null) {
-          return MyLabel({gLabel: gNotavailable, gFontSize: 20.0});
+          return MyLabel({gLabel: gNotavailable, gFontSize: 20.0}, backcolor);
         }
         Map<String, dynamic> formDefine = datamodel.formLists[_formName];
         Map<dynamic, dynamic> items = formDefine[gItems];
-
+        Color cBackColor = datamodel.fromBdckcolor(backcolor);
         //Size size = MediaQuery.of(context).size;
         //double _top = 10.0;
         List<Widget> _showItems() {
@@ -61,7 +62,11 @@ class MyForm extends StatelessWidget {
                   Text(
                     datamodel.getSCurrent(item.value[gLabel]) +
                         ":" +
-                        aDvalue.toString()
+                        aDvalue.toString(),
+                    style: TextStyle(
+                      color: cBackColor,
+                      //backgroundColor: _param[gBackgroundColor]
+                    )
                     /*+
                             (item.value[gValue] == null)
                         ? item.value[gDefaultValue].toString()
@@ -103,20 +108,19 @@ class MyForm extends StatelessWidget {
                     }).toList(),
                   ));*/
                   result.add(
-                    MyDropdown(item.value, _formName),
+                    MyDropdown(item.value, _formName, backcolor),
                   );
                 } else if (!datamodel.isNull(item.value[gStreetAddress])) {
                 } else {
                   result.add(
-                    TextFieldWidget(
-                      item: item,
-                      /*
+                    TextFieldWidget(item: item, backcolor: backcolor
+                        /*
                 onTab: () => {_onTab(item.value['id'], size)},
                 onChanged: (String value) =>
                     {_onChange(item.value['id'], value)},
                 textFieldController: item.value['txtEditingController'],
                 */
-                    ),
+                        ),
                   );
                 }
               }
@@ -143,8 +147,34 @@ class MyForm extends StatelessWidget {
               ),
             );
           } else {*/
-          result.add(
-            ElevatedButton(
+          Map paramSubmit = {
+            gWidth: 200,
+            gHeight: 40,
+            gBorderRadius: 10.0,
+            gMargin: const EdgeInsets.all(1.5),
+            gPadding: const EdgeInsets.all(1.5),
+            //gMargin: const EdgeInsets.all(0.5),
+            //gPadding: const EdgeInsets.all(0.5),
+            gBlur: 10.0,
+            gAlignment: Alignment.topLeft,
+            gBorder: 2.0,
+            gColor: Colors.blue,
+            gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
+            gChild: MyLabel({gLabel: formDefine[gSubmit]}, Colors.blue.value)
+          };
+
+          result.add(InkWell(
+            child: MyGlass(paramSubmit),
+            onTap: () {
+              if (!_formKey.currentState.validate()) {
+                return;
+              }
+              _formKey.currentState.save();
+              datamodel.formSubmit(context, _formName);
+            },
+          ));
+
+          /*ElevatedButton(
               child: Text(datamodel.getSCurrent(formDefine[gSubmit])),
               onPressed: () {
                 if (!_formKey.currentState.validate()) {
@@ -164,7 +194,7 @@ class MyForm extends StatelessWidget {
                 minimumSize: Size(200, 40),
               ),
             ),
-          );
+          );*/
           //}
 
           datamodel.afterSubmit(context, _formName, result);

@@ -7,7 +7,8 @@ import 'package:provider/provider.dart';
 
 class PicsAndButtons extends StatelessWidget {
   final Map _param;
-  PicsAndButtons(this._param);
+  final int backcolor;
+  PicsAndButtons(this._param, this.backcolor);
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +16,9 @@ class PicsAndButtons extends StatelessWidget {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Expanded(child: PicsAndLabels(_param)),
+          Expanded(child: PicsAndLabels(_param, backcolor)),
           SizedBox(height: 120),
-          MyLabel(datamodel.getParamTypeValue(_param[gTitle])),
+          MyLabel(datamodel.getParamTypeValue(_param[gTitle]), backcolor),
           SizedBox(height: 150),
           datamodel.getButtons(Map.of(_param)),
           SizedBox(height: gDefaultPaddin),

@@ -53,7 +53,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
         return null;
       }
       List<Widget> items = [];
-      items.add(datamodel.getLocalComponents(context));
+      items.add(datamodel.getLocalComponents(context, Colors.black));
       actionItem.forEach((element) {
         Map<String, dynamic> map = Map.of(element);
         /*{};
@@ -64,7 +64,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
           icon: Icon(datamodel.getIconsByName(map[gIcon])),
           tooltip: map[gLabel] + '',
           onPressed: () {
-            datamodel.onTap(context, map);
+            datamodel.onTap(context, map, null);
           },
           //onTap: datamodel.onTap(context, map),
         ));
@@ -114,7 +114,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
                   ),
                   Expanded(
                     child: ListView(
-                      children: datamodel.getMenuItems(gMain, context),
+                      children: datamodel.getMenuItems(gMain, context, null),
                     ),
                   ),
                 ],

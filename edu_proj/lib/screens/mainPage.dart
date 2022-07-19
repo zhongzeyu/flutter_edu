@@ -13,8 +13,8 @@ class MainPage extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       datamodel.setScreenSize(size);
       return Container(
-        margin: EdgeInsets.all(10.0),
-        color: Colors.white,
+        //margin: EdgeInsets.all(10.0),
+        color: Colors.black,
         child: Center(
           child: Image.network(datamodel.imgList[gMain]),
         ),
