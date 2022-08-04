@@ -1,4 +1,5 @@
 // @dart=2.9
+
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
@@ -14,6 +15,8 @@ import 'myGlass.dart';
 class MyForm extends StatelessWidget {
   final String _param;
   final int backcolor;
+  //final FocusNode focusNode = new FocusNode();
+  //final _debouncer = Debouncer(milliseconds: 1000);
   //final Map _paramData;
 
   //MyForm(this._param, this._paramData);
@@ -38,6 +41,7 @@ class MyForm extends StatelessWidget {
           List<Widget> result = [];
           //dynamic dataRow;
           //dataRow = _paramData[gData];
+          datamodel.setFormFocus(_formName, null);
           items.entries.forEach((item) {
             /*item.value[gOldvalue] =
                 (dataRow == null) ? null : dataRow[item.value[gId]];
@@ -113,7 +117,8 @@ class MyForm extends StatelessWidget {
                 } else if (!datamodel.isNull(item.value[gStreetAddress])) {
                 } else {
                   result.add(
-                    TextFieldWidget(item: item, backcolor: backcolor
+                    TextFieldWidget(
+                        item: item, backcolor: backcolor, formname: _formName
                         /*
                 onTab: () => {_onTab(item.value['id'], size)},
                 onChanged: (String value) =>
@@ -211,4 +216,25 @@ class MyForm extends StatelessWidget {
       },
     );
   }
+
+  /*void onLoad(BuildContext context) {
+    Future.delayed(Duration(seconds: 3),
+        () => FocusScope.of(context).requestFocus(focusNode));
+  }*/
 }
+
+/*class Debouncer {
+  final int milliseconds;
+  VoidCallback action;
+  Timer _timer;
+
+  Debouncer({this.milliseconds});
+
+  run(VoidCallback action) {
+    if (_timer != null) {
+      _timer.cancel();
+    }
+
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}*/

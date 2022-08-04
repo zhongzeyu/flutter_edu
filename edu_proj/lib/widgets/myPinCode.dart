@@ -14,36 +14,37 @@ class MyPinCode extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       return Padding(
           padding: const EdgeInsets.all(18.0),
-          child: SizedBox(
-            child: PinCodeTextField(
-              appContext: context,
-              length: _param[gLength],
+          child: PinCodeTextField(
+            appContext: context,
+            autoFocus: true,
+
+            length: _param[gLength],
 //onChanged: (pin) => _registerVerifyController.onChange(pin),
-              keyboardType: TextInputType.number,
+            keyboardType: TextInputType.number,
 //enabled: !_registerVerifyController.isLoading.value,
-              pinTheme: PinTheme(
-                fieldWidth: 40,
-                fieldHeight: 48,
-                shape: PinCodeFieldShape.box,
-                borderRadius: BorderRadius.circular(5),
-                inactiveColor: Theme.of(context).colorScheme.primary,
-              ),
-              animationType: AnimationType.scale,
-              dialogConfig: DialogConfig(
-                dialogTitle: 'Past Code',
-                dialogContent: 'Do you want to paste ',
-                affirmativeText: 'Paste',
-                negativeText: 'Cancel',
-              ),
-              //onCompleted: (pin) => datamodel.setDropdownMenuItem(
-              //  _param, pin, context, _formName),
-              onChanged: (String value) {
-                var email = datamodel.getFormValue(
-                    gLogin, gEmail, gTxtEditingController);
-                datamodel.setFormValue(
-                    _formName, _param[gId], email + gDelimeterItem + value);
-              },
+            pinTheme: PinTheme(
+              fieldWidth: 40,
+              fieldHeight: 40,
+              shape: PinCodeFieldShape.box,
+              borderRadius: BorderRadius.circular(5),
+              inactiveColor: Theme.of(context).colorScheme.primary,
             ),
+            animationType: AnimationType.scale,
+            /*dialogConfig: DialogConfig(
+              dialogTitle: 'Past Code',
+              dialogContent: 'Do you want to paste ',
+              affirmativeText: 'Paste',
+              negativeText: 'Cancel',
+            ),*/
+            //onCompleted: (pin) => datamodel.setDropdownMenuItem(
+            //  _param, pin, context, _formName),
+            onCompleted: (pin) => datamodel.formSubmit(context, _formName),
+            onChanged: (String value) {
+              var email =
+                  datamodel.getFormValue(gLogin, gEmail, gTxtEditingController);
+              datamodel.setFormValue(
+                  _formName, _param[gId], email + gDelimeterItem + value);
+            },
           ));
     });
   }

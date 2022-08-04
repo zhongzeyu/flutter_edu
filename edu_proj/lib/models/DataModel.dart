@@ -11,7 +11,7 @@ import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/screens/MyDynamicBody.dart';
 //import 'package:edu_proj/screens/MyMain.dart';
 import 'package:edu_proj/screens/firstPage.dart';
-import 'package:edu_proj/screens/mainPage.dart';
+//import 'package:edu_proj/screens/mainPage.dart';
 //import 'package:edu_proj/screens/myDetail.dart';
 import 'package:edu_proj/screens/myDetailNew.dart';
 import 'package:edu_proj/utils/AES.dart';
@@ -32,6 +32,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+//import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -56,13 +57,28 @@ class DataModel extends ChangeNotifier {
   http.Client httpClient = http.Client();
   //Locale _locale = const Locale('en', '');
   String _locale = 'en';
-  final List<int> _colorList = [
+  /*final List<int> _colorList = [
     4282679983,
     4291930500,
     4288255123, //Color(0xFF5D825E),
     4293112728,
     4294278273,
     4289572269
+  ];*/
+  final List<int> _colorList = [
+    Colors.cyan.value,
+    Colors.amber.value,
+    Colors.brown.value,
+    Colors.orange.value,
+    Colors.red.value,
+    Colors.green.value,
+    Colors.blue.value,
+    Colors.purple.value,
+    Colors.lime.value,
+    Colors.indigo.value,
+    Colors.pink.value,
+    Colors.teal.value,
+    Colors.yellow.value,
   ];
   //Locale get locale => _locale;
   String get locale => _locale;
@@ -347,7 +363,7 @@ class DataModel extends ChangeNotifier {
     await openDetailForm(gChangepassword, context, backcolor);
   }
 
-  clear() {
+  clear(context) {
     //_email = null;
     setFormValue(gLogin, gEmail, '');
     setFormValue(gLogin, gPassword, '');
@@ -357,6 +373,10 @@ class DataModel extends ChangeNotifier {
     //_formLists[gLogin][gItems]['password'][gTxtEditingController]..text = '';
     _token = '';
     _myId = '';
+    _tabList = {};
+
+    //showScreenPageOne(gLogin, context, Colors.black.value);
+    removeAllScreens(context);
   }
 
   decryptByDES(ciphertext) {
@@ -419,7 +439,7 @@ class DataModel extends ChangeNotifier {
       resetSessionKey(context);
       //sendRequestList(context);
       //return MyWait();
-      return MainPage();
+      //return MainPage();
     }
     return _firstPage;
     /*if (_token == '' || _myId == '') {
@@ -627,12 +647,27 @@ class DataModel extends ChangeNotifier {
     List<Widget> list = [];
 
     int colorIndex = -1;
+    if (isNull(detail)) {
+      return list;
+    }
     detail.forEach((element) {
       colorIndex += 1;
       if (colorIndex >= _colorList.length) {
         colorIndex = 0;
       }
-      list.add(Container(
+      element.putIfAbsent(gColor, () => _colorList[colorIndex]);
+      element.putIfAbsent(gWidth, () => 140.0);
+      element.putIfAbsent(gName, () => params[gName] ?? '');
+      element.putIfAbsent(gType, () => params[gType] ?? '');
+      /*element[gColor] = _colorList[colorIndex];
+      element[gWidth] = element[gWidth] ?? 140.0;
+      //element[gContext] = context;
+      element[gName] = element[gName] ?? params[gName] ?? '';
+      element[gType] = element[gType] ?? params[gType] ?? '';*/
+
+      list.add(MyButton(element));
+
+      /*list.add(Container(
         padding: const EdgeInsets.all(5.0),
         margin: const EdgeInsets.all(5.0),
         clipBehavior: Clip.hardEdge,
@@ -667,19 +702,9 @@ class DataModel extends ChangeNotifier {
           },
         ),
       )
-          /*TextButton(
-            style: TextButton.styleFrom(
-              //padding: const EdgeInsets.all(10.0),
-              //primary: fromBdckcolor(data[gColorIndex]),
-              textStyle: const TextStyle(fontSize: 15),
-            ),
-            onPressed: () {
-              element[gColorIndex] = data[gColorIndex];
-              processTap(context, element, param0);
-            },
-            child: Text(getSCurrent(element[gLabel])))*/
+          
 
-          );
+          );*/
     });
 
     return list;
@@ -1000,12 +1025,11 @@ class DataModel extends ChangeNotifier {
             ),
       isNull(_myId)
           ? Text("")
-          : Material(
-              child: MyIcon({
+          : MyIcon({
               gValue: 0xf199,
               gLabel: gLogout,
               gAction: gLocalAction,
-            }))
+            })
     ];
   }
 
@@ -1334,7 +1358,7 @@ class DataModel extends ChangeNotifier {
     }
     if (data[gType] == gCard) {
       return getCard(data[gBody], context, tabname, backcolor);
-    } else if (data[gType] == gTable) {
+    } else if (data[gType].toString().endsWith(gTable)) {
       //String tableName = data[gActionid];
       data[gTabName] = tabname;
       return getTableBody(data, context, backcolor);
@@ -1376,8 +1400,8 @@ class DataModel extends ChangeNotifier {
                 ? FontWeight.bold
                 : FontWeight.normal,
             color: index == _tabList[tabName][gTabIndex]
-                ? Colors.black
-                : Colors.grey)));
+                ? Colors.white
+                : Colors.black)));
     if ((dataThis[gCanRefresh] ?? "true") != "false") {
       titleWidgets.add(MyIcon({
         gValue: 0xf2f7,
@@ -1540,17 +1564,18 @@ class DataModel extends ChangeNotifier {
         gLabel: gSearch,
       })
     };
-    if (tableInfo[gAttr][gCanEdit]) {
-      List detail = [
-        {gLabel: gAddnew},
-        {gLabel: gPdf}
-      ];
+    List detail = [];
 
-      param[index++] = {
-        gItem: jsonEncode(
-            {gType: gBtns, gAction: gTable, gValue: tableName, gItems: detail})
-      };
+    if (tableInfo[gAttr][gCanEdit]) {
+      detail.add({gLabel: gAddnew, gTableID: tableName, gWidth: 100});
     }
+    detail.add({gLabel: gPdf, gTableID: tableName, gWidth: 60});
+    detail.add({gLabel: gExcel, gTableID: tableName, gWidth: 60});
+    param[index++] = {
+      gItem: jsonEncode(
+          {gType: gBtns, gAction: gTable, gValue: tableName, gItems: detail})
+    };
+
     param[index++] = {
       gItem: jsonEncode({gType: gTableEditor, gName: tableName})
     };
@@ -1677,6 +1702,7 @@ class DataModel extends ChangeNotifier {
 
   getTableRowShowValueFilterMapOrList(
       item, colList, context, filterValue, mapOrList) {
+    String filterValueLower = filterValue.toString().toLowerCase();
     Map result = {};
     List resultList = [];
 
@@ -1701,7 +1727,10 @@ class DataModel extends ChangeNotifier {
         if (!filterValueExists) {
           if (!isHiddenColumn(colList, i)) {
             if (!isNull(result[ci[gId]]) &&
-                result[ci[gId]].indexOf(filterValue) > -1) {
+                result[ci[gId]]
+                    .toString()
+                    .toLowerCase()
+                    .contains(filterValueLower)) {
               filterValueExists = true;
             }
           }
@@ -1794,7 +1823,7 @@ class DataModel extends ChangeNotifier {
   getWidgetBody(param, context, backcolor) {
     if (param[gType] == gForm) {
       return getWidgetForm(param, backcolor);
-    } else if (param[gType] == gTable) {
+    } else if (param[gType].toString().endsWith(gTable)) {
       return getTableBody(param, context, backcolor);
     } else if (param[gType] == gScreen) {
       return MyScreen(param, backcolor);
@@ -1946,6 +1975,14 @@ class DataModel extends ChangeNotifier {
         data[gTableID] != null) {
       tableAddNew(data, context);
     } else if (data[gLabel] != null &&
+        data[gLabel] == gPdf &&
+        data[gTableID] != null) {
+      toPdf(data, context);
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gExcel &&
+        data[gTableID] != null) {
+      toExcel(data, context);
+    } else if (data[gLabel] != null &&
         data[gLabel] == gDelete &&
         data[gTableID] != null) {
       var tableId = data[gTableID];
@@ -2048,7 +2085,7 @@ class DataModel extends ChangeNotifier {
         data[gTableID] != null) {
       searchTable(data, context);
     } else if (data[gLabel] != null && data[gLabel] == gLogout) {
-      logOff();
+      logOff(context);
     } else if (data[gAction] == gTextLink) {
       businessFunc(data[gAction1], context);
 
@@ -2062,8 +2099,8 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  logOff() {
-    clear();
+  logOff(context) {
+    clear(context);
 
     myNotifyListeners();
   }
@@ -2072,11 +2109,11 @@ class DataModel extends ChangeNotifier {
     try {
       if (map[gType] == gAction) {
         if (map[gActionid] == gLogout) {
-          logOff();
+          logOff(context);
         } else if (map[gActionid] == gChangepassword) {
           changePassword(context, null, backcolor);
         } else if (map[gActionid] == gRole) {}
-      } else if (map[gType] == gTable) {
+      } else if (map[gType].toString().endsWith(gTable)) {
         var tableid = map[gActionid];
         _lastBackGroundColor = _defaultBackGroundColor;
 
@@ -2183,6 +2220,8 @@ class DataModel extends ChangeNotifier {
           actionData[0] = Map.of(actionData[0]);
           showMsg(context, actionData[0]['errMsg'], null);
           //throw actionData[0]['errMsg'];
+        } else if (action == gShowExcel) {
+          await showPDF(actionData, context);
         } else if (action == gShowpdf) {
           await showPDF(actionData, context);
         } else if (action == gShowScreenPage) {
@@ -2202,7 +2241,8 @@ class DataModel extends ChangeNotifier {
   processTab(List data, context) {
     data.forEach((data0) {
       data0 = Map.of(data0);
-      if (data0[gType] == gTable || data0[gType] == gTabletree) {
+      if (data0[gType].toString().endsWith(gTable) ||
+          data0[gType] == gTabletree) {
         addTable(data0, context);
         if (data0[gWhere] != null && data0[gWhere].indexOf("=") > 0) {
           showTable(data0[gActionid], context, data0[gLabel], data0[gTranspass],
@@ -2480,19 +2520,6 @@ class DataModel extends ChangeNotifier {
   setDropdownMenuItem(_param, newValue, context, _formName) {
     setFormValue(_formName, _param[gId], newValue);
 
-    /*Map<String, dynamic> formDefine = formLists[_formName];
-    Map<dynamic, dynamic> items = formDefine[gItems];
-
-    items.entries.forEach((item) {
-      if (item.value[gId] == _param[gId]) {
-        item.value[gValue] = newValue;
-      }
-      
-    });*/
-    /*Map<dynamic, dynamic> items1 = formDefine[gItems];
-    myNotifyListeners();
-    Map<dynamic, dynamic> items2 = formDefine[gItems];*/
-    //formDefine[gItems] = items;
     myNotifyListeners();
   }
 
@@ -2502,16 +2529,12 @@ class DataModel extends ChangeNotifier {
       Map<String, dynamic> thisListI = thisList[i];
       var formID = thisListI[gFormName];
       setFormListOne(formID, thisListI);
-      /*thisListI.entries.forEach((element) {
-        String formID = element.key;
-        setFormListOne(formID, element.value);
-      });*/
     }
     myNotifyListeners();
   }
 
   //setFormListOne(formID, param) {
-  setFormListOne(formID, formDetail) {
+  setFormListOne(formID, formDetail) async {
     if (_formLists[formID] != null) {
       return;
     }
@@ -2519,40 +2542,9 @@ class DataModel extends ChangeNotifier {
     // var btns = param[gBtns];
     Map<String, dynamic> formValue = Map.from(formDetail);
 
-    //formValue['submit'] = getSCurrent(formValue['submit']);
-    //String title = getSCurrent(formValue[gTitle][gLabel]);
-
-    //formValue[gsBackgroundColor] = Color(_lastBackGroundColor);
-    //formValue[gsBackgroundColor] = Colors.white;
-    /*formValue['image'] = Text(
-          getSCurrent(formValue[gTitle][gLabel]),
-          style: TextStyle(
-            color: fromBdckcolor(_lastBackGroundColor),
-            fontSize: formValue[gTitle][gFontSize],
-            height: formValue[gTitle]['height'],
-
-            //fontFamily: ,
-            letterSpacing: formValue[gTitle]['letterSpacing'],
-            fontWeight: FontWeight.bold,
-            //background: new Paint()..color = Colors.yellow,
-            //foreground: new Paint()..color = Colors.red,
-            //decoration: TextDecoration.underline,
-            //decorationStyle: TextDecorationStyle.dashed
-            shadows: [
-              Shadow(
-                  color: Color(_lastBackGroundColor),
-                  offset: Offset.fromDirection(3),
-                  blurRadius: 5.0)
-            ],
-          ),
-        );*/
-
     Map<dynamic, dynamic> itemList = formValue[gItems];
     itemList.entries.forEach((elementItemList) {
       Map<dynamic, dynamic> valueItemList = elementItemList.value;
-      //valueItemList[gLabel] = getSCurrent(valueItemList[gLabel]);
-      /*valueItemList['prefixIcon'] = Icon(
-          IconData(valueItemList['prefixIcon'], fontFamily: 'MaterialIcons'));*/
 
       valueItemList[gInputType] = getInputType(valueItemList[gInputType]);
       valueItemList[gTxtEditingController] =
@@ -2569,19 +2561,12 @@ class DataModel extends ChangeNotifier {
       formValue[gItems][key] = Map.of(value);
     });
 
-    //formValue[gBtns] = btns;
-    /*if (_formLists[formID] != null) {
-      //copy original defaultvalue
-      Map<String, dynamic> formDefine = _formLists[formID];
-      Map<dynamic, dynamic> oldItems = formDefine[gItems];
-      oldItems.entries.forEach((item) {
-        if (!isNull(item.value[gDefaultValue])) {
-          formValue[gItems][item.value[gId]][gDefaultValue] =
-              item.value[gDefaultValue];
-        }
-      });
-    }*/
     _formLists[formID] = formValue;
+    if (formID == gLogin) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      setFormValue(gLogin, gEmail, prefs.getString('myid') ?? '');
+    }
     //print(jsonEncode(_formLists[formID]));
   }
 
@@ -2716,15 +2701,17 @@ class DataModel extends ChangeNotifier {
                       MyDetailNew(_screenLists[name], backcolor)));
         }
       } else {
-        MyScreen aScreen = MyScreen(_screenLists[name], backcolor);
-        Map param = {gLabel: name, gScreen: aScreen};
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => MyDetailNew(param, backcolor)));
+        showScreenPageOne(name, context, backcolor);
       }
     }
     myNotifyListeners();
+  }
+
+  showScreenPageOne(name, context, backcolor) {
+    MyScreen aScreen = MyScreen(_screenLists[name], backcolor);
+    Map param = {gLabel: name, gScreen: aScreen};
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => MyDetailNew(param, backcolor)));
   }
 
   newForm(data, context) {
@@ -2800,14 +2787,6 @@ class DataModel extends ChangeNotifier {
       Map<String, dynamic> ai = Map.of(actionData[i]);
       ai.entries.forEach((element) {
         Map mValue = Map.of(element.value);
-        /*mValue.entries.forEach((element1) {
-          if (element1.key != 'en') {
-            //mValue[element1.key] = element1.value;
-            mValue[element1.key] = utf8.decode(element1.value.codeUnits);
-
-            //mValue[element1.key] = Utf8Decoder().convert(element1.value);
-          }
-        });*/
         _i10nMap[element.key] = mValue;
       });
     }
@@ -2821,6 +2800,40 @@ class DataModel extends ChangeNotifier {
 
   setFormDefaultValue(formid, colId, value) {
     _formLists[formid][gItems][colId][gDefaultValue] = value;
+  }
+
+  setFormFocus(formid, colId) {
+    Map<dynamic, dynamic> items = _formLists[formid][gItems];
+
+    if (colId != null) {
+      items.entries.forEach((item) {
+        if (item.value[gId] == colId) {
+          item.value[gFocus] = true;
+        } else {
+          item.value[gFocus] = false;
+        }
+      });
+    } else {
+      bool haveFocus = false;
+      items.entries.forEach((item) {
+        if (item.value[gFocus] ?? false) {
+          haveFocus = true;
+        }
+      });
+      if (haveFocus) {
+        return;
+      }
+      //first value null get focus
+      items.entries.forEach((item) {
+        bool isValueNull = isNull(item.value[gValue]);
+        var txtValue = item.value[gTxtEditingController].value.text;
+        bool isTxtNull = isNull(txtValue);
+        if (isValueNull && isTxtNull) {
+          item.value[gFocus] = true;
+          return;
+        }
+      });
+    }
   }
 
   setFormValue(formid, colId, value) {
@@ -2867,13 +2880,16 @@ class DataModel extends ChangeNotifier {
     _actionLists[gMain] = data;
   }
 
-  setMyInfo(data, context) {
+  setMyInfo(data, context) async {
     //_myInfo = data;
     setFormValue(gLogin, gEmail, data[gEmail]);
     //_formLists[gLogin][gItems][gEmail][gDefaultValue] = data[gEmail];
     _token = data[gToken];
     _myId = data[gEmail];
+
     _globalCompanyid = data[gCompanyid];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('myid', _myId);
     //myNotifyListeners();
   }
 
@@ -2908,6 +2924,8 @@ class DataModel extends ChangeNotifier {
       data0[gIsselected] = true;
       _tabList[tabname][gData].add(data0);
       _tabList[tabname][gTabIndex] = 0;
+      //_tabList[tabname][gController] = ItemScrollController();
+      //_tabList[tabname][gControllerListener] = ItemPositionsListener.create();
     });
 
     myNotifyListeners();
@@ -2989,6 +3007,12 @@ class DataModel extends ChangeNotifier {
         _tabList[tabName][gData][i][gVisible] = true;
         if (_tabList[tabName][gTabIndex] != i) {
           _tabList[tabName][gTabIndex] = i;
+          myNotifyListeners();
+          _tabList[tabName][gController].scrollTo(
+              index: i,
+              duration: Duration(seconds: 2),
+              curve: Curves.easeInOutCubic);
+          _tabList[tabName][gController].jumpTo(index: i);
 
           myNotifyListeners();
         }
@@ -2997,34 +3021,6 @@ class DataModel extends ChangeNotifier {
     }
     _tabList[tabName][gTabIndex] = 0;
     return false;
-
-    /*
-        int i = 0;
-    bool tablExists = false;
-
-    _tabList[tabName][gData].forEach((element) {
-      if (element[gLabel] == label) {
-        //_tabController.animateTo(i);
-        tablExists = true;
-        if (_tabList[tabName][gTabIndex] != i) {
-          _tabList[tabName][gTabIndex] = i;
-          myNotifyListeners();
-        }
-
-        //DefaultTabController.of(context).animateTo(i);
-        return tablExists;
-        //_tabController.initialIndex = i;
-      }
-      i++;
-    });
-    if (!tablExists) {
-      _tabList[tabName][gTabIndex] = 0;
-    }
-
-    return tablExists;
-
-    //addTab();
-    //myNotifyListeners();*/
   }
 
   showTable(String tableid, context, title, transpass, backcolor) {
@@ -3047,20 +3043,6 @@ class DataModel extends ChangeNotifier {
         newForm(param, context);
         showTableForm(param, context, backcolor);
       }
-
-      /*Map param = {
-        gTableID: tableid,
-        gType: gTable,
-        gLabel: title,
-        gTranspass: transpass
-      };
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MyDetailNew(param)));
-      if (strSubexists(transpass, gPopupnew)) {
-        //trigger add new
-        newForm(param, context);
-        showTableForm(param, context);
-      }*/
     }
   }
 
@@ -3077,7 +3059,15 @@ class DataModel extends ChangeNotifier {
     showTableForm(data, context, null);
   }
 
+  toExcel(data, context) {
+    toFile(data, context, 'excel');
+  }
+
   toPdf(data, context) {
+    toFile(data, context, 'pdf');
+  }
+
+  toFile(data, context, label) {
     String tableName = data[gTableID];
     List header = [];
     List body = [];
@@ -3132,11 +3122,11 @@ class DataModel extends ChangeNotifier {
       filename = filename.substring(0, filename.indexOf("-"));
     }
     sendRequestOne(
-        'pdf',
+        label,
         {
           gHeader: header,
           gBody: body,
-          gFilename: 'pdf' + filename,
+          gFilename: label + filename,
           gSubject: subject
         },
         context);

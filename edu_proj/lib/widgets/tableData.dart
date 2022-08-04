@@ -1,6 +1,7 @@
 import 'package:edu_proj/config/constants.dart';
+import 'package:edu_proj/widgets/myButton.dart';
 //import 'package:edu_proj/widgets/myButton.dart';
-import 'package:edu_proj/widgets/myIcon.dart';
+//import 'package:edu_proj/widgets/myIcon.dart';
 import 'package:flutter/material.dart';
 
 class TableData extends DataTableSource {
@@ -27,52 +28,62 @@ class TableData extends DataTableSource {
   DataRow getRow(int index) {
     List<DataCell> dataCellList = [];
     List<Widget> actionList = [];
-    Map aparam = {
+    /*Map aparam = {
       //gValue: 0xf00d,
       //gLabel: gEdit,
       gAction: gLocalAction,
       gPadding: 0.0,
-      gWidth: 0.0,
+      gWidth: 50.0,
       gTableID: _param[gTableID],
       gRow: (_param[gDataSearch] ?? _param[gData])[index],
       gContext: _context
-    };
+    };*/
     if (_param[gAttr][gCanEdit]) {
-      Map thisParam = new Map.from(aparam);
+      /*Map thisParam = new Map.from(aparam);
       thisParam[gLabel] = gEdit;
       thisParam[gValue] = 0xe21a;
-      actionList.add(MyIcon(thisParam));
-      //dataCellList.add(DataCell(MyIcon(thisParam)));
-
-      /*dataCellList.add(DataCell(MyButton({
+      
+      actionList.add(MyIcon(thisParam));*/
+      actionList.add(MyButton({
         gLabel: gEdit,
         gAction: gLocalAction,
         gTableID: _param[gTableID],
-        gRow: index,
-        gContext: _context
-      })));*/
+        gRow: (_param[gDataSearch] ?? _param[gData])[index],
+        gContext: _context,
+        gWidth: 50.0
+      }));
     }
     if (_param[gAttr][gCanDelete]) {
-      Map thisParam = new Map.from(aparam);
+      /*Map thisParam = new Map.from(aparam);
       thisParam[gLabel] = gDelete;
       thisParam[gValue] = 0xe1b9;
-      actionList.add(MyIcon(thisParam));
+      actionList.add(MyIcon(thisParam));*/
+
+      actionList.add(MyButton({
+        gLabel: gDelete,
+        gAction: gLocalAction,
+        gTableID: _param[gTableID],
+        gRow: (_param[gDataSearch] ?? _param[gData])[index],
+        gContext: _context,
+        gWidth: 50.0
+      }));
+
       //dataCellList.add(DataCell(MyIcon(thisParam)));
     }
     if ((_param[gAttr][gDetail] ?? "") != "") {
-      Map thisParam = new Map.from(aparam);
+      /*Map thisParam = new Map.from(aparam);
       thisParam[gLabel] = gDetail;
       thisParam[gValue] = 0xe1ff;
-      actionList.add(MyIcon(thisParam));
-      //dataCellList.add(DataCell(MyIcon(thisParam)));
-      /*dataCellList.add(DataCell(MyIcon({
-        gValue: 0xee90,
+      actionList.add(MyIcon(thisParam));*/
+
+      actionList.add(MyButton({
         gLabel: gDetail,
         gAction: gLocalAction,
         gTableID: _param[gTableID],
         gRow: (_param[gDataSearch] ?? _param[gData])[index],
-        gContext: _context
-      })));*/
+        gContext: _context,
+        gWidth: 50.0
+      }));
     }
     if (actionList.length > 0) {
       dataCellList.add(DataCell(Row(

@@ -26,6 +26,57 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      Widget fileView;
+      if (widget._param[gPath].toString().toLowerCase().endsWith(".pdf")) {
+        fileView = UCPDFView(
+          filePath: widget._param[gPath],
+          enableSwipe: true,
+          swipeHorizontal: true,
+          autoSpacing: false,
+          pageFling: true,
+          pageSnap: true,
+          defaultPage: currentPage,
+          fitPolicy: FitPolicy.BOTH,
+          preventLinkNavigation:
+              false, // if set to true the link is handled in flutter
+          onRender: (_pages) {
+            setState(() {
+              pages = _pages;
+              isReady = true;
+            });
+          },
+          onError: (error) {
+            setState(() {
+              errorMessage = error.toString();
+            });
+            print(error.toString());
+          },
+          onPageError: (page, error) {
+            setState(() {
+              errorMessage = '$page: ${error.toString()}';
+            });
+            //print('$page: ${error.toString()}');
+          },
+          onViewCreated: (PDFViewController pdfViewController) {
+            _controller.complete(pdfViewController);
+          },
+          onLinkHandler: (String uri) {
+            //print('goto uri: $uri');
+          },
+          onPageChanged: (int page, int total) {
+            // print('page change: $page/$total');
+            setState(() {
+              currentPage = page;
+            });
+          },
+        );
+      } else {
+        Share.shareFiles(
+          [widget._param[gPath]],
+          subject: widget._param[gSubject],
+        );
+        return Text("");
+      }
       return Scaffold(
         appBar: AppBar(
           title: Text(datamodel.getSCurrent(widget._param[gSubject])),
@@ -45,48 +96,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
         ),
         body: Stack(
           children: <Widget>[
-            UCPDFView(
-              filePath: widget._param[gPath],
-              enableSwipe: true,
-              swipeHorizontal: true,
-              autoSpacing: false,
-              pageFling: true,
-              pageSnap: true,
-              defaultPage: currentPage,
-              fitPolicy: FitPolicy.BOTH,
-              preventLinkNavigation:
-                  false, // if set to true the link is handled in flutter
-              onRender: (_pages) {
-                setState(() {
-                  pages = _pages;
-                  isReady = true;
-                });
-              },
-              onError: (error) {
-                setState(() {
-                  errorMessage = error.toString();
-                });
-                print(error.toString());
-              },
-              onPageError: (page, error) {
-                setState(() {
-                  errorMessage = '$page: ${error.toString()}';
-                });
-                //print('$page: ${error.toString()}');
-              },
-              onViewCreated: (PDFViewController pdfViewController) {
-                _controller.complete(pdfViewController);
-              },
-              onLinkHandler: (String uri) {
-                //print('goto uri: $uri');
-              },
-              onPageChanged: (int page, int total) {
-                // print('page change: $page/$total');
-                setState(() {
-                  currentPage = page;
-                });
-              },
-            ),
+            fileView,
             errorMessage.isEmpty
                 ? !isReady
                     ? Center(

@@ -24,6 +24,7 @@ class MyItem extends StatelessWidget {
       if (_param[gType] == null) {
         return null;
       }
+      var thisContext = this._param[gContext] ?? context;
       List<Widget> result = [];
       if (_param[gType] == gBtn) {
         result.add(MyButton(_param));
@@ -31,7 +32,7 @@ class MyItem extends StatelessWidget {
         if (_param[gAction] == gTable) {
           List detail = _param[gItems];
 
-          List list = datamodel.getButtonsList(context, detail, 0, _param);
+          List list = datamodel.getButtonsList(thisContext, detail, 0, _param);
 
           result.add(Wrap(
             spacing: 8.0, //gap between adjacent items
@@ -79,25 +80,26 @@ class MyItem extends StatelessWidget {
         Map searchItemValue = searchItem.value;
         searchItemValue.putIfAbsent(gAction, () => gLocalAction);
         searchItemValue.putIfAbsent(gWidth, () => 250.0);
-        searchItemValue.putIfAbsent(gContext, () => context);
+        searchItemValue.putIfAbsent(gContext, () => thisContext);
         searchItemValue.putIfAbsent(gTableID, () => tableName);
         searchItemValue.putIfAbsent(gOldvalue, () => tableInfo[gSearch] ?? '');
         result.add(TextFieldWidget(item: searchItem));
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
         _param[gAction] = gTextLink;
-        result.add(MyLabel(_param, backcolor));
+        _param[gColor] = Colors.transparent.value;
+        result.add(MyButton(_param));
       } else if (_param[gType] == gSizedbox) {
         result.add(SizedBox(height: _param[gValue]));
       } else if (_param[gType] == gTab) {
         String tabID = _param[gValue];
-        var tab = datamodel.getTab(tabID, context);
+        var tab = datamodel.getTab(tabID, thisContext);
         if (tab == null) {
           result.add(SizedBox());
           return result[0];
         }
         //var tabData = tab[gData];
-        final double _screenHeight = MediaQuery.of(context).size.height;
+        final double _screenHeight = MediaQuery.of(thisContext).size.height;
         result.add(Column(
           children: [
             SizedBox(
@@ -111,7 +113,7 @@ class MyItem extends StatelessWidget {
             ),
             SizedBox(
               height: _screenHeight - 200.0,
-              child: datamodel.getTabBody(tabID, context, backcolor),
+              child: datamodel.getTabBody(tabID, thisContext, backcolor),
             )
           ],
         ));

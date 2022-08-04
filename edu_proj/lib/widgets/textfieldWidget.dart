@@ -9,8 +9,9 @@ import 'package:provider/provider.dart';
 class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
   final int backcolor;
+  final String formname;
   final _debouncer = Debouncer(milliseconds: 500);
-  TextFieldWidget({this.item, this.backcolor});
+  TextFieldWidget({this.item, this.backcolor, this.formname});
   _getWidth() {
     return null;
     //item.value[gWidth] ?? null;
@@ -52,7 +53,8 @@ class TextFieldWidget extends StatelessWidget {
         width: _getWidth(),
         child: TextFormField(
             controller: item.value[gTxtEditingController],
-            autofocus: item.value[gFocus] ?? true,
+            autofocus: item.value[gFocus] ?? false,
+            //focusNode: item.value[gFocusNode],
             keyboardType: item.value[gInputType],
             maxLength: item.value[gLength],
             style: TextStyle(
@@ -133,6 +135,13 @@ class TextFieldWidget extends StatelessWidget {
             },
             onChanged: (text) {
               _debouncer.run(() => textChange(text, item, datamodel, context));
+            },
+            onTap: () {
+              if (datamodel.isNull(formname)) {
+                return;
+              }
+              //set focus
+              datamodel.setFormFocus(formname, item.value[gId]);
             }),
       );
     });

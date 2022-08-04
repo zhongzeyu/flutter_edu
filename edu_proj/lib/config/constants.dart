@@ -48,6 +48,8 @@ const gCompany = 'company';
 const gCompanyid = 'companyid';
 const gContext = 'context';
 const gContinue = 'Continue';
+const gController = 'controller';
+const gControllerListener = 'controllerlistener';
 const gCreateAccount = 'createAccount';
 const gCreatenewpassword = 'createnewpassword';
 
@@ -64,7 +66,7 @@ const gDefaultValue = 'defaultValue';
 const gDelete = 'Delete';
 const gDelimeterItem = '~';
 
-const gDetail = 'detail';
+const gDetail = 'Detail';
 const gDetailPage = 'detailPage';
 const gDivider = 'divider';
 
@@ -77,6 +79,7 @@ const gEmployee = 'employee';
 const gEn = 'en';
 const gEnterusercode = 'enterusercode';
 const gEteremailtoresetpassword = 'eteremailtoresetpassword';
+const gExcel = 'Excel';
 const gExpanded = 'Expanded';
 
 const gFiledownload = 'filedownload';
@@ -84,6 +87,8 @@ const gFilename = 'filename';
 const gFinishme = 'finishme';
 const gFirstPage = 'firstPage';
 const gFocus = 'focus';
+const gFocusNode = 'focusNode';
+
 const gFontSize = 'fontSize';
 const gFontStyle = 'fontStyle';
 const gFontWeight = 'fontWeight';
@@ -209,6 +214,7 @@ const gSetImgList = 'setImgList';
 const gSetSessionkey = 'setSessionkey';
 const gSetTableList = 'setTableList';
 const gShowErr = 'showErr';
+const gShowExcel = "showExcel";
 const gShowpdf = 'showPdf';
 const gShowScreenPage = 'showScreenPage';
 const gShowTable = 'showTable';

@@ -13,12 +13,16 @@ class MyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      Color btnColor = _param[gColor] ?? Colors.blue;
-      Color backColor = datamodel.fromBdckcolor(btnColor.value);
+      int btnColorValue = _param[gColor] ?? Colors.blue.value;
+      Color btnColor = Color(btnColorValue);
+      Color backColor = datamodel.fromBdckcolor(btnColorValue);
+      if (btnColor == Colors.transparent) {
+        backColor = btnColor;
+      }
 
       Map param = {
-        gWidth: _param[gWidth] ?? 200,
-        gHeight: _param[gHeight] ?? 40,
+        gWidth: _param[gWidth] ?? 200.0,
+        gHeight: _param[gHeight] ?? 40.0,
         gBorderRadius: _param[gBorderRadius] ?? 10.0,
         gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
         gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
@@ -34,8 +38,17 @@ class MyButton extends StatelessWidget {
       return InkWell(
         child: MyGlass(param),
         onTap: () {
-          datamodel.sendRequestOne(
-              _param[gAction], _param, this._param[gContext] ?? context);
+          if (_param[gType].toString().startsWith(gTab)) {
+            datamodel.processTap(
+                this._param[gContext] ?? context, _param, _param[gName]);
+            //} else if (_param[gAction] == null || _param[gAction] != gTextLink) {
+          } else if (!datamodel.isNull(this._param[gAction] ?? '')) {
+            datamodel.sendRequestOne(
+                _param[gAction], _param, this._param[gContext] ?? context);
+          } else {
+            datamodel.sendRequestOne(
+                gLocalAction, _param, this._param[gContext] ?? context);
+          }
         },
       );
       /*Map param = {

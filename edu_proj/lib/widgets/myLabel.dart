@@ -16,20 +16,24 @@ class MyLabel extends StatelessWidget {
         if (backcolor != null) {
           labelColor = datamodel.fromBdckcolor(backcolor);
         }
+        /*if (backcolor == Colors.transparent.value) {
+          labelColor = Colors.black;
+        }*/
         Text text = Text(
           datamodel.getSCurrent(_param[gLabel] ?? _param[gValue]),
           //textAlign: TextAlign.left,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontWeight: _param[gFontWeight], //FontWeight.bold,
             fontSize: _param[gFontSize],
             color: labelColor,
-            //backgroundColor: _param[gBackgroundColor]
+            //backgroundColor: Colors.transparent
           ),
         );
-        if (_param[gAction] == null || _param[gAction] != gTextLink) {
-          return text;
-        }
-        return Material(
+        //if (_param[gAction] == null || _param[gAction] != gTextLink) {
+        return text;
+        //}
+        /*return Material(
           child: InkWell(
             child: text,
             onTap: () {
@@ -37,7 +41,7 @@ class MyLabel extends StatelessWidget {
                   gLocalAction, _param, this._param[gContext] ?? context);
             },
           ),
-        );
+        );*/
       }
       return Text("");
     });
