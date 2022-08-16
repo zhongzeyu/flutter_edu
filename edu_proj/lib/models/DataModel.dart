@@ -39,24 +39,24 @@ import 'package:path_provider/path_provider.dart';
 import '../widgets/pdfScreen.dart';
 
 class DataModel extends ChangeNotifier {
-  //String _email;
-  String _token = '';
-  String _myId = '';
-  String _sessionkey = '';
-  String initRequest = ''; //'checkout';
+  //dynamic _email;
+  dynamic _token = '';
+  dynamic _myId = '';
+  dynamic _sessionkey = '';
+  dynamic initRequest = ''; //'checkout';
   int _zzyprime = 91473769;
   int _zzydhbase = 2;
   int _arandomsession = new Random().nextInt(1000);
   int _requestCnt = 0;
-  String _globalCompanyid = '';
+  dynamic _globalCompanyid = '';
   final int _defaultBackGroundColor = 4294967295; //4280391411;
   Map _systemParams = {gSystemTitle: gSystemTitle};
   int _lastBackGroundColor = 4280391411;
   final int _requestCntMax = 10;
-  //String _firstFormName = '';
+  //dynamic _firstFormName = '';
   http.Client httpClient = http.Client();
   //Locale _locale = const Locale('en', '');
-  String _locale = 'en';
+  dynamic _locale = 'en';
   /*final List<int> _colorList = [
     4282679983,
     4291930500,
@@ -81,33 +81,36 @@ class DataModel extends ChangeNotifier {
     Colors.yellow.value,
   ];
   //Locale get locale => _locale;
-  String get locale => _locale;
+  dynamic get locale => _locale;
   Widget _firstPage = Text('');
-  Map<String, Map<String, dynamic>> _formLists = {};
+  Map<dynamic, Map<dynamic, dynamic>> _formLists = {};
   Map<int, Color> _bdBackColorList = {};
-  Map<String, Map<String, dynamic>> _tableList = {};
-  Map<String, dynamic> _tabList = {};
+  Map<dynamic, Map<dynamic, dynamic>> _tableList = {};
+  Map<dynamic, dynamic> _tabList = {};
   //Widget _tabWidget;
-  Map<String, dynamic> _actionLists = {};
-  Map<String, dynamic> _menuLists = {};
-  Map<String, dynamic> _screenLists = {};
-  Map<String, String> _imgList = {
-    gMain:
-        'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
+  Map<dynamic, dynamic> _actionLists = {};
+  Map<dynamic, dynamic> _menuLists = {};
+  Map<dynamic, dynamic> _screenLists = {};
+  Map<dynamic, dynamic> _imgList = {
+    gMain: 'http://' +
+        MyConfig.URL.name +
+        '/images/main.jpg' //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   };
+
+  //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   Map get imgList => _imgList;
-  Map<String, dynamic> _i10nMap = {};
+  Map<dynamic, dynamic> _i10nMap = {};
   Queue _requestList = new Queue();
 
-  //String get email => _email;
-  String get token => _token;
-  Map<String, Map<String, dynamic>> get formLists => _formLists;
-  Map<String, dynamic> get actionLists => _actionLists;
-  Map<String, dynamic> get menuLists => _menuLists;
-  Map<String, dynamic> get screenLists => _screenLists;
+  //dynamic get email => _email;
+  dynamic get token => _token;
+  Map<dynamic, Map<dynamic, dynamic>> get formLists => _formLists;
+  Map<dynamic, dynamic> get actionLists => _actionLists;
+  Map<dynamic, dynamic> get menuLists => _menuLists;
+  Map<dynamic, dynamic> get screenLists => _screenLists;
 
-  Map<String, Map<String, dynamic>> get tableList => _tableList;
-  Map<String, dynamic> get tabList => _tabList;
+  Map<dynamic, Map<dynamic, dynamic>> get tableList => _tableList;
+  Map<dynamic, dynamic> get tabList => _tabList;
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
   Map get systemParams => _systemParams;
@@ -282,7 +285,7 @@ class DataModel extends ChangeNotifier {
     setFormListOne(data[gActionid], param[gFormdetail]);
   }
 
-  Future<void> alert(BuildContext context, String msg) async {
+  Future<void> alert(BuildContext context, dynamic msg) async {
     /*return showDialog<void>(
     barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
@@ -308,7 +311,7 @@ class DataModel extends ChangeNotifier {
   );*/
   }
   afterSubmit(context, _formName, result) {
-    Map<String, dynamic> formDefine = _formLists[_formName];
+    Map<dynamic, dynamic> formDefine = _formLists[_formName];
     if (formDefine[gBtns] != null) {
       List btnList = formDefine[gBtns];
       for (int i = 0; i < btnList.length; i++) {
@@ -561,7 +564,7 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  static Color fromInt(String strColor) {
+  static Color fromInt(dynamic strColor) {
     int intColor = int.parse(strColor);
     //print('=== intColor is $intColor');
     return Color(intColor);
@@ -736,7 +739,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getTitle(param, context, backcolor) {
-    String aLabel = param[gLabel];
+    dynamic aLabel = param[gLabel];
     if (aLabel == null) {
       if (param[gData] != null) {
         aLabel = param[gData][gLabel] ?? param[gData][gName];
@@ -812,16 +815,16 @@ class DataModel extends ChangeNotifier {
     if (tabledata == null) {
       return null;
     }
-    List<String> result = [];
+    List<dynamic> result = [];
     result.add('');
     List tabledataList = tabledata[gData];
     tabledataList.forEach((element) {
-      String value = element[gLabel];
+      dynamic value = element[gLabel];
       result.add(value);
     });
 
-    return result.map<DropdownMenuItem<String>>((String value) {
-      return DropdownMenuItem<String>(
+    return result.map<DropdownMenuItem<dynamic>>((dynamic value) {
+      return DropdownMenuItem<dynamic>(
         value: value,
         child: MyLabel({
           gLabel: value,
@@ -833,7 +836,7 @@ class DataModel extends ChangeNotifier {
   getDynamicWidgets(List param, context, backcolor) {
     List<Widget> widgetList = [];
     param.forEach((element) {
-      String type = element[gType];
+      dynamic type = element[gType];
       if (type == gTab) {
         widgetList.add(
           Container(
@@ -901,7 +904,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getFormValue(formid, dbid, valueid) {
-    Map<String, dynamic> formDetail = _formLists[formid];
+    Map<dynamic, dynamic> formDetail = _formLists[formid];
     if (valueid == gTxtEditingController) {
       return formDetail[gItems][dbid][valueid].value.text;
     }
@@ -1033,7 +1036,7 @@ class DataModel extends ChangeNotifier {
     ];
   }
 
-  getMenuItems(String menuName, context, backcolor) {
+  getMenuItems(dynamic menuName, context, backcolor) {
     List<Widget> items = [];
 
     /*for (int i = 0; i < _menuLists[menuName].length; i++) {
@@ -1284,20 +1287,20 @@ class DataModel extends ChangeNotifier {
   }
 
   getSCurrentLan(dynamic sourceOriginal, lancode) {
-    String source0 = sourceOriginal + "";
-    String sourceLocase = source0.toLowerCase();
-    String source = sourceLocase;
-    String sourceChck = source;
+    dynamic source0 = sourceOriginal + "";
+    dynamic sourceLocase = source0.toLowerCase();
+    dynamic source = sourceLocase;
+    dynamic sourceChck = source;
     if (sourceChck.indexOf("{") > 0) {
       sourceChck = sourceChck.substring(0, sourceChck.indexOf("{"));
     }
     if (_i10nMap[sourceChck] != null) {
-      String result = _i10nMap[sourceChck][lancode];
+      dynamic result = _i10nMap[sourceChck][lancode];
       if (result != null) {
         while ((result.indexOf('}') > 0 && result.indexOf('{') >= 0)) {
-          String result0 = result.substring(0, result.indexOf('{'));
+          dynamic result0 = result.substring(0, result.indexOf('{'));
 
-          String resultMid = "";
+          dynamic resultMid = "";
           if (source.indexOf('{') > -1 &&
               source.indexOf('}') > -1 &&
               source.indexOf('}') > source.indexOf('{')) {
@@ -1305,7 +1308,7 @@ class DataModel extends ChangeNotifier {
                 source.substring(source.indexOf('{') + 1, source.indexOf('}'));
           }
 
-          String result1 = result.substring(result.indexOf('}') + 1);
+          dynamic result1 = result.substring(result.indexOf('}') + 1);
 
           result = result0 + getSCurrent(resultMid) + result1;
           source = source.substring(source.indexOf('}') + 1);
@@ -1320,11 +1323,11 @@ class DataModel extends ChangeNotifier {
         return result;
       }
     } else if (source.indexOf(" ") > -1) {
-      String s0 = source0.substring(0, source.indexOf(" "));
-      String s1 = source0.substring(source.indexOf(" ") + 1);
-      String s0Result = getSCurrent(s0);
-      String s1Result = getSCurrent(s1);
-      String delimiter = ' ';
+      dynamic s0 = source0.substring(0, source.indexOf(" "));
+      dynamic s1 = source0.substring(source.indexOf(" ") + 1);
+      dynamic s0Result = getSCurrent(s0);
+      dynamic s1Result = getSCurrent(s1);
+      dynamic delimiter = ' ';
       if (lancode == 'zh') {
         if (s0 != s0Result && s1 != s1Result) {
           delimiter = '';
@@ -1359,7 +1362,7 @@ class DataModel extends ChangeNotifier {
     if (data[gType] == gCard) {
       return getCard(data[gBody], context, tabname, backcolor);
     } else if (data[gType].toString().endsWith(gTable)) {
-      //String tableName = data[gActionid];
+      //dynamic tableName = data[gActionid];
       data[gTabName] = tabname;
       return getTableBody(data, context, backcolor);
       /*return Column(
@@ -1370,7 +1373,7 @@ class DataModel extends ChangeNotifier {
         ],
       );*/
     } else if (data[gType] == gTabletree) {
-      //String tableName = data[gActionid];
+      //dynamic tableName = data[gActionid];
       setTreeNode(data, context);
       return getTreeBody(data, context, backcolor);
     }
@@ -1547,8 +1550,8 @@ class DataModel extends ChangeNotifier {
 
   getTableBodyParam(data, context) {
     //_tableList[tableName][gKey] = UniqueKey();
-    String tableName = data[gActionid] ?? data[gTableID];
-    //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+    dynamic tableName = data[gActionid] ?? data[gTableID];
+    //dynamic tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
 
     Map tableInfo = _tableList[tableName];
     //List tableData = tableInfo[gData];
@@ -1673,17 +1676,29 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableCellValueFromDataRow(dataRow, columns, colIndex, context) {
-    String colName = columns[colIndex][gId];
+    return getTableCellValueFromDataRowIsRaw(
+        dataRow, columns, colIndex, context, false);
+  }
+
+  getTableCellValueFromDataRowIsRaw(
+      dataRow, columns, colIndex, context, isRaw) {
+    dynamic colName = columns[colIndex][gId];
     var result = dataRow[colName];
     if (isNull(result)) {
       return result;
     }
-    String inputType = columns[colIndex][gInputType];
+    dynamic inputType = columns[colIndex][gInputType];
 
     if (inputType == gDatetime) {
+      if (isRaw) {
+        if (isNull(result)) {
+          return 0;
+        }
+        return int.parse(result);
+      }
       return toLocalTime(result);
     }
-    String droplist = columns[colIndex][gDroplist];
+    dynamic droplist = columns[colIndex][gDroplist];
     if (!isNull(droplist)) {
       //getTableValueKeyFromColumns(columns, dataRow)
       return getTableKeyword(droplist, result, context);
@@ -1702,7 +1717,7 @@ class DataModel extends ChangeNotifier {
 
   getTableRowShowValueFilterMapOrList(
       item, colList, context, filterValue, mapOrList) {
-    String filterValueLower = filterValue.toString().toLowerCase();
+    dynamic filterValueLower = filterValue.toString().toLowerCase();
     Map result = {};
     List resultList = [];
 
@@ -1726,11 +1741,8 @@ class DataModel extends ChangeNotifier {
         }
         if (!filterValueExists) {
           if (!isHiddenColumn(colList, i)) {
-            if (!isNull(result[ci[gId]]) &&
-                result[ci[gId]]
-                    .toString()
-                    .toLowerCase()
-                    .contains(filterValueLower)) {
+            if (!isNull(oneValue) &&
+                oneValue.toString().toLowerCase().contains(filterValueLower)) {
               filterValueExists = true;
             }
           }
@@ -1771,10 +1783,11 @@ class DataModel extends ChangeNotifier {
       return result;
     }
     columns.forEach((element) {
-      if ((element[gIsKeyword] ?? false)) {
+      bool isKeyword = element[gIsKeyword] ?? false;
+      if (isKeyword) {
         var value = dataRow[element[gId]];
         if (!isNull(value)) {
-          result += sep + dataRow[element[gId]];
+          result += sep + value;
           sep = ",";
         }
       }
@@ -1836,7 +1849,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getWidgetForm(param, backcolor) {
-    String formID = param[gFormdetail][gFormName];
+    dynamic formID = param[gFormdetail][gFormName];
 
     setFormListOne(formID, param);
     /*int index = -1;
@@ -1863,7 +1876,7 @@ class DataModel extends ChangeNotifier {
     return title;
   }
 
-  String hash(str) {
+  dynamic hash(str) {
     var bytes1 = utf8.encode(str); // data being hashed
     var digest1 = sha256.convert(bytes1); // Hashing Process
     return digest1.toString();
@@ -1912,7 +1925,7 @@ class DataModel extends ChangeNotifier {
       //  .toLocal();
       DateTime dt =
           DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
-      String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+      dynamic formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
       return formattedDate;
       //return DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
       /*DateTime _nowDate = DateTime.now();
@@ -2060,13 +2073,13 @@ class DataModel extends ChangeNotifier {
         data[gValue] != null &&
         data[gMove] != null) {
       //bool expanded = data[gMove];
-      //String key = data[gValue];
+      //dynamic key = data[gValue];
     } else if (data[gLabel] != null &&
         data[gLabel] == gTreeSelected &&
         data[gValue] != null) {
       if (data[gData] != null && data[gData][gType] != null) {
         if (data[gData][gType] == gTabletree) {
-          String tableid = data[gValue] ?? '';
+          dynamic tableid = data[gValue] ?? '';
           if (tableid != '') {
             //show table
             Map element = {
@@ -2086,7 +2099,7 @@ class DataModel extends ChangeNotifier {
       searchTable(data, context);
     } else if (data[gLabel] != null && data[gLabel] == gLogout) {
       logOff(context);
-    } else if (data[gAction] == gTextLink) {
+    } else if (!isNull(data[gAction1])) {
       businessFunc(data[gAction1], context);
 
       //forgetpassword(context);
@@ -2526,7 +2539,7 @@ class DataModel extends ChangeNotifier {
   setFormList(actionData) {
     List<dynamic> thisList = actionData;
     for (int i = 0; i < thisList.length; i++) {
-      Map<String, dynamic> thisListI = thisList[i];
+      Map<dynamic, dynamic> thisListI = thisList[i];
       var formID = thisListI[gFormName];
       setFormListOne(formID, thisListI);
     }
@@ -2540,7 +2553,7 @@ class DataModel extends ChangeNotifier {
     }
     //var formDetail = param[gFormdetail];
     // var btns = param[gBtns];
-    Map<String, dynamic> formValue = Map.from(formDetail);
+    Map<dynamic, dynamic> formValue = Map.from(formDetail);
 
     Map<dynamic, dynamic> itemList = formValue[gItems];
     itemList.entries.forEach((elementItemList) {
@@ -2571,7 +2584,7 @@ class DataModel extends ChangeNotifier {
   }
 
   showAlertDialog(BuildContext context, title, msg, requestFirst) {
-    int backcolor = Colors.black.value;
+    int backcolor = Colors.white.value;
     // set up the buttons
     Widget cancelButton = ElevatedButton(
       child: MyLabel({gLabel: gCancel}, backcolor),
@@ -2605,10 +2618,10 @@ class DataModel extends ChangeNotifier {
   }
 
   showPDF(actionData, context) async {
-    String filename = '';
-    String subject = '';
+    dynamic filename = '';
+    dynamic subject = '';
     for (int i = 0; i < actionData.length; i++) {
-      Map<String, dynamic> ai = Map.of(actionData[i]);
+      Map<dynamic, dynamic> ai = Map.of(actionData[i]);
       filename = ai[gFilename];
       subject = ai[gSubject];
     }
@@ -2631,10 +2644,10 @@ class DataModel extends ChangeNotifier {
   }
 
   Future downloadFile(filename, context, needRemove, subject) async {
-    String filePath = '';
+    dynamic filePath = '';
 
     try {
-      String myUrl = 'http://' +
+      dynamic myUrl = 'http://' +
           MyConfig.URL.name +
           '/' +
           MyConfig.DOWNLOAD.name +
@@ -2648,7 +2661,7 @@ class DataModel extends ChangeNotifier {
         //await consolidateHttpClientResponseBytes(response);
         //Directory dir = await getApplicationDocumentsDirectory();
         Directory dir = await getTemporaryDirectory();
-        String tempPath = dir.path;
+        dynamic tempPath = dir.path;
         //showMsg(context, tempPath);
 
         filePath = '$tempPath/$filename';
@@ -2672,9 +2685,9 @@ class DataModel extends ChangeNotifier {
 
   showScreenPage(actionData, context, backcolor) {
     for (int i = 0; i < actionData.length; i++) {
-      Map<String, dynamic> ai = actionData[i];
-      String name = '';
-      String type = '';
+      Map<dynamic, dynamic> ai = actionData[i];
+      dynamic name = '';
+      dynamic type = '';
       dynamic data;
       ai.entries.forEach((element) {
         if (element.key == gName) {
@@ -2716,7 +2729,7 @@ class DataModel extends ChangeNotifier {
 
   newForm(data, context) {
     var tableName = data[gActionid] ?? data[gTableID];
-    Map<String, dynamic> formDefine = _formLists[tableName];
+    Map<dynamic, dynamic> formDefine = _formLists[tableName];
     Map<dynamic, dynamic> items = formDefine[gItems];
     items.entries.forEach((item) {
       item.value[gOldvalue] = null;
@@ -2728,7 +2741,7 @@ class DataModel extends ChangeNotifier {
 
   showFormEdit(data, context) {
     var tableName = data[gActionid] ?? data[gTableID];
-    Map<String, dynamic> formDefine = _formLists[tableName];
+    Map<dynamic, dynamic> formDefine = _formLists[tableName];
     Map<dynamic, dynamic> items = formDefine[gItems];
     dynamic dataRow = data[gRow];
     items.entries.forEach((item) {
@@ -2784,7 +2797,7 @@ class DataModel extends ChangeNotifier {
 
   setI10n(actionData) {
     for (int i = 0; i < actionData.length; i++) {
-      Map<String, dynamic> ai = Map.of(actionData[i]);
+      Map<dynamic, dynamic> ai = Map.of(actionData[i]);
       ai.entries.forEach((element) {
         Map mValue = Map.of(element.value);
         _i10nMap[element.key] = mValue;
@@ -2933,7 +2946,7 @@ class DataModel extends ChangeNotifier {
 
   setSessionkey(data) {
     int key = int.parse(data);
-    String sessionkey = getMod(key, _arandomsession, _zzyprime).toString();
+    dynamic sessionkey = getMod(key, _arandomsession, _zzyprime).toString();
     _sessionkey = hash(sessionkey);
     //myNotifyListeners();
   }
@@ -2949,7 +2962,7 @@ class DataModel extends ChangeNotifier {
   setTreeNode(data, context) {
     /*List<Node> nodes = [];
     if (data[gType] == gTabletree) {
-      String tableName = data[gActionid];
+      dynamic tableName = data[gActionid];
       nodes = getTreeNodesFromTable(tableName, context, 0);
     }
     data[gNode] = nodes;*/
@@ -3023,7 +3036,7 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
-  showTable(String tableid, context, title, transpass, backcolor) {
+  showTable(dynamic tableid, context, title, transpass, backcolor) {
     if (_tableList[tableid] == null) {
       retrieveTableFromDB(tableid, context);
     } else {
@@ -3068,16 +3081,16 @@ class DataModel extends ChangeNotifier {
   }
 
   toFile(data, context, label) {
-    String tableName = data[gTableID];
+    dynamic tableName = data[gTableID];
     List header = [];
     List body = [];
 
     Map tableInfo = _tableList[tableName];
 
     //tableInfo.[gData].length;
-    List tableData = tableInfo[gData];
+    //List tableData = tableInfo[gData];
     List columns = tableInfo[gColumns];
-    String subject = tableInfo[gAttr][gLabel] ?? '';
+    dynamic subject = tableInfo[gAttr][gLabel] ?? '';
 
     for (int i = 0; i < columns.length; i++) {
       if (isHiddenColumn(columns, i)) {
@@ -3087,30 +3100,16 @@ class DataModel extends ChangeNotifier {
       header.add(getSCurrentLan(columns[i][gLabel], 'en'));
     }
 
-    String searchValue = tableInfo[gSearch] ?? '';
-    List newData = [];
+    List newData = tableInfo[gDataSearch] ?? tableInfo[gData];
 
-    for (int i = 0; i < tableData.length; i++) {
-      Map dataRow = tableData[i];
+    for (int i = 0; i < newData.length; i++) {
+      Map dataRow = newData[i];
       //get updated value
       List ti = getTableRowShowValueFilterMapOrList(
-          dataRow, columns, context, searchValue, false);
+          dataRow, columns, context, '', false);
       if (ti != null) {
         body.add(ti);
       }
-      /*bool searchTxtExists = false;
-        for (MapEntry element in ti.entries) {
-          var elementKey = element.key;
-
-          if (searchValue == '' ||
-              (element.value ?? '').indexOf(searchValue) > -1) {
-            searchTxtExists = true;
-            break;
-          }
-        }
-        if (searchTxtExists) {
-          newData.add(ti);
-        }*/
     }
 
     tableInfo[gDataSearch] = newData;
@@ -3133,7 +3132,9 @@ class DataModel extends ChangeNotifier {
   }
 
   tableSort(tableName, columnIndex, ascending, context) {
-    List data = tableList[tableName][gData];
+    //List data = tableList[tableName][gData];
+    Map tableInfo = tableList[tableName];
+    List data = tableInfo[gData];
     if (data == null || data.length < 2) {
       return;
     }
@@ -3151,32 +3152,34 @@ class DataModel extends ChangeNotifier {
     }
     data.sort((a, b) =>
         tableSortCompare(a, b, columns, dataColumnIndex, ascending, context));
-
+    //tableInfo[gDataSearch] = data;
     tableList[tableName][gAscending] = ascending;
     tableList[tableName][gSortColumnIndex] = columnIndex;
   }
 
   tableSortCompare(a, b, columns, colindex, ascending, context) {
-    String inputType = columns[colindex][gInputType];
+    dynamic inputType = columns[colindex][gInputType];
+    var valueA =
+        getTableCellValueFromDataRowIsRaw(a, columns, colindex, context, true);
+    var valueB =
+        getTableCellValueFromDataRowIsRaw(b, columns, colindex, context, true);
+
     if (ascending) {
       if (inputType == gDatetime) {
-        return getTableCellValueFromDataRow(a, columns, colindex, context) -
-            getTableCellValueFromDataRow(b, columns, colindex, context);
+        return valueA - valueB;
       } else {
         //data.sort((a, b) => a[colName].compareTo(b[colName]));
-        return getTableCellValueFromDataRow(a, columns, colindex, context)
-            .compareTo(
-                getTableCellValueFromDataRow(b, columns, colindex, context));
+        var result =
+            valueA.toString().trim().compareTo(valueB.toString().trim());
+        return result;
       }
     } else {
       if (inputType == gDatetime) {
-        return getTableCellValueFromDataRow(b, columns, colindex, context) -
-            getTableCellValueFromDataRow(a, columns, colindex, context);
+        return valueB - valueA;
       } else {
         //data.sort((a, b) => a[colName].compareTo(b[colName]));
-        return getTableCellValueFromDataRow(b, columns, colindex, context)
-            .compareTo(
-                getTableCellValueFromDataRow(a, columns, colindex, context));
+        var result = valueB.compareTo(valueA);
+        return result;
       }
     }
   }
