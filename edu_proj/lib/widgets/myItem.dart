@@ -1,5 +1,5 @@
 // @dart=2.9
-import 'dart:convert';
+//import 'dart:convert';
 
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
@@ -110,7 +110,7 @@ class MyItem extends StatelessWidget {
         result.add(Column(
           children: [
             SizedBox(
-              height: 60,
+              height: 60.0,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: tab[gData].length,
