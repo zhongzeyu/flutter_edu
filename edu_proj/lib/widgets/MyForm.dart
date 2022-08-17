@@ -13,7 +13,7 @@ import 'myDropdown.dart';
 import 'myGlass.dart';
 
 class MyForm extends StatelessWidget {
-  final String _param;
+  final dynamic _param;
   final int backcolor;
   //final FocusNode focusNode = new FocusNode();
   //final _debouncer = Debouncer(milliseconds: 1000);
@@ -27,12 +27,12 @@ class MyForm extends StatelessWidget {
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
         final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-        final String _formName = _param;
+        final dynamic _formName = _param;
         //['name'];
         if (datamodel.formLists[_formName] == null) {
           return MyLabel({gLabel: gNotavailable, gFontSize: 20.0}, backcolor);
         }
-        Map<String, dynamic> formDefine = datamodel.formLists[_formName];
+        Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
         Map<dynamic, dynamic> items = formDefine[gItems];
         Color cBackColor = datamodel.fromBdckcolor(backcolor);
         //Size size = MediaQuery.of(context).size;
@@ -79,7 +79,7 @@ class MyForm extends StatelessWidget {
 
                     /*
                 onTab: () => {_onTab(item.value['id'], size)},
-                onChanged: (String value) =>
+                onChanged: (dynamic value) =>
                     {_onChange(item.value['id'], value)},
                 textFieldController: item.value['txtEditingController'],
                 */
@@ -93,7 +93,7 @@ class MyForm extends StatelessWidget {
               } else {
                 //if had droplist, use dropdown
                 if (!datamodel.isNull(item.value[gDroplist])) {
-                  /*result.add(DropdownButton<String>(
+                  /*result.add(DropdownButton<dynamic>(
                     value: 'One',
                     icon: const Icon(Icons.arrow_downward),
                     elevation: 16,
@@ -102,10 +102,10 @@ class MyForm extends StatelessWidget {
                       height: 2,
                       color: Colors.deepPurpleAccent,
                     ),
-                    onChanged: (String newValue) {},
-                    items: <String>['One', 'Two', 'Free', 'Four']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
+                    onChanged: (dynamic newValue) {},
+                    items: <dynamic>['One', 'Two', 'Free', 'Four']
+                        .map<DropdownMenuItem<dynamic>>((dynamic value) {
+                      return DropdownMenuItem<dynamic>(
                         value: value,
                         child: Text(value),
                       );
@@ -121,7 +121,7 @@ class MyForm extends StatelessWidget {
                         item: item, backcolor: backcolor, formname: _formName
                         /*
                 onTab: () => {_onTab(item.value['id'], size)},
-                onChanged: (String value) =>
+                onChanged: (dynamic value) =>
                     {_onChange(item.value['id'], value)},
                 textFieldController: item.value['txtEditingController'],
                 */

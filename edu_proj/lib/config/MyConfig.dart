@@ -5,7 +5,7 @@ enum MyConfig {
 }
 
 extension MyConfigExtension on MyConfig {
-  String get name {
+  dynamic get name {
     return [
       '192.168.50.239',
       'smilesmart',

@@ -11,7 +11,7 @@ class TableData extends DataTableSource {
 
   TableData(this._param, this._context);
   // Generate some made-up data
-  /*final List<Map<String, dynamic>> _data = List.generate(
+  /*final List<Map<dynamic, dynamic>> _data = List.generate(
       200,
       (index) => {
             "id": index,

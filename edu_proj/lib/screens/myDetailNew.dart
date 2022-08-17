@@ -6,6 +6,8 @@ import 'package:edu_proj/widgets/myScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/myPic.dart';
+
 class MyDetailNew extends StatelessWidget {
   final Map _param;
   final int backcolor;
@@ -122,7 +124,6 @@ class MyDetailNew extends StatelessWidget {
           ],
         )
       };
-      //String imgUrl = datamodel.imgList[gMain];
 
       return Scaffold(
         body: Container(
@@ -131,7 +132,8 @@ class MyDetailNew extends StatelessWidget {
           color: Colors.black,
           child: Stack(children: [
             Center(
-              child: Image.network(datamodel.imgList[gMain]),
+              child: MyPic({gImg: datamodel.imgList[gMain]}),
+              //Image.network(datamodel.imgList[gMain]),
             ),
             SafeArea(
               child: MyGlass(param),

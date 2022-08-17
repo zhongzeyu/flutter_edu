@@ -4,6 +4,8 @@ import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/myPic.dart';
+
 class MainPage extends StatelessWidget {
   const MainPage({Key key}) : super(key: key);
 
@@ -16,7 +18,8 @@ class MainPage extends StatelessWidget {
         //margin: EdgeInsets.all(10.0),
         color: Colors.black,
         child: Center(
-          child: Image.network(datamodel.imgList[gMain]),
+          child: MyPic({gImg: datamodel.imgList[gMain]}),
+          //Image.network(datamodel.imgList[gMain]),
         ),
       );
     });

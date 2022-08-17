@@ -32,7 +32,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
     /*getMenuItems(List mainItem, DataModel datamodel) {
       List<Widget> items = [];
       mainItem.forEach((element) {
-        Map<String, String> map = {};
+        Map<dynamic, dynamic> map = {};
         element.entries.forEach((e) {
           map[e.key] = e.value;
         });
@@ -55,7 +55,7 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
       List<Widget> items = [];
       items.add(datamodel.getLocalComponents(context, Colors.black));
       actionItem.forEach((element) {
-        Map<String, dynamic> map = Map.of(element);
+        Map<dynamic, dynamic> map = Map.of(element);
         /*{};
         element.entries.forEach((e) {
           map[e.key] = e.value;
@@ -74,10 +74,10 @@ class _MyMainState extends State<MyMain> with TickerProviderStateMixin {
 
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
-        Map<String, dynamic> formDefine = datamodel.formLists[gLogin];
+        Map<dynamic, dynamic> formDefine = datamodel.formLists[gLogin];
         //datamodel.setTabParent(this);
         //datamodel.initTabController(context);
-        /*String myTitle =
+        /*dynamic myTitle =
             datamodel.getSCurrent(datamodel.systemParams['systemTitle']);*/
 
         return Scaffold(

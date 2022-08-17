@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
   final int backcolor;
-  final String formname;
+  final dynamic formname;
   final _debouncer = Debouncer(milliseconds: 500);
   TextFieldWidget({this.item, this.backcolor, this.formname});
   _getWidth() {
@@ -18,7 +18,7 @@ class TextFieldWidget extends StatelessWidget {
   }
 
   textChange(
-      String text, MapEntry item, DataModel datamodel, BuildContext context) {
+      dynamic text, MapEntry item, DataModel datamodel, BuildContext context) {
     if ((item.value[gAction] ?? '') == '') {
       return;
     }
@@ -85,7 +85,7 @@ class TextFieldWidget extends StatelessWidget {
               //prefixIcon: item.value['prefixIcon'],
             ),
             obscureText: isPassword && item.value[gPasswordShow],
-            validator: (String value) {
+            validator: (dynamic value) {
               if (item.value[gRequired] && value.isEmpty) {
                 return datamodel
                     .getSCurrent(gIsrequired + "{" + item.value[gLabel] + "}");
@@ -130,7 +130,7 @@ class TextFieldWidget extends StatelessWidget {
               : (item.value[gDefaultValue] != null
                   ? item.value[gDefaultValue]
                   : ""),*/
-            onSaved: (String value) {
+            onSaved: (dynamic value) {
               item.value[gValue] = value;
             },
             onChanged: (text) {

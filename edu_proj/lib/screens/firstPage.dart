@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/myGlass.dart';
+import '../widgets/myPic.dart';
 
 class FirstPage extends StatelessWidget {
   FirstPage();
@@ -69,7 +70,6 @@ class FirstPage extends StatelessWidget {
           ],
         )
       };
-      //String imgUrl = datamodel.imgList[gMain];
 
       return Scaffold(
         body: Container(
@@ -78,7 +78,8 @@ class FirstPage extends StatelessWidget {
           color: Colors.black,
           child: Stack(children: [
             Center(
-              child: Image.network(datamodel.imgList[gMain]),
+              child: MyPic({gImg: datamodel.imgList[gMain]}),
+              //Image.network(datamodel.imgList[gMain]),
             ),
             SafeArea(
               child: MyGlass(param),

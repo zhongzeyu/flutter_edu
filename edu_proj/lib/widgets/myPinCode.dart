@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 class MyPinCode extends StatelessWidget {
   final dynamic _param;
-  final String _formName;
+  final dynamic _formName;
   MyPinCode(this._param, this._formName);
 
   @override
@@ -17,7 +17,6 @@ class MyPinCode extends StatelessWidget {
           child: PinCodeTextField(
             appContext: context,
             autoFocus: true,
-
             length: _param[gLength],
 //onChanged: (pin) => _registerVerifyController.onChange(pin),
             keyboardType: TextInputType.number,
@@ -38,13 +37,20 @@ class MyPinCode extends StatelessWidget {
             ),*/
             //onCompleted: (pin) => datamodel.setDropdownMenuItem(
             //  _param, pin, context, _formName),
-            onCompleted: (pin) => datamodel.formSubmit(context, _formName),
-            onChanged: (String value) {
+            //onCompleted: (pin) => datamodel.formSubmit(context, _formName),
+            onCompleted: (pin) {
+              var email =
+                  datamodel.getFormValue(gLogin, gEmail, gTxtEditingController);
+              datamodel.setFormValue(
+                  _formName, _param[gId], email + gDelimeterItem + pin);
+            },
+            onChanged: (dynamic value) {},
+            /*onChanged: (dynamic value) {
               var email =
                   datamodel.getFormValue(gLogin, gEmail, gTxtEditingController);
               datamodel.setFormValue(
                   _formName, _param[gId], email + gDelimeterItem + value);
-            },
+            },*/
           ));
     });
   }

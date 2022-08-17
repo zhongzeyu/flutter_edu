@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 class MyDropdown extends StatelessWidget {
   final dynamic _param;
-  final String _formName;
+  final dynamic _formName;
   final int backcolor;
   MyDropdown(this._param, this._formName, this.backcolor);
 
@@ -15,7 +15,7 @@ class MyDropdown extends StatelessWidget {
       return Padding(
           padding: const EdgeInsets.all(18.0),
           child: SizedBox(
-            child: DropdownButton<String>(
+            child: DropdownButton<dynamic>(
               value: _param[gValue],
               icon: const Icon(Icons.arrow_downward),
               elevation: 16,
@@ -24,7 +24,7 @@ class MyDropdown extends StatelessWidget {
                 height: 2,
                 color: Colors.deepPurpleAccent,
               ),
-              onChanged: (String newValue) {
+              onChanged: (dynamic newValue) {
                 datamodel.setDropdownMenuItem(
                     _param, newValue, context, _formName);
               },

@@ -22,14 +22,14 @@ class MyPaginatedDataTable extends StatelessWidget {
     DataTableSource tabledata;
     int actionBtnCnts = 0;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
-      String tableName = _param[gName];
+      //dynamic tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+      dynamic tableName = _param[gName];
 
       Map tableInfo = datamodel.tableList[tableName];
       //tableInfo.[gData].length;
       List tableData = tableInfo[gData];
       List columns = tableInfo[gColumns];
-      String searchValue = tableInfo[gSearch] ?? '';
+      dynamic searchValue = tableInfo[gSearch] ?? '';
       List newData = [];
 
       for (int i = 0; i < tableData.length; i++) {
@@ -142,7 +142,7 @@ class MyPaginatedDataTable extends StatelessWidget {
               },
               child: MyLabel({gLabel: gDelete})));
         }
-        //String tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
+        //dynamic tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
 
         return items;
       }*/

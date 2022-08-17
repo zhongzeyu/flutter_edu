@@ -8,6 +8,7 @@ import 'package:edu_proj/widgets/myButton.dart';
 import 'package:edu_proj/widgets/myIcon.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
+import 'package:edu_proj/widgets/myPic.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
 //import 'package:edu_proj/widgets/myTab.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +43,7 @@ class MyItem extends StatelessWidget {
           ));
         }
       } else if (_param[gType] == gForm) {
-        String formID = _param[gValue];
+        dynamic formID = _param[gValue];
 
         //datamodel.setFormListOne(formID, _param);
 
@@ -53,13 +54,18 @@ class MyItem extends StatelessWidget {
         //var imgOriginal = _param[gValue];
         var imgOriginal = datamodel.imgList[_param[gValue]] ??
             datamodel.imgList[gNotavailable];
-        result.add(Image.memory(
+        result.add(MyPic({
+          gImg: imgOriginal,
+          gHeight: (_param[gHeight] != null) ? _param[gHeight] : null,
+          gWidth: (_param[gWidth] != null) ? _param[gWidth] : null,
+        }));
+        /*result.add(Image.memory(
           base64.decode(imgOriginal),
           fit: BoxFit.fill,
           gaplessPlayback: true,
           height: (_param[gHeight] != null) ? _param[gHeight] : null,
           width: (_param[gWidth] != null) ? _param[gWidth] : null,
-        ));
+        ));*/
         if (_param[gLabel] != null) {
           result.add(SizedBox(width: gDefaultPaddin));
           result.add(MyLabel(_param, backcolor));
@@ -86,13 +92,14 @@ class MyItem extends StatelessWidget {
         result.add(TextFieldWidget(item: searchItem));
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
-        _param[gAction] = gTextLink;
+        //_param[gAction] = gTextLink;
+        _param[gAction] = gLocalAction;
         _param[gColor] = Colors.transparent.value;
         result.add(MyButton(_param));
       } else if (_param[gType] == gSizedbox) {
         result.add(SizedBox(height: _param[gValue]));
       } else if (_param[gType] == gTab) {
-        String tabID = _param[gValue];
+        dynamic tabID = _param[gValue];
         var tab = datamodel.getTab(tabID, thisContext);
         if (tab == null) {
           result.add(SizedBox());

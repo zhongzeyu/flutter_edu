@@ -46,7 +46,8 @@ dependencies:
   uc_pdfview:
   share_plus: ^4.0.3
   shared_preferences:
-
+  scrollable_positioned_list:
+  
 
     
     
