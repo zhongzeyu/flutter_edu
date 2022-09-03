@@ -176,6 +176,7 @@ class DataModel extends ChangeNotifier {
       return;
     }
     addTabSub(data, tabName);
+    changeTabPos(tabName, data[gLabel]);
     /*_tabList[tabName][gData].add(
         {gLabel: data[gLabel], gType: data[gType], gActionid: data[gActionid]});
     _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;*/
@@ -811,10 +812,26 @@ class DataModel extends ChangeNotifier {
   }
 
   getDropdownMenuItem(tableid, filterStr, context, backcolor) {
-    dynamic tabledata = getTableByTableID(tableid, null, context);
+    dynamic tabledata =
+        getTableByTableID('Zzydictionary', gLabel + '=' + tableid, context);
     if (tabledata == null) {
       return null;
     }
+    var parentid = '';
+    List tabledataListDictionary = tabledata[gData];
+    tabledataListDictionary.forEach((element) {
+      parentid = element[gId];
+    });
+    if (isNull(parentid)) {
+      return null;
+    }
+
+    tabledata = getTableByTableID(
+        'Zzydictionaryitem', gParentid + "='" + parentid + "'", context);
+    if (tabledata == null) {
+      return null;
+    }
+
     List<dynamic> result = [];
     result.add('');
     List tabledataList = tabledata[gData];
@@ -1477,7 +1494,7 @@ class DataModel extends ChangeNotifier {
       gLabel: '',
       gType: gTable,
       gActionid: tableid,
-      gWhere: "",
+      gWhere: (where ?? ""),
       gColorIndex: 0
     };
     sendRequestOne(gProcess, [element], context);
@@ -1731,23 +1748,25 @@ class DataModel extends ChangeNotifier {
     for (int i = 0; i < colList.length; i++) {
       var ci = colList[i];
       var colIndex = i;
-      if (!isNull(item[ci[gId]])) {
-        var oneValue =
-            getTableCellValueFromDataRow(item, colList, colIndex, context) ??
-                '';
-        result[ci[gId]] = oneValue;
+      //if (!isNull(item[ci[gId]])) {
+      var oneValue =
+          getTableCellValueFromDataRow(item, colList, colIndex, context) ?? '';
+      if (isNull(oneValue)) {
+        oneValue = "";
+      }
+      result[ci[gId]] = oneValue;
+      if (!isHiddenColumn(colList, i)) {
+        resultList.add(oneValue);
+      }
+      if (!filterValueExists) {
         if (!isHiddenColumn(colList, i)) {
-          resultList.add(oneValue);
-        }
-        if (!filterValueExists) {
-          if (!isHiddenColumn(colList, i)) {
-            if (!isNull(oneValue) &&
-                oneValue.toString().toLowerCase().contains(filterValueLower)) {
-              filterValueExists = true;
-            }
+          if (!isNull(oneValue) &&
+              oneValue.toString().toLowerCase().contains(filterValueLower)) {
+            filterValueExists = true;
           }
         }
       }
+      //}
     }
     if (!filterValueExists) {
       return null;
@@ -2279,12 +2298,49 @@ class DataModel extends ChangeNotifier {
   }
 
   processTap(context, element, tabName) {
-    _tabList[tabName][gData].forEach((el) {
+    processTapBasic(context, element, tabName, false);
+  }
+
+  changeTabPos(tabName, tabLabel) {
+    List tabData = _tabList[tabName][gData];
+    int iLoc = 0;
+    Map mLoc;
+    for (int i = 0; i < tabData.length; i++) {
+      Map el = tabData[i];
+      if (el[gLabel] == tabLabel) {
+        iLoc = i;
+        mLoc = el;
+      }
+    }
+    if (iLoc > 1) {
+      while (iLoc > 1) {
+        tabData[iLoc] = tabData[iLoc - 1];
+        iLoc--;
+      }
+      tabData[iLoc] = mLoc;
+    }
+
+    _tabList[tabName][gTabIndex] = iLoc;
+  }
+
+  processTapBasic(context, element, tabName, needPosChange) {
+    if (needPosChange) {
+      changeTabPos(tabName, element[gLabel]);
+    }
+    List tabData = _tabList[tabName][gData];
+    for (int i = 0; i < tabData.length; i++) {
+      Map el = tabData[i];
       if (el[gLabel] == element[gLabel]) {
         showTab(el[gLabel], context, tabName);
         return;
       }
-    });
+    }
+    /*tabData.forEach((el) {
+      if (el[gLabel] == element[gLabel]) {
+        showTab(el[gLabel], context, tabName);
+        return;
+      }
+    });*/
     sendRequestOne(gProcess, [element], context);
   }
 
@@ -3020,15 +3076,8 @@ class DataModel extends ChangeNotifier {
         _tabList[tabName][gData][i][gVisible] = true;
         if (_tabList[tabName][gTabIndex] != i) {
           _tabList[tabName][gTabIndex] = i;
-          myNotifyListeners();
-          _tabList[tabName][gController].scrollTo(
-              index: i,
-              duration: Duration(seconds: 2),
-              curve: Curves.easeInOutCubic);
-          _tabList[tabName][gController].jumpTo(index: i);
-
-          myNotifyListeners();
         }
+        myNotifyListeners();
         return true;
       }
     }
