@@ -111,6 +111,9 @@ class MyForm extends StatelessWidget {
                       );
                     }).toList(),
                   ));*/
+                  datamodel.getDropdownMenuItem(
+                      item.value[gDroplist], null, context, backcolor);
+
                   result.add(
                     MyDropdown(item.value, _formName, backcolor),
                   );

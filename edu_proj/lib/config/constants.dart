@@ -5,6 +5,7 @@ const gAction1 = 'action1';
 const gActionid = 'actionid';
 const gActions = 'actions';
 const gAddnew = 'Addnew';
+const gAddress = 'Address';
 const gAlert = 'Alert';
 const gAlign = 'align';
 const gAlignment = 'alignment';
@@ -66,9 +67,10 @@ const gDefaultValue = 'defaultValue';
 const gDelete = 'Delete';
 const gDelimeterItem = '~';
 
-const gDetail = 'Detail';
+const gDetail = 'detail';
 const gDetailPage = 'detailPage';
 const gDivider = 'divider';
+const gDpid = 'dpid';
 
 const gDroplist = 'droplist';
 
@@ -273,4 +275,8 @@ const gVisiblePassword = 'visiblePassword';
 const gWelcome = 'welcome';
 const gWhere = 'where';
 const gWidth = 'width';
+const gYear = 'year';
+const gYearmonth = 'yearmonth';
+const gZzydictionary = 'Zzydictionary';
+const gZzydictionaryitem = 'Zzydictionaryitem';
 const gZh = 'zh';

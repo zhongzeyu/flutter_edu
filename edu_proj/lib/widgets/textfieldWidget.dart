@@ -49,10 +49,15 @@ class TextFieldWidget extends StatelessWidget {
       item.value[gTxtEditingController].selection = TextSelection.fromPosition(
           TextPosition(offset: item.value[gTxtEditingController].text.length));
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
+      TextEditingController txtController = item.value[gTxtEditingController];
+      if (datamodel.isNull(txtController.text)) {
+        txtController.text = "";
+      }
+
       return Container(
         width: _getWidth(),
         child: TextFormField(
-            controller: item.value[gTxtEditingController],
+            controller: txtController,
             autofocus: item.value[gFocus] ?? false,
             //focusNode: item.value[gFocusNode],
             keyboardType: item.value[gInputType],

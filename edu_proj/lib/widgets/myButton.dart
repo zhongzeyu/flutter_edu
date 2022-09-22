@@ -39,8 +39,8 @@ class MyButton extends StatelessWidget {
         child: MyGlass(param),
         onTap: () {
           if (_param[gType].toString().startsWith(gTab)) {
-            datamodel.processTap(
-                this._param[gContext] ?? context, _param, _param[gName]);
+            datamodel.processTapBasic(
+                this._param[gContext] ?? context, _param, _param[gName], true);
             //} else if (_param[gAction] == null || _param[gAction] != gTextLink) {
           } else if (!datamodel.isNull(this._param[gAction] ?? '')) {
             datamodel.sendRequestOne(

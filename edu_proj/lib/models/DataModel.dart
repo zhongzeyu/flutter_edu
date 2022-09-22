@@ -96,6 +96,7 @@ class DataModel extends ChangeNotifier {
         MyConfig.URL.name +
         '/images/main.jpg' //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   };
+  Map<dynamic, dynamic> _dpList = {};
 
   //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   Map get imgList => _imgList;
@@ -111,6 +112,7 @@ class DataModel extends ChangeNotifier {
 
   Map<dynamic, Map<dynamic, dynamic>> get tableList => _tableList;
   Map<dynamic, dynamic> get tabList => _tabList;
+  Map<dynamic, dynamic> get dpList => _dpList;
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
   Map get systemParams => _systemParams;
@@ -241,6 +243,7 @@ class DataModel extends ChangeNotifier {
           columnIndex++;
         }
         tableSort(data[gActionid], columnIndex, ascending, context);
+
         /*if (i == 0) {
           _tableList[data[gActionid]][gAscending] = ascending;
           _tableList[data[gActionid]][gSortColumnIndex] = columnIndex;
@@ -284,6 +287,33 @@ class DataModel extends ChangeNotifier {
     _formLists[data[gActionid]] = null;
 
     setFormListOne(data[gActionid], param[gFormdetail]);
+    if (data[gActionid] == gZzydictionary) {
+      //need retrieve dictionitem
+      var parentid = '';
+      Map tabledata = _tableList[data[gActionid]];
+      List tabledataListDictionary = tabledata[gData];
+      tabledataListDictionary.forEach((element) {
+        parentid = element[gId];
+      });
+      getTableByTableID(
+          gZzydictionaryitem, gParentid + "='" + parentid + "'", context);
+    } else if (data[gActionid] == gZzydictionaryitem) {
+      //need get dictionitem data
+      List<dynamic> result = [];
+      result.add('');
+      Map tabledata = _tableList[data[gActionid]];
+      List tabledataList = tabledata[gData];
+      tabledataList.forEach((element) {
+        dynamic value = element[gLabel];
+        result.add(value);
+      });
+
+      Map tabledataParent = _tableList[gZzydictionary];
+      List tabledataListDictionary = tabledataParent[gData];
+      tabledataListDictionary.forEach((element) {
+        _dpList[element[gLabel]] = result;
+      });
+    }
   }
 
   Future<void> alert(BuildContext context, dynamic msg) async {
@@ -811,43 +841,13 @@ class DataModel extends ChangeNotifier {
     return Column(children: result);
   }
 
-  getDropdownMenuItem(tableid, filterStr, context, backcolor) {
-    dynamic tabledata =
-        getTableByTableID('Zzydictionary', gLabel + '=' + tableid, context);
-    if (tabledata == null) {
-      return null;
-    }
-    var parentid = '';
-    List tabledataListDictionary = tabledata[gData];
-    tabledataListDictionary.forEach((element) {
-      parentid = element[gId];
-    });
-    if (isNull(parentid)) {
-      return null;
+  getDropdownMenuItem(dpid, filterStr, context, backcolor) {
+    if (_dpList[dpid] != null) {
+      // dplist exists
+      return;
     }
 
-    tabledata = getTableByTableID(
-        'Zzydictionaryitem', gParentid + "='" + parentid + "'", context);
-    if (tabledata == null) {
-      return null;
-    }
-
-    List<dynamic> result = [];
-    result.add('');
-    List tabledataList = tabledata[gData];
-    tabledataList.forEach((element) {
-      dynamic value = element[gLabel];
-      result.add(value);
-    });
-
-    return result.map<DropdownMenuItem<dynamic>>((dynamic value) {
-      return DropdownMenuItem<dynamic>(
-        value: value,
-        child: MyLabel({
-          gLabel: value,
-        }, backcolor),
-      );
-    }).toList();
+    getTableByTableID(gZzydictionary, gLabel + "='" + dpid + "'", context);
   }
 
   getDynamicWidgets(List param, context, backcolor) {
@@ -1715,11 +1715,10 @@ class DataModel extends ChangeNotifier {
       }
       return toLocalTime(result);
     }
-    dynamic droplist = columns[colIndex][gDroplist];
+    /*dynamic droplist = columns[colIndex][gDroplist];
     if (!isNull(droplist)) {
-      //getTableValueKeyFromColumns(columns, dataRow)
       return getTableKeyword(droplist, result, context);
-    }
+    }*/
     return result;
   }
 

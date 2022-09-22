@@ -3,6 +3,8 @@ import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'myLabel.dart';
+
 class MyDropdown extends StatelessWidget {
   final dynamic _param;
   final dynamic _formName;
@@ -28,8 +30,15 @@ class MyDropdown extends StatelessWidget {
                 datamodel.setDropdownMenuItem(
                     _param, newValue, context, _formName);
               },
-              items: datamodel.getDropdownMenuItem(
-                  _param[gDroplist], null, context, backcolor),
+              items: datamodel.dpList[_param[gDroplist]]
+                  .map<DropdownMenuItem<dynamic>>((dynamic value) {
+                return DropdownMenuItem<dynamic>(
+                  value: value,
+                  child: MyLabel({
+                    gLabel: value,
+                  }, backcolor),
+                );
+              }).toList(),
             ),
           ));
     });
