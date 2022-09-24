@@ -7,8 +7,6 @@ import 'package:edu_proj/widgets/myPinCode.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-//import 'package:places_service/places_service.dart';
-
 import 'myDropdown.dart';
 import 'myGlass.dart';
 
@@ -53,10 +51,10 @@ class MyForm extends StatelessWidget {
                   : dataRow[item.value[gId]].toString();*/
 
             //datamodel.setFormValue(_formName, item.value[gId], itemValue);
-            if (item.value[gIsHidden] != gTrue &&
-                item.value[gType] != gHidden) {
+            if ((item.value[gIsHidden] ?? "false") != gTrue &&
+                (item.value[gType] ?? "") != gHidden) {
               //_top += 10;
-              if (item.value[gType] == gLabel) {
+              if ((item.value[gType] ?? "") == gLabel) {
                 dynamic aDvalue = (item.value[gValue] == null)
                     ? item.value[gDefaultValue].toString()
                     : item.value[gValue].toString();
@@ -86,38 +84,45 @@ class MyForm extends StatelessWidget {
                   ),
                 );
                 //}
-              } else if (item.value[gType] == gPincode) {
+              } else if ((item.value[gType] ?? "") == gPincode) {
                 result.add(
                   MyPinCode(item.value, _formName),
                 );
               } else {
                 //if had droplist, use dropdown
                 if (!datamodel.isNull(item.value[gDroplist])) {
-                  /*result.add(DropdownButton<dynamic>(
-                    value: 'One',
-                    icon: const Icon(Icons.arrow_downward),
-                    elevation: 16,
-                    style: const TextStyle(color: Colors.deepPurple),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.deepPurpleAccent,
-                    ),
-                    onChanged: (dynamic newValue) {},
-                    items: <dynamic>['One', 'Two', 'Free', 'Four']
-                        .map<DropdownMenuItem<dynamic>>((dynamic value) {
-                      return DropdownMenuItem<dynamic>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ));*/
-                  datamodel.getDropdownMenuItem(
+                  /*datamodel.getDropdownMenuItem(
+                      item.value[gDroplist], null, context, backcolor);*/
+                  if (datamodel.dpList[item.value[gDroplist]] != null) {
+                    List itemList = datamodel.dpList[item.value[gDroplist]];
+                    if (itemList != null) {
+                      result.add(DropdownButton<dynamic>(
+                        value: item.value[gValue],
+                        icon: const Icon(Icons.arrow_downward),
+                        elevation: 16,
+                        style: const TextStyle(color: Colors.deepPurple),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                        onChanged: (dynamic newValue) {},
+                        items: itemList
+                            .map<DropdownMenuItem<dynamic>>((dynamic value) {
+                          return DropdownMenuItem<dynamic>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ));
+                    }
+                  }
+
+                  /*datamodel.getDropdownMenuItem(
                       item.value[gDroplist], null, context, backcolor);
 
                   result.add(
-                    MyDropdown(item.value, _formName, backcolor),
-                  );
-                } else if (!datamodel.isNull(item.value[gStreetAddress])) {
+                    MyDropdown(item, _formName, backcolor),
+                  );*/
                 } else {
                   result.add(
                     TextFieldWidget(

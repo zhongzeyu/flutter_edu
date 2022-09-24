@@ -20,7 +20,7 @@ class MyLabel extends StatelessWidget {
           labelColor = Colors.black;
         }*/
         Text text = Text(
-          datamodel.getSCurrent(_param[gLabel] ?? _param[gValue]),
+          datamodel.getSCurrent(_param[gLabel] ?? _param[gValue] ?? ""),
           //textAlign: TextAlign.left,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(

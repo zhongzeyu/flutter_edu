@@ -19,6 +19,9 @@ class TextFieldWidget extends StatelessWidget {
 
   textChange(
       dynamic text, MapEntry item, DataModel datamodel, BuildContext context) {
+    if (item.value[gType] == gAddress) {
+      item.value[gAction] = gLocalAction;
+    }
     if ((item.value[gAction] ?? '') == '') {
       return;
     }
