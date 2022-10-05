@@ -14,7 +14,7 @@ class MyDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      List itemList = datamodel.dpList[item.value[gDroplist]];
+      //List itemList = datamodel.dpList[item.value[gDroplist]];
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
 
       return Container(
@@ -58,7 +58,7 @@ class MyDropdown extends StatelessWidget {
                       datamodel.setDropdownMenuItem(
                           item.value, newValue, context, _formName);
                     },
-                    items: itemList
+                    items: datamodel.dpList[item.value[gDroplist]]
                         .map<DropdownMenuItem<dynamic>>((dynamic value) {
                       return DropdownMenuItem<dynamic>(
                         value: value,
@@ -75,37 +75,6 @@ class MyDropdown extends StatelessWidget {
           ],
         ),
       );
-
-      /*Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: SizedBox(
-            child: DropdownButton<dynamic>(
-              value: _param.value[gValue],
-              icon: Icon(
-                Icons.arrow_downward,
-                color: cBackColor,
-              ),
-              elevation: 16,
-              style: TextStyle(color: cBackColor),
-              
-              underline: Container(
-                height: 2,
-                color: cBackColor, //Colors.deepPurpleAccent,
-              ),
-              onChanged: (dynamic newValue) {
-                datamodel.setDropdownMenuItem(
-                    _param.value, newValue, context, _formName);
-              },
-              items: itemList.map<DropdownMenuItem<dynamic>>((dynamic value) {
-                return DropdownMenuItem<dynamic>(
-                  value: value,
-                  child: MyLabel({
-                    gLabel: value,
-                  }, backcolor),
-                );
-              }).toList(),
-            ),
-          ));*/
     });
   }
 }
