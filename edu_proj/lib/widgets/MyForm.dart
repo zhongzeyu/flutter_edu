@@ -22,17 +22,19 @@ class MyForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int thisbackcolor = backcolor ?? Colors.black.value;
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
         final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
         final dynamic _formName = _param;
         //['name'];
         if (datamodel.formLists[_formName] == null) {
-          return MyLabel({gLabel: gNotavailable, gFontSize: 20.0}, backcolor);
+          return MyLabel(
+              {gLabel: gNotavailable, gFontSize: 20.0}, thisbackcolor);
         }
         Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
         Map<dynamic, dynamic> items = formDefine[gItems];
-        Color cBackColor = datamodel.fromBdckcolor(backcolor);
+        //Color cBackColor = datamodel.fromBdckcolor(backcolor);
         //Size size = MediaQuery.of(context).size;
         //double _top = 10.0;
         List<Widget> _showItems() {
@@ -53,38 +55,7 @@ class MyForm extends StatelessWidget {
             //datamodel.setFormValue(_formName, item.value[gId], itemValue);
             if ((item.value[gIsHidden] ?? "false") != gTrue &&
                 (item.value[gType] ?? "") != gHidden) {
-              //_top += 10;
-              if ((item.value[gType] ?? "") == gLabel) {
-                dynamic aDvalue = (item.value[gValue] == null)
-                    ? item.value[gDefaultValue].toString()
-                    : item.value[gValue].toString();
-                // if (item.value[gDefaultValue] != null &&
-                //    item.value[gDefaultValue] != '') {
-                result.add(
-                  Text(
-                    datamodel.getSCurrent(item.value[gLabel]) +
-                        ":" +
-                        aDvalue.toString(),
-                    style: TextStyle(
-                      color: cBackColor,
-                      //backgroundColor: _param[gBackgroundColor]
-                    )
-                    /*+
-                            (item.value[gValue] == null)
-                        ? item.value[gDefaultValue].toString()
-                        : item.value[gValue].toString()*/
-                    ,
-
-                    /*
-                onTab: () => {_onTab(item.value['id'], size)},
-                onChanged: (dynamic value) =>
-                    {_onChange(item.value['id'], value)},
-                textFieldController: item.value['txtEditingController'],
-                */
-                  ),
-                );
-                //}
-              } else if ((item.value[gType] ?? "") == gPincode) {
+              if ((item.value[gType] ?? "") == gPincode) {
                 result.add(
                   MyPinCode(item.value, _formName),
                 );
@@ -92,41 +63,18 @@ class MyForm extends StatelessWidget {
                 //if had droplist, use dropdown
                 if (!datamodel.isNull(item.value[gDroplist])) {
                   /*datamodel.getDropdownMenuItem(
-                      item.value[gDroplist], null, context, backcolor);*/
+                      item.value[gDroplist], null, context, thisbackcolor);*/
                   if (datamodel.dpList[item.value[gDroplist]] != null) {
-                    List itemList = datamodel.dpList[item.value[gDroplist]];
-                    if (itemList != null) {
-                      result.add(DropdownButton<dynamic>(
-                        value: item.value[gValue],
-                        icon: const Icon(Icons.arrow_downward),
-                        elevation: 16,
-                        style: const TextStyle(color: Colors.deepPurple),
-                        underline: Container(
-                          height: 2,
-                          color: Colors.deepPurpleAccent,
-                        ),
-                        onChanged: (dynamic newValue) {},
-                        items: itemList
-                            .map<DropdownMenuItem<dynamic>>((dynamic value) {
-                          return DropdownMenuItem<dynamic>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ));
-                    }
+                    result.add(
+                      MyDropdown(item, _formName, thisbackcolor),
+                    );
                   }
-
-                  /*datamodel.getDropdownMenuItem(
-                      item.value[gDroplist], null, context, backcolor);
-
-                  result.add(
-                    MyDropdown(item, _formName, backcolor),
-                  );*/
                 } else {
                   result.add(
                     TextFieldWidget(
-                        item: item, backcolor: backcolor, formname: _formName
+                        item: item,
+                        backcolor: thisbackcolor,
+                        formname: _formName
                         /*
                 onTab: () => {_onTab(item.value['id'], size)},
                 onChanged: (dynamic value) =>
@@ -147,19 +95,7 @@ class MyForm extends StatelessWidget {
             ),
           );
           datamodel.beforeSubmit(context, _formName, result);
-          /*if (_formKey == null ||
-              _formKey.currentState == null ||
-              !(_formKey.currentState.validate() ?? true)) {
-            result.add(
-              ElevatedButton(
-                child: Text(datamodel.getSCurrent(formDefine[gSubmit])),
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.grey,
-                ),
-                onPressed: () {},
-              ),
-            );
-          } else {*/
+
           Map paramSubmit = {
             gWidth: 200,
             gHeight: 40,
@@ -187,29 +123,6 @@ class MyForm extends StatelessWidget {
             },
           ));
 
-          /*ElevatedButton(
-              child: Text(datamodel.getSCurrent(formDefine[gSubmit])),
-              onPressed: () {
-                if (!_formKey.currentState.validate()) {
-                  return;
-                }
-                _formKey.currentState.save();
-                datamodel.formSubmit(context, _formName);
-              },
-              style: ElevatedButton.styleFrom(
-                //primary: Colors.yellow,
-                //primary: Colors.green,
-                //onPrimary: Colors.white,
-                //shadowColor: Colors.greenAccent,
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32.0)),
-                minimumSize: Size(200, 40),
-              ),
-            ),
-          );*/
-          //}
-
           datamodel.afterSubmit(context, _formName, result);
           return result;
         }
@@ -224,25 +137,4 @@ class MyForm extends StatelessWidget {
       },
     );
   }
-
-  /*void onLoad(BuildContext context) {
-    Future.delayed(Duration(seconds: 3),
-        () => FocusScope.of(context).requestFocus(focusNode));
-  }*/
 }
-
-/*class Debouncer {
-  final int milliseconds;
-  VoidCallback action;
-  Timer _timer;
-
-  Debouncer({this.milliseconds});
-
-  run(VoidCallback action) {
-    if (_timer != null) {
-      _timer.cancel();
-    }
-
-    _timer = Timer(Duration(milliseconds: milliseconds), action);
-  }
-}*/

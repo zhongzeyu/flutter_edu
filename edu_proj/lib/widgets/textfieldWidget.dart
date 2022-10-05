@@ -73,44 +73,39 @@ class TextFieldWidget extends StatelessWidget {
               letterSpacing: item.value[gLetterSpacing],
             ),
             decoration: InputDecoration(
-              labelText: datamodel.getSCurrent(item.value[gLabel]),
-              labelStyle: TextStyle(
-                color: cBackColor,
-                fontSize: item.value[gFontSize],
-                fontStyle: item.value[gFontStyle],
-                fontWeight: item.value[gFontWeight],
-                letterSpacing: item.value[gLetterSpacing],
-              ),
-              hintText: item.value[gPlaceHolder],
-              hintStyle: TextStyle(
-                color: cBackColor,
-                fontSize: item.value[gFontSize],
-                fontStyle: item.value[gFontStyle],
-                fontWeight: item.value[gFontWeight],
-                letterSpacing: item.value[gLetterSpacing],
-              ),
-              suffixIcon: item.value[gSuffixIcon],
-              //prefixIcon: item.value['prefixIcon'],
-            ),
+                labelText: datamodel.getSCurrent(item.value[gLabel]),
+                labelStyle: TextStyle(
+                  color: cBackColor,
+                  fontSize: item.value[gFontSize],
+                  fontStyle: item.value[gFontStyle],
+                  fontWeight: item.value[gFontWeight],
+                  letterSpacing: item.value[gLetterSpacing],
+                ),
+                hintText: item.value[gPlaceHolder],
+                hintStyle: TextStyle(
+                  color: cBackColor,
+                  fontSize: item.value[gFontSize],
+                  fontStyle: item.value[gFontStyle],
+                  fontWeight: item.value[gFontWeight],
+                  letterSpacing: item.value[gLetterSpacing],
+                ),
+                suffixIcon: item.value[gSuffixIcon],
+                //prefixIcon: item.value['prefixIcon'],
+                enabled: ((item.value[gType] ?? "") != gLabel)),
             obscureText: isPassword && item.value[gPasswordShow],
             validator: (dynamic value) {
               if (item.value[gRequired] && value.isEmpty) {
                 return datamodel
                     .getSCurrent(gIsrequired + "{" + item.value[gLabel] + "}");
-                //return S.of(context).isrequired(item.value['label']);
               }
               if (item.value[gType] == gEmail &&
                   !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                       .hasMatch(value)) {
                 return datamodel.getSCurrent(gInvalidname + "{" + gEmail + "}");
-                //return S.of(context).invalidname(S.of(context).email);
               }
               if (item.value[gMinLength] != null &&
                   item.value[gMinLength] != '0' &&
                   value.length < item.value[gMinLength]) {
-                /*return S
-                  .of(context)
-                  .mininput(item.value[gMinLength], item.value[gUnit]);*/
                 return datamodel.getSCurrent(gMininput +
                     "{" +
                     item.value[gMinLength] +
@@ -127,17 +122,9 @@ class TextFieldWidget extends StatelessWidget {
                     "}{" +
                     item.value[gUnit] +
                     "}");
-                /*return S
-                  .of(context)
-                  .maxinput(item.value[gLength], item.value[gUnit]);*/
               }
               return null;
             },
-            /*initialValue: item.value[gValue] != null
-              ? item.value[gValue]
-              : (item.value[gDefaultValue] != null
-                  ? item.value[gDefaultValue]
-                  : ""),*/
             onSaved: (dynamic value) {
               item.value[gValue] = value;
             },

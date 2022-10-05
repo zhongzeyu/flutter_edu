@@ -10,11 +10,12 @@ class MyLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int thisbackcolor = backcolor ?? Colors.black.value;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       if (_param != null && (_param[gLabel] ?? _param[gValue]) != null) {
         Color labelColor = Colors.black;
-        if (backcolor != null) {
-          labelColor = datamodel.fromBdckcolor(backcolor);
+        if (thisbackcolor != null) {
+          labelColor = datamodel.fromBdckcolor(thisbackcolor);
         }
         /*if (backcolor == Colors.transparent.value) {
           labelColor = Colors.black;
