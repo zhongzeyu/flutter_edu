@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import 'myLabel.dart';
@@ -104,6 +105,9 @@ class TextFieldWidget extends StatelessWidget {
                     //prefixIcon: item.value['prefixIcon'],
                     enabled: ((item.value[gType] ?? "") != gLabel)),
                 obscureText: isPassword && item.value[gPasswordShow],
+                inputFormatters: ((item.value[gType] ?? "") == gPhone)
+                    ? [PhoneInputFormatter()]
+                    : null,
                 validator: (dynamic value) {
                   if (item.value[gRequired] && value.isEmpty) {
                     return datamodel.getSCurrent(
