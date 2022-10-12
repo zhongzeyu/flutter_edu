@@ -8,7 +8,6 @@ import 'package:crypto/crypto.dart';
 //import 'package:dio/dio.dart';
 import 'package:edu_proj/config/MyConfig.dart';
 import 'package:edu_proj/config/constants.dart';
-import 'package:edu_proj/screens/MyDynamicBody.dart';
 //import 'package:edu_proj/screens/MyMain.dart';
 import 'package:edu_proj/screens/firstPage.dart';
 //import 'package:edu_proj/screens/mainPage.dart';
@@ -65,7 +64,7 @@ class DataModel extends ChangeNotifier {
     4294278273,
     4289572269
   ];*/
-  final List<int> _colorList = [
+  /*final List<int> _colorList = [
     Colors.cyan.value,
     Colors.amber.value,
     Colors.brown.value,
@@ -79,6 +78,9 @@ class DataModel extends ChangeNotifier {
     Colors.pink.value,
     Colors.teal.value,
     Colors.yellow.value,
+  ];*/
+  final List<int> _colorList = [
+    Colors.green.value,
   ];
   //Locale get locale => _locale;
   dynamic get locale => _locale;
@@ -197,7 +199,67 @@ class DataModel extends ChangeNotifier {
     _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;
   }
 
+  addZzylog(data, context) {
+    //merget data
+    var timestamp = data[gTimestamp];
+    if (data[gUpdate] != null) {
+      List list = data[gUpdate];
+      list.forEach((element) {
+        Map aMap = Map.of(element);
+        var tablename = aMap.entries.first.key;
+        Map rowData = Map.of(aMap.entries.first.value);
+        var tableInfo = _tableList[tablename];
+        List tableData = tableInfo[gData];
+        tableInfo[gTimestamp] = timestamp;
+        tableData.forEach((element1) {
+          if (element1[gId] == rowData[gId]) {
+            element1 = rowData;
+          }
+        });
+
+        //update the table row
+      });
+    }
+    if (data[gNew] != null) {
+      List list = data[gNew];
+      list.forEach((element) {
+        Map aMap = Map.of(element);
+        var tablename = aMap.entries.first.key;
+        Map rowData = Map.of(aMap.entries.first.value);
+        var tableInfo = _tableList[tablename];
+        List tableData = tableInfo[gData];
+        tableInfo[gTimestamp] = timestamp;
+        bool findRow = false;
+        tableData.forEach((element1) {
+          if (element1[gId] == rowData[gId]) {
+            element1 = rowData;
+            findRow = true;
+          }
+        });
+        if (!findRow) {
+          tableData.insert(0, rowData);
+        }
+      });
+    }
+    if (data[gDelete] != null) {
+      List list = data[gDelete];
+      list.forEach((element) {
+        Map aMap = Map.of(element);
+        var tablename = aMap.entries.first.key;
+        Map rowData = Map.of(aMap.entries.first.value);
+        var tableInfo = _tableList[tablename];
+        List tableData = tableInfo[gData];
+        tableInfo[gTimestamp] = timestamp;
+        tableData.removeWhere((element1) => element1[gId] == rowData[gId]);
+      });
+    }
+  }
+
   addTable(data, context) {
+    if (data[gBody] != null && data[gBody][gZzylog] != null) {
+      addZzylog(Map.of(data[gBody][gZzylog]), context);
+      return;
+    }
     var isNew = false;
     if (_tableList[data[gActionid]] == null) {
       isNew = true;
@@ -254,6 +316,7 @@ class DataModel extends ChangeNotifier {
     }
 
     _tableList[data[gActionid]][gTableID] = data[gActionid];
+
     initTableData(data[gActionid], context);
     Map param = {
       gType: gForm,
@@ -287,33 +350,25 @@ class DataModel extends ChangeNotifier {
     _formLists[data[gActionid]] = null;
 
     setFormListOne(data[gActionid], param[gFormdetail]);
-    if (data[gActionid] == gZzydictionary) {
-      //need retrieve dictionitem
-      var parentid = '';
-      Map tabledata = _tableList[data[gActionid]];
-      List tabledataListDictionary = tabledata[gData];
-      tabledataListDictionary.forEach((element) {
-        parentid = element[gId];
-      });
-      getTableByTableID(
-          gZzydictionaryitem, gParentid + "='" + parentid + "'", context);
-    } else if (data[gActionid] == gZzydictionaryitem) {
-      //need get dictionitem data
-      List<dynamic> result = [];
-      result.add('');
-      Map tabledata = _tableList[data[gActionid]];
-      List tabledataList = tabledata[gData];
-      tabledataList.forEach((element) {
-        dynamic value = element[gLabel];
-        result.add(value);
-      });
+  }
 
-      Map tabledataParent = _tableList[gZzydictionary];
-      List tabledataListDictionary = tabledataParent[gData];
-      tabledataListDictionary.forEach((element) {
-        _dpList[element[gLabel]] = result;
+  setDroplist() {
+    Map tabledata = _tableList[gZzydictionary];
+    List tabledataList = tabledata[gData];
+    Map tabledataItem = _tableList[gZzydictionaryitem];
+    List tabledataListItem = tabledataItem[gData];
+    tabledataList.forEach((element) {
+      var parentid = element[gId];
+      var label = element[gLabel];
+      List result = [];
+      tabledataListItem.forEach((elementItem) {
+        if (elementItem[gParentid] == parentid) {
+          dynamic value = elementItem[gLabel];
+          result.add(value);
+        }
       });
-    }
+      _dpList[label] = result;
+    });
   }
 
   Future<void> alert(BuildContext context, dynamic msg) async {
@@ -693,61 +748,14 @@ class DataModel extends ChangeNotifier {
       element.putIfAbsent(gWidth, () => 140.0);
       element.putIfAbsent(gName, () => params[gName] ?? '');
       element.putIfAbsent(gType, () => params[gType] ?? '');
-      /*element[gColor] = _colorList[colorIndex];
-      element[gWidth] = element[gWidth] ?? 140.0;
-      //element[gContext] = context;
-      element[gName] = element[gName] ?? params[gName] ?? '';
-      element[gType] = element[gType] ?? params[gType] ?? '';*/
 
       list.add(MyButton(element));
-
-      /*list.add(Container(
-        padding: const EdgeInsets.all(5.0),
-        margin: const EdgeInsets.all(5.0),
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5.0),
-          color: Color(_colorList[colorIndex]),
-          /*boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 32.0,
-              offset: Offset(0, 8.toDouble()),
-            ),
-          ],*/
-        ),
-        child: InkWell(
-          child: MyLabel({
-            gLabel: getSCurrent(element[gLabel]),
-          }, _colorList[colorIndex]),
-          onTap: () {
-            element[gColorIndex] = colorIndex;
-            if (params[gType] == gTab) {
-              processTap(context, element, params[gName]);
-            } else if (params[gAction] == gTable) {
-              if (element[gLabel] == gAddnew) {
-                element[gTableID] = params[gValue];
-                tableAddNew(element, context);
-              } else if (element[gLabel] == gPdf) {
-                element[gTableID] = params[gValue];
-                toPdf(element, context);
-              }
-            }
-          },
-        ),
-      )
-          
-
-          );*/
     });
 
     return list;
   }
 
   getCardTitle(data, backcolor) {
-    /*if (data[gType] == gProcess)
-      return getTxtImage(
-          data[gLabel], _colorList[data[gColorIndex]], 15.0, 2.0, 2.0);*/
     return MyLabel({
       gLabel: data[gLabel],
     }, backcolor);
@@ -841,14 +849,14 @@ class DataModel extends ChangeNotifier {
     return Column(children: result);
   }
 
-  getDropdownMenuItem(dpid, filterStr, context, backcolor) {
+  /*getDropdownMenuItem(dpid, filterStr, context, backcolor) {
     if (_dpList[dpid] != null) {
-      // dplist exists
       return;
+      // dplist exists
     }
 
     getTableByTableID(gZzydictionary, gLabel + "='" + dpid + "'", context);
-  }
+  }*/
 
   getDynamicWidgets(List param, context, backcolor) {
     List<Widget> widgetList = [];
@@ -1005,7 +1013,7 @@ class DataModel extends ChangeNotifier {
       return TextInputType.number;
     } else if (s == gPhone) {
       return TextInputType.phone;
-    } else if (s == gStreetAddress) {
+    } else if (s == gAddress) {
       return TextInputType.streetAddress;
     } else if (s == gUrl) {
       return TextInputType.url;
@@ -1500,6 +1508,16 @@ class DataModel extends ChangeNotifier {
     sendRequestOne(gProcess, [element], context);
   }
 
+  getDPList() {
+    var result = "";
+    var delimeter = "";
+    _dpList.forEach((key, value) {
+      result = result + delimeter + key;
+      delimeter = gSTREMAIL;
+    });
+    return result;
+  }
+
   getTableItemByName(tableInfo, itemName, value) {
     MapEntry item = MapEntry(itemName, {
       gWidth: 150.0,
@@ -1715,10 +1733,6 @@ class DataModel extends ChangeNotifier {
       }
       return toLocalTime(result);
     }
-    /*dynamic droplist = columns[colIndex][gDroplist];
-    if (!isNull(droplist)) {
-      return getTableKeyword(droplist, result, context);
-    }*/
     return result;
   }
 
@@ -2117,6 +2131,8 @@ class DataModel extends ChangeNotifier {
       searchTable(data, context);
     } else if (data[gLabel] != null && data[gLabel] == gLogout) {
       logOff(context);
+    } else if (!isNull(data[gType]) && data[gType] == gAddress) {
+      searchAddress(data, context);
     } else if (!isNull(data[gAction1])) {
       businessFunc(data[gAction1], context);
 
@@ -2262,6 +2278,8 @@ class DataModel extends ChangeNotifier {
         } else if (action == gShowTable) {
           await showTable(actionData[0][gTableID], context,
               actionData[0][gLabel] ?? "", "", null);
+        } else if (action == gSetDroplist) {
+          await setDroplist();
         }
       });
     } catch (e) {
@@ -2441,22 +2459,13 @@ class DataModel extends ChangeNotifier {
           gProcess,
           [
             {
-              "label": gNull,
-              "type": "table",
-              "actionid": tableid,
-              "colorIndex": 0
+              gLabel: gNull,
+              gType: gTable,
+              gActionid: tableid,
+              gColorIndex: 0,
             }
           ],
           context);
-
-      /*sendRequestOne(
-          gGetTableData,
-          {
-            gTableID: tableid,
-            gEmail: _myId, //getFormValue(gLogin, gEmail, gValue),
-            gCompany: _globalCompanyid
-          },
-          context);*/
     } catch (e) {
       throw e;
     }
@@ -2502,6 +2511,17 @@ class DataModel extends ChangeNotifier {
     tableData.insert(0, Map.of(data0[gBody]));
   }
 
+  searchAddress(data, context) async {
+    var searchTxt = data[gSearch];
+    if ((searchTxt + "").length < 3) {
+      return;
+    }
+    //
+    List result = await downloadAddress(searchTxt, context, false);
+    _dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = result;
+    myNotifyListeners();
+  }
+
   searchTable(data, context) {
     var tableId = data[gTableID];
     var searchTxt = data[gSearch];
@@ -2531,18 +2551,7 @@ class DataModel extends ChangeNotifier {
               {gKey: param}
             ]
           });
-        } else {
-          //no need session key
-
-          /*_requestList.addFirst({
-            gAction: initRequest,
-            gData: [
-            ]
-          });*/
-          myBusiness(initRequest, context);
-          //set i10t
-
-        }
+        } else {}
       }
       if (_requestList.isEmpty) {
         return;
@@ -2559,6 +2568,24 @@ class DataModel extends ChangeNotifier {
       if (_token != '') {
         requestFirst[gToken] = _token;
         requestFirst[gCompanyid] = _globalCompanyid;
+      }
+      //#add timestamp for process table
+
+      if (requestFirst[gData] != null && requestFirst[gData] is List) {
+        List requestData = requestFirst[gData];
+        requestData.forEach((element) {
+          if (!isNull(element[gType]) &&
+              element[gType] == gTable &&
+              !isNull(element[gActionid])) {
+            var tablename = element[gActionid];
+            var timestamp;
+            if (_tableList[tablename] != null) {
+              timestamp = _tableList[tablename][gTimestamp];
+            }
+
+            element[gTimestamp] = timestamp;
+          }
+        });
       }
       var dataRequest = encryptByDES(requestFirst);
       await processRequest(dataRequest, context);
@@ -2586,7 +2613,7 @@ class DataModel extends ChangeNotifier {
   }
 
   setDropdownMenuItem(_param, newValue, context, _formName) {
-    setFormValue(_formName, _param[gId], newValue);
+    setFormValueItem(_param, newValue);
 
     myNotifyListeners();
   }
@@ -2735,6 +2762,89 @@ class DataModel extends ChangeNotifier {
     } catch (ex) {
       showMsg(context, ex.toString(), null);
     }
+    //print('======== filePath is $filePath');
+  }
+
+  downloadAddress(searchTxt, context, haveNext) async {
+    var searchType = "SearchTerm";
+    List tmpListAddress = [];
+    bool needFindUS = false;
+    if (haveNext ?? false) {
+      searchType = "LastId";
+    } else {
+      needFindUS = true;
+      tmpListAddress = await downloadAddressDetail(
+          searchType + "=" + searchTxt + "&Country=US", context);
+    }
+    List tmpListAddress1 =
+        await downloadAddressDetail(searchType + "=" + searchTxt, context);
+    if (tmpListAddress1.length > 0) {
+      tmpListAddress1.forEach((element) {
+        tmpListAddress.add(element);
+      });
+    }
+    if (needFindUS) {
+      List tmpListAddress2 = await downloadAddressDetail(
+          searchType + "=" + searchTxt + "&Country=US", context);
+      if (tmpListAddress2.length > 0) {
+        tmpListAddress2.forEach((element) {
+          tmpListAddress.add(element);
+        });
+      }
+    }
+
+    List<dynamic> result = [];
+    //result.add('');
+    tmpListAddress.forEach((element) async {
+      if (element["Next"] == "Find") {
+        List resultSub = await downloadAddress(element["Id"], context, true);
+        resultSub.forEach((element1) {
+          result.add(element1);
+        });
+      } else {
+        var address = element["Text"] + " " + element["Description"];
+        result.add(address);
+      }
+    });
+    return result;
+  }
+
+  showDropList(dpid, item, context) {}
+
+  setAddressForItem(oneAddress, item, context) {
+    var address = oneAddress["Text"] + " " + oneAddress["Description"];
+    setFormValueItem(item, address);
+  }
+
+  Future downloadAddressDetail(param, context) async {
+    List result = [];
+    try {
+      dynamic myUrl = MyConfig.URLAddress.name + param;
+
+      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //var response = await request;
+      if (response.statusCode == 200) {
+        Utf8Decoder decode = new Utf8Decoder();
+        Map data = Map.of(jsonDecode(decode.convert(response.bodyBytes)));
+        if (data == null) {
+          return;
+        }
+        List itemList = data["Items"];
+        if (itemList.length < 1) {
+          return;
+        }
+        itemList.forEach((element) {
+          Map oneItem = Map.of(element);
+          result.add(oneItem);
+        });
+      } else {
+        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
+      }
+    } catch (ex) {
+      showMsg(context, ex.toString(), null);
+    }
+    return result;
     //print('======== filePath is $filePath');
   }
 
@@ -2905,8 +3015,12 @@ class DataModel extends ChangeNotifier {
   }
 
   setFormValue(formid, colId, value) {
-    _formLists[formid][gItems][colId][gValue] = value;
-    _formLists[formid][gItems][colId][gTxtEditingController]..text = value;
+    setFormValueItem(_formLists[formid][gItems][colId], value);
+  }
+
+  setFormValueItem(item, value) {
+    item[gValue] = value;
+    item[gTxtEditingController]..text = value;
     //
   }
 
@@ -3008,10 +3122,13 @@ class DataModel extends ChangeNotifier {
 
   setTableList(List<dynamic> data, context) {
     data.forEach((element) {
-      element.entries.forEach((element1) {
+      element = Map.of(element);
+      addTable(element, context);
+      /*element.entries.forEach((element1) {
         addTable(element1, context);
-      });
+      });*/
     });
+    //myNotifyListeners();
   }
 
   setTreeNode(data, context) {
@@ -3234,483 +3351,6 @@ class DataModel extends ChangeNotifier {
 
   wait(waitSeconds) async {
     await Future.delayed(Duration(seconds: waitSeconds));
-  }
-
-  myBusiness(initRequest, context) {
-    if (initRequest == 'checkout') {
-      //1 set i10n
-      {
-        var actionData = [
-          {
-            "parent": {gEn: "parent", gZh: "ç¶ç±»"}
-          },
-          {
-            "serverwrongcode": {
-              gEn:
-                  "failed, Http response code is not right, [{responseCode}], [{responsebody}]",
-              gZh:
-                  "å¤±è´¥ï¼ æå¡å¨è¿åéè¯¯ä¿¡æ¯, [{responseCode}], [{responsebody}]"
-            }
-          },
-          {
-            "program": {gEn: "program", "zh": "é¡¹ç®"}
-          },
-          {
-            "employee": {"en": "employee", "zh": "åå·¥"}
-          },
-          {
-            "type": {"en": "type", "zh": "ç±»å"}
-          },
-          {
-            "checkverifycode": {
-              "en": "please check email for verify code",
-              "zh": "è¯·æ¥æ¶é®ä»¶æ¾å°éªè¯ç "
-            }
-          },
-          {
-            "character": {"en": "characters", "zh": "字符"}
-          },
-          {
-            "charge": {"en": "charge", "zh": "结帐"}
-          },
-          {
-            "companyid": {"en": "company", "zh": "公司"}
-          },
-          {
-            "password": {"en": "password", "zh": "密码"}
-          },
-          {
-            "action": {"en": "action", "zh": "动作"}
-          },
-          {
-            "create": {"en": "create", "zh": "创建"}
-          },
-          {
-            "enter": {"en": "enter", "zh": "输入"}
-          },
-          {
-            "welcome": {"en": "welcome", "zh": "欢迎"}
-          },
-          {
-            "new": {"en": "new", "zh": "新"}
-          },
-          {
-            "isrequired": {"en": "{name} is required", "zh": "{name}必填"}
-          },
-          {
-            "systemtitle": {"en": "Checkout", "zh": "结帐"}
-          },
-          {
-            "entryid": {"en": "enter by", "zh": "输入"}
-          },
-          {
-            "tutor": {"en": "tutor", "zh": "老师"}
-          },
-          {
-            "forget": {"en": "forget", "zh": "忘记"}
-          },
-          {
-            "dictionary": {"en": "dictionary", "zh": "字典"}
-          },
-          {
-            "system": {"en": "system", "zh": "系统"}
-          },
-          {
-            "name": {"en": "name", "zh": "名称"}
-          },
-          {
-            "invalidname": {
-              "en": "pleaseÂ enterÂ anÂ validÂ {name}",
-              "zh": "è¯·è¾å¥åæ³ç{name}"
-            }
-          },
-          {
-            "reset": {"en": "reset", "zh": "éç½®"}
-          },
-          {
-            "detail": {"en": "detail", "zh": "æç»"}
-          },
-          {
-            "maxinput": {
-              "en": "please enter less than {number} {unit}",
-              "zh": "è¯·è¾å¥å°äº{number}ä¸ª{unit}"
-            }
-          },
-          {
-            "desc": {"en": "description", "zh": "æè¿°"}
-          },
-          {
-            "code": {"en": "code", "zh": "ç "}
-          },
-          {
-            "role": {"en": "Role", "zh": "è§è²"}
-          },
-          {
-            "entrytime": {"en": "enter at", "zh": "å½å¥æ¶é´"}
-          },
-          {
-            "submit": {"en": "submit", "zh": "æäº¤"}
-          },
-          {
-            "student": {"en": "student", "zh": "å­¦ç"}
-          },
-          {
-            "mininput": {
-              "en": "please enter at least {number} {unit}",
-              "zh": "è¯·è¾å¥è³å°{number}ä¸ª{unit}"
-            }
-          },
-          {
-            "update": {"en": "update", "zh": "ä¿®æ¹"}
-          },
-          {
-            "industry": {"en": "industry", "zh": "è¡ä¸"}
-          },
-          {
-            "login": {"en": "login", "zh": "ç»å½"}
-          },
-          {
-            "delete": {"en": "delete", "zh": "å é¤"}
-          },
-          {
-            "eteremailtoresetpassword": {
-              "en":
-                  "enter your email address and we'll send you an email with code to reset your password.",
-              "zh":
-                  "è¾å¥é®ç®±ï¼æä»¬ä¼ç»æ¨é®ä»¶ä¸­åéªè¯ç ï¼ä»¥ä¾¿éç½®å¯ç "
-            }
-          },
-          {
-            "not": {"en": "not", "zh": "ä¸"}
-          },
-          {
-            "serverdown": {
-              "en":
-                  "failed! server is not response, please retry after a while",
-              "zh": "å¤±è´¥ï¼ æå¡å¨æªååºï¼è¯·ç¨ååè¯"
-            }
-          },
-          {
-            "backbtn": {"en": "  <- ", "zh": "  <- "}
-          },
-          {
-            "beef": {"en": "beef", "zh": "牛肉"}
-          },
-          {
-            "verify": {"en": "verify", "zh": "éªè¯ç "}
-          },
-          {
-            "company": {"en": "company", "zh": "å¬å¸"}
-          },
-          {
-            "nochange": {"en": "no change", "zh": "æªä¿®æ¹"}
-          },
-          {
-            "noodle": {"en": "noodle", "zh": "面"}
-          },
-          {
-            "email": {"en": "email", "zh": "çµå­é®ä»¶"}
-          },
-          {
-            "table": {"en": "table", "zh": "è¡¨"}
-          },
-          {
-            "change": {"en": "change", "zh": "ä¿®æ¹"}
-          },
-          {
-            "match": {"en": "match", "zh": "å¹é"}
-          },
-          {
-            "addnew": {"en": "add new", "zh": "æ°å¢"}
-          },
-          {
-            "home": {"en": "home", "zh": "ä¸»é¡µ"}
-          },
-          {
-            "pls": {"en": "Please", "zh": "è¯·"}
-          },
-          {
-            "account": {"en": "account", "zh": "å¸å·"}
-          }
-        ];
-        setI10n(actionData);
-      }
-      {
-        setSessionkey("77680759");
-      }
-      {
-        Map param = {
-          "type": "form",
-          "formdetail": {
-            "formName": "login",
-            "backgroundColor": 4280391411,
-            "submit": "Login",
-            "imgTitle": {
-              "title": "Welcome",
-              "fontSize": 40.0,
-              "height": 1.2,
-              "letterSpacing": 1.0
-            },
-            "height": 450.5,
-            "top": 130.0,
-            "items": {
-              "email": {
-                "id": "email",
-                "dbid": "email",
-                "type": "email",
-                "label": "Email",
-                "defaultValue": "",
-                "placeHolder": "xxx@xxxxx.xxx",
-                "required": true,
-                "minLength": 8,
-                "length": 40,
-                "hash": false,
-                "unit": "characters",
-                "prefixIcon": 59123,
-                "inputType": "emailAddress",
-                "isHidden": false,
-                "fontSize": null,
-                "letterSpacing": null,
-                "isPrimary": false
-              },
-              "password": {
-                "id": "password",
-                "dbid": "password",
-                "type": "password",
-                "label": "Password",
-                "defaultValue": "",
-                "placeHolder": "",
-                "required": true,
-                "minLength": 8,
-                "length": 20,
-                "hash": true,
-                "unit": "characters",
-                "prefixIcon": 59459,
-                "inputType": "visiblePassword",
-                "isHidden": false,
-                "fontSize": null,
-                "letterSpacing": null,
-                "isPrimary": false
-              }
-            }
-          }
-        };
-        getWidgetForm(param, null);
-      }
-      {
-        dynamic data = {
-          "id": "996a925f-5ce8-4d08-9ef6-2f3169d21491",
-          "zzyoptlock": "619",
-          "username": "Linus",
-          "firstname": "Zhong",
-          "usercode": "1220",
-          "email": "none",
-          "token": "none",
-          "cell": "null",
-          "parentid": "null",
-          "url": "null",
-          "roleid": "-1",
-          "password": "",
-          "companyid": "IOTPay",
-          "entryid": "996a925f-5ce8-4d08-9ef6-2f3169d21491",
-          "entrytime": "1623459619673"
-        };
-        setMyInfo(data, context);
-      }
-
-      {
-        List actiondata = [
-          {
-            "label": "Role",
-            "icon": 0xf1ac,
-            "type": "table",
-            "actionid": "Zzyrole"
-          },
-          {
-            "label": "Menu",
-            "icon": 0xf1c4,
-            "type": "table",
-            "actionid": "Zzymenu"
-          },
-          {
-            "label": "Test",
-            "icon": 0xf2dd,
-            "type": "action",
-            "actionid": "test"
-          },
-          {
-            "label": "Change Password",
-            "icon": 0xf33f,
-            "type": "action",
-            "actionid": "changepassword"
-          }
-        ];
-        setMyMenu(actiondata);
-      }
-      {
-        List actionData = [
-          {
-            gLabel: "Shopping Cart",
-            gIcon: 0xf37f,
-            gType: gAction,
-            gActionid: "businessShowShoppingCart"
-          }
-        ];
-        setMyAction(actionData);
-      }
-
-      {
-        Map items = businessCheckoutGetItems();
-        Map category = businessCheckoutGetCategory();
-        List data = [];
-        category.forEach((key, value) {
-          List itemList = value[gItems];
-          List bodyList = [];
-          itemList.forEach((element) {
-            Map itemOne = items[element];
-            bodyList.add({
-              gLabel: itemOne[gLabel],
-              gType: gProcess,
-              gActionid: 'businessChckoutAddOneToShoppingCart',
-              gDetail: [
-                {gLabel: itemOne[gPrice], gType: gMoney, gActionid: element}
-              ]
-            });
-          });
-          data.add({gLabel: value[gLabel], gType: gCard, gBody: bodyList});
-        });
-
-        setMyTab(data);
-      }
-      {
-        removeAllScreens(context);
-      }
-    }
-  }
-
-  businessCheckoutGetItems() {
-    return {
-      'item0': {
-        gLabel: "Beef Noodle",
-        gPrice: "15.00",
-      },
-      'item1': {
-        gLabel: "House special stir Fried sliced",
-        gPrice: "12.10",
-      },
-      'item2': {
-        gLabel: "Red curry over Noodle",
-        gPrice: "13.00",
-      },
-      'item3': {
-        gLabel: "Taipei Riverway Seafood Thisk so...",
-        gPrice: "14.00",
-      },
-      'item4': {
-        gLabel: "White Rice",
-        gPrice: "1.00",
-      },
-      'item5': {
-        gLabel: "Brown Rice",
-        gPrice: "1.50",
-      },
-      'item6': {
-        gLabel: "Eight Treasure Rice",
-        gPrice: "2.50",
-      },
-      'item7': {
-        gLabel: "Stirred Rice",
-        gPrice: "5.50",
-      },
-      'item8': {
-        gLabel: "Red Tea",
-        gPrice: "5.50",
-      },
-      'item9': {
-        gLabel: "Green Tea",
-        gPrice: "4.50",
-      },
-      'item10': {
-        gLabel: "Rose Tea",
-        gPrice: "10.50",
-      },
-      'item11': {
-        gLabel: "Regular Coffee",
-        gPrice: "1.50",
-      },
-      'item12': {
-        gLabel: "Carpocino",
-        gPrice: "2.50",
-      },
-      'item13': {
-        gLabel: "Cat poop",
-        gPrice: "12.50",
-      },
-      'item14': {
-        gLabel: "Apple juice",
-        "price": "2.50",
-      },
-      'item15': {
-        gLabel: "Beer",
-        gPrice: "4.50",
-      },
-    };
-  }
-
-  businessCheckoutGetCategory() {
-    return {
-      'cate0': {
-        gLabel: "Noodle",
-        gItems: ['item0', 'item1', 'item2', 'item3']
-      },
-      'cate1': {
-        gLabel: "Rice",
-        gItems: ['item4', 'item5', 'item6', 'item7']
-      },
-      'cate2': {
-        gLabel: "Tea",
-        gItems: ['item8', 'item9', 'item10']
-      },
-      'cate3': {
-        gLabel: "Coffee",
-        gItems: ['item11', 'item12', 'item13']
-      },
-      'cate4': {
-        gLabel: "Uncategorized",
-        gItems: ['item14', 'item15']
-      },
-    };
-  }
-
-  businessGetOrderSum() {
-    return '20.00';
-  }
-
-  businessMyBody(name) {
-    if (name == gMain) {
-      List objList = [];
-      objList.add({
-        gType: gLabel,
-        gHeight: 80.0,
-        gAlign: gCenter,
-        gLabel: '\$ ' + businessGetOrderSum(),
-        gFontSize: 40.0,
-        //gColor: Colors.red
-      });
-      objList.add({
-        gType: gButton,
-        gHeight: 80.0,
-        gAlign: gCenter,
-        gLabel: gCharge,
-        gFontSize: 40.0,
-        gColor: Colors.white,
-        gBackgroundColor: Colors.green
-      });
-
-      objList.add({gType: gTab, gData: name});
-      return MyDynamicBody(objList);
-    }
-    return null;
   }
 }
 
