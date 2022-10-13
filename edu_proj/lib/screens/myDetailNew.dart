@@ -17,6 +17,8 @@ class MyDetailNew extends StatelessWidget {
   Widget build(BuildContext context) {
     List mapActions = [];
     List mapBottoms = [];
+    bool isHome = false;
+    int thisbackcolor = backcolor ?? Colors.black.value;
     _param.forEach((key, value) {
       if (value == null) {
         return;
@@ -37,6 +39,10 @@ class MyDetailNew extends StatelessWidget {
           /*for (int i = 0; i < value1.length; i++) {
             mapBottoms.add(Map.of(value1[i]));
           }*/
+        } else if (key1 == gItem) {
+          if (((value1 + "") ?? "").indexOf(gHometab) > 0) {
+            isHome = true;
+          }
         }
       });
     });
@@ -66,16 +72,19 @@ class MyDetailNew extends StatelessWidget {
         gChild: Row(
             //mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              Expanded(child: datamodel.getTitle(_param, context, backcolor)),
+              isHome
+                  ? new Text("")
+                  : IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+              Expanded(
+                  child: datamodel.getTitle(_param, context, thisbackcolor)),
               Row(
                   children:
-                      datamodel.getActions(mapActions, context, backcolor)),
+                      datamodel.getActions(mapActions, context, thisbackcolor)),
             ])
       };
 
@@ -141,74 +150,6 @@ class MyDetailNew extends StatelessWidget {
           ]),
         ),
       );
-
-      /*return Scaffold(
-          //backgroundColor: _param[gBackgroundColor],
-          appBar: AppBar(
-            //backgroundColor: _param[gColor],
-            //elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            title: datamodel.getTitle(_param, context, backcolor),
-
-            //title: const TextBox(),
-            actions:
-                //other icons
-                //datamodel.getScreenItems(mapActions,context),
-                datamodel.getActions(mapActions, context, backcolor),
-          ),
-          drawer: Drawer(
-            child: MediaQuery.removePadding(
-              context: context,
-              // DrawerHeader consumes top MediaQuery padding.
-              removeTop: true,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 38.0),
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: ClipOval(
-                            child: Icon(Icons.person_outline),
-                          ),
-                        ),
-                        aWidget
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children:
-                          datamodel.getMenuItems(gMain, context, backcolor),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          body: SafeArea(
-            child: Column(
-              children: [
-                //Expanded(child: PicsAndButtons(datamodel.screenLists[_name])),
-                Expanded(child: MyScreen(_param, backcolor)),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: datamodel.getScreenItemsList(
-                        mapBottoms, context, backcolor)
-                    //datamodel.getActions({gActions: mapBottoms}, context)),
-                    ),
-              ],
-            ),
-          )
-          
-          );*/
     });
   }
 }
