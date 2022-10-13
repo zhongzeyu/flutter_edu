@@ -104,7 +104,7 @@ class MyPaginatedDataTable extends StatelessWidget {
             continue;
           }
           result.add(DataColumn(
-              label: MyLabel({gLabel: columns[i][gLabel]}, null),
+              label: MyLabel({gLabel: columns[i][gLabel]}, Colors.white.value),
               onSort: sortTable));
         }
         return result;

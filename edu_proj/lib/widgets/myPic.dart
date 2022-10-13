@@ -24,7 +24,7 @@ class MyPic extends StatelessWidget {
           _param[gImg]
               .toString()
               .substring(_param[gImg].toString().lastIndexOf('/') + 1);
-      //print('=================' + imgUrl);
+      print('=================' + imgUrl);
       return Image(
         image: NetworkImage(imgUrl),
         fit: BoxFit.fitWidth,

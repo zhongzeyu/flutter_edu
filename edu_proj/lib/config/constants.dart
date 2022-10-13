@@ -80,6 +80,7 @@ const gEmailAddress = 'emailAddress';
 const gEmployee = 'employee';
 const gEn = 'en';
 const gEnterusercode = 'enterusercode';
+const gEntrytime = 'entrytime';
 const gEteremailtoresetpassword = 'eteremailtoresetpassword';
 const gExcel = 'Excel';
 const gExpanded = 'Expanded';
@@ -111,6 +112,7 @@ const gHeader = 'header';
 const gHeight = 'height';
 const gHidden = 'hidden';
 const gHome = 'home';
+const gHometab = 'hometab';
 
 const gIcon = 'icon';
 const gId = 'id';
@@ -154,6 +156,7 @@ const gMsg = 'msg';
 const gMultiline = 'multiline';
 
 const gName = 'name';
+const gNew = 'new';
 const gNochange = 'nochange';
 const gNode = 'node';
 const gNoecrypted = 'noecrypted';
@@ -207,6 +210,7 @@ const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';
 
+const gSetDroplist = 'setDroplist';
 const gSetFormList = 'setFormList';
 const gSetMyMenu = 'setMyMenu';
 const gSetMyInfo = 'setMyInfo';
@@ -224,7 +228,7 @@ const gSidb = 'sidb';
 const gSizedbox = 'sizedbox';
 
 const gSortColumnIndex = 'sortColumnIndex';
-const gStreetAddress = 'streetAddress';
+const gSTREMAIL = "zy:";
 const gStudent = 'student';
 const gSubject = 'subject';
 const gSubmit = 'submit';
@@ -250,6 +254,8 @@ const gTextFontColor = 'textFontColor';
 const gTextLightColor = Color(0xFFACACAC);
 const gText = 'text';
 const gTextLink = 'textlink';
+
+const gTimestamp = 'timestamp';
 const gTitle = 'title';
 const gToken = 'token';
 const gTop = 'top';
@@ -263,6 +269,7 @@ const gTxtEditingController = 'txtEditingController';
 const gType = 'type';
 
 const gUnit = 'unit';
+const gUpdate = 'update';
 const gUpdatepassword = 'updatepassword';
 const gUrl = 'url';
 
@@ -280,3 +287,4 @@ const gYearmonth = 'yearmonth';
 const gZzydictionary = 'Zzydictionary';
 const gZzydictionaryitem = 'Zzydictionaryitem';
 const gZh = 'zh';
+const gZzylog = 'Zzylog';
