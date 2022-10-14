@@ -171,7 +171,7 @@ class DataModel extends ChangeNotifier {
   }
 
   addTab(data, context, tabName) {
-    if (isNull(data[gLabel])) {
+    if (isNull(data[gLabel]) || data[gLabel] == gDroplist) {
       return;
     }
     bool tabExists = showTab(data[gLabel], context, tabName);
@@ -237,7 +237,7 @@ class DataModel extends ChangeNotifier {
           }
         });
         if (!findRow) {
-          tableData.insert(0, rowData);
+          tableInsert(tablename, rowData, context);
         }
       });
     }
@@ -248,9 +248,55 @@ class DataModel extends ChangeNotifier {
         var tablename = aMap.entries.first.key;
         Map rowData = Map.of(aMap.entries.first.value);
         var tableInfo = _tableList[tablename];
-        List tableData = tableInfo[gData];
+        //List tableData = tableInfo[gData];
         tableInfo[gTimestamp] = timestamp;
-        tableData.removeWhere((element1) => element1[gId] == rowData[gId]);
+        //tableData.removeWhere((element1) => element1[gId] == rowData[gId]);
+        tableRemove(tablename, rowData, context);
+      });
+    }
+  }
+
+  tableInsert(tablename, rowData, context) {
+    var tableInfo = _tableList[tablename];
+    List tableData = tableInfo[gData];
+    Map row = Map.of(rowData);
+    tableData.insert(0, row);
+    if (_dpList.containsKey(tablename)) {
+      dpListInsert(tablename, row, context);
+    }
+  }
+
+  tableRemove(tablename, rowData, context) {
+    var tableInfo = _tableList[tablename];
+    List tableData = tableInfo[gData];
+    Map row = Map.of(rowData);
+    tableData.removeWhere((element1) => element1[gId] == row[gId]);
+
+    if (_dpList.containsKey(tablename)) {
+      dpListRemove(tablename, row, context);
+    }
+  }
+
+  dpListRemove(tablename, row, context) {
+    _dpList[tablename].removeWhere((element1) => element1[gId] == row[gId]);
+    _i10nMap.removeWhere((key, value) => key == row[gId]);
+  }
+
+  dpListInsert(tablename, element, context) {
+    if (!_dpList.containsKey(tablename)) {
+      List tmp = [];
+      _dpList[tablename] = tmp;
+    }
+    _dpList[tablename].add(element[gId]);
+
+    _i10nMap[element[gId]] = {
+      _locale: getTableKeyword(tablename, element[gId], context)
+    };
+    if (_dpList.containsKey(gZzyLanguageCode)) {
+      List languagecodeList = _dpList[gZzyLanguageCode];
+      languagecodeList.forEach((element1) {
+        _i10nMap[element[gId]][element1] =
+            getTableKeyword(tablename, element[gId], context);
       });
     }
   }
@@ -350,6 +396,15 @@ class DataModel extends ChangeNotifier {
     _formLists[data[gActionid]] = null;
 
     setFormListOne(data[gActionid], param[gFormdetail]);
+    if (data[gLabel] == gDroplist) {
+      //add to droplist
+      List tableData = _tableList[data[gActionid]][gData];
+      if (tableData.length > 0) {
+        tableData.forEach((element) {
+          dpListInsert(data[gActionid], element, context);
+        });
+      }
+    }
   }
 
   setDroplist() {
@@ -1508,13 +1563,15 @@ class DataModel extends ChangeNotifier {
     sendRequestOne(gProcess, [element], context);
   }
 
-  getDPList() {
-    var result = "";
-    var delimeter = "";
-    _dpList.forEach((key, value) {
-      result = result + delimeter + key;
-      delimeter = gSTREMAIL;
-    });
+  getDpListByKey(key, context, value) {
+    List result = [];
+    if (_dpList.containsKey(key)) {
+      result = _dpList[key];
+    }
+    if (result.length < 1) {
+      result.add(value);
+    }
+
     return result;
   }
 
@@ -1530,6 +1587,22 @@ class DataModel extends ChangeNotifier {
     });
 
     return item;
+  }
+
+  getTableShowData(tableInfo, context) {
+    List tableData = tableInfo[gData];
+    List columns = tableInfo[gColumns];
+    List result = [];
+    tableData.forEach((dataRow) {
+      Map map = {};
+      for (int i = 0; i < columns.length; i++) {
+        Map col = columns[i];
+        map[col[gId]] =
+            getTableCellValueFromDataRowIsRawCol(dataRow, col, context, false);
+      }
+      result.add(map);
+    });
+    return result;
   }
 
   getTreeNodesFromTable(tableName, context, level) {
@@ -1717,12 +1790,17 @@ class DataModel extends ChangeNotifier {
 
   getTableCellValueFromDataRowIsRaw(
       dataRow, columns, colIndex, context, isRaw) {
-    dynamic colName = columns[colIndex][gId];
+    Map col = columns[colIndex];
+    return getTableCellValueFromDataRowIsRawCol(dataRow, col, context, isRaw);
+  }
+
+  getTableCellValueFromDataRowIsRawCol(dataRow, col, context, isRaw) {
+    dynamic colName = col[gId];
     var result = dataRow[colName];
     if (isNull(result)) {
       return result;
     }
-    dynamic inputType = columns[colIndex][gInputType];
+    dynamic inputType = col[gInputType];
 
     if (inputType == gDatetime) {
       if (isRaw) {
@@ -1733,6 +1811,13 @@ class DataModel extends ChangeNotifier {
       }
       return toLocalTime(result);
     }
+    if (isRaw) {
+      return result;
+    }
+    if (!isNull(col[gDroplist])) {
+      return getSCurrent(result);
+    }
+
     return result;
   }
 
@@ -2288,8 +2373,8 @@ class DataModel extends ChangeNotifier {
   }
 
   processTab(List data, context) {
-    data.forEach((data0) {
-      data0 = Map.of(data0);
+    data.forEach((element) {
+      Map data0 = Map.of(element);
       if (data0[gType].toString().endsWith(gTable) ||
           data0[gType] == gTabletree) {
         addTable(data0, context);
@@ -2299,6 +2384,7 @@ class DataModel extends ChangeNotifier {
           return;
         }
       }
+
       addTab(data0, context, data0[gParam0]);
     });
 
@@ -2419,9 +2505,6 @@ class DataModel extends ChangeNotifier {
 
   requestListRemoveFirst() {
     return _requestList.removeFirst();
-    /*if (index >= 0) {
-      _requestList.removeWhere((key, value) => key == index);
-    }*/
   }
 
   resetPassword(context, data) {
@@ -2473,11 +2556,13 @@ class DataModel extends ChangeNotifier {
 
   saveTableOne(data0, context) {
     //formid = data0[gFormid];
-    List tableData = tableList[data0[gTableID]][gData];
+    var tablename = data0[gTableID];
+    //List tableData = tableList[tablename][gData];
+
     if (data0[gActionid] == gTableAdd) {
       //tableData.insert(0, Map.of(data0[gBody]));
       finishme(context);
-      saveTableOneAt0(tableData, data0, context);
+      tableInsert(tablename, data0[gBody], context);
       tableList[data0[gTableID]][gKey] = UniqueKey();
       //if table have detail, popup the detail page
       Map tableAttr = tableList[data0[gTableID]][gAttr];
@@ -2495,20 +2580,18 @@ class DataModel extends ChangeNotifier {
       }
     } else if (data0[gActionid] == gTableUpdate) {
       finishme(context);
-      var updateID = data0[gBody][gId];
-      tableData.removeWhere((element) => element[gId] == updateID);
+      //var updateID = data0[gBody][gId];
+      //tableData.removeWhere((element) => element[gId] == updateID);
+      tableRemove(tablename, data0[gBody], context);
       //tableData.insert(0, Map.of(data0[gBody]));
-      saveTableOneAt0(tableData, data0, context);
+      tableInsert(tablename, data0[gBody], context);
     } else if (data0[gActionid] == gTableDelete) {
-      var deletedID = data0[gBody][gId];
-      tableData.removeWhere((element) => element[gId] == deletedID);
+      //var deletedID = data0[gBody][gId];
+      //tableData.removeWhere((element) => element[gId] == deletedID);
+      tableRemove(tablename, data0[gBody], context);
     }
 
     myNotifyListeners();
-  }
-
-  saveTableOneAt0(tableData, data0, context) {
-    tableData.insert(0, Map.of(data0[gBody]));
   }
 
   searchAddress(data, context) async {
@@ -2573,6 +2656,16 @@ class DataModel extends ChangeNotifier {
 
       if (requestFirst[gData] != null && requestFirst[gData] is List) {
         List requestData = requestFirst[gData];
+        var existsTables = '';
+        var existsTablesSep = '';
+        /*_tableList.forEach((key, value) {
+          existsTables = existsTables + existsTablesSep + key;
+          existsTablesSep = ',';
+        });*/
+        _dpList.forEach((key, value) {
+          existsTables = existsTables + existsTablesSep + key;
+          existsTablesSep = ',';
+        });
         requestData.forEach((element) {
           if (!isNull(element[gType]) &&
               element[gType] == gTable &&
@@ -2582,8 +2675,8 @@ class DataModel extends ChangeNotifier {
             if (_tableList[tablename] != null) {
               timestamp = _tableList[tablename][gTimestamp];
             }
-
             element[gTimestamp] = timestamp;
+            element[gTablelistExist] = existsTables;
           }
         });
       }

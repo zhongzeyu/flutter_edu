@@ -58,7 +58,9 @@ class MyDropdown extends StatelessWidget {
                       datamodel.setDropdownMenuItem(
                           item.value, newValue, context, _formName);
                     },
-                    items: datamodel.dpList[item.value[gDroplist]]
+                    items: datamodel
+                        .getDpListByKey(
+                            item.value[gDroplist], context, item.value[gValue])
                         .map<DropdownMenuItem<dynamic>>((dynamic value) {
                       return DropdownMenuItem<dynamic>(
                         value: value,

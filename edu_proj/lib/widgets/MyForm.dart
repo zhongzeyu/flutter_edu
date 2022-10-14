@@ -62,11 +62,11 @@ class MyForm extends StatelessWidget {
               } else {
                 //if had droplist, use dropdown
                 if (!datamodel.isNull(item.value[gDroplist])) {
-                  if (datamodel.dpList[item.value[gDroplist]] != null) {
-                    result.add(
-                      MyDropdown(item, _formName, thisbackcolor),
-                    );
-                  }
+                  //if (datamodel.dpList[item.value[gDroplist]] != null) {
+                  result.add(
+                    MyDropdown(item, _formName, thisbackcolor),
+                  );
+                  //}
                 } else {
                   result.add(
                     TextFieldWidget(

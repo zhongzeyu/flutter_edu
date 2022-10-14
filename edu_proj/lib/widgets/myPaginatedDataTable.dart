@@ -22,11 +22,9 @@ class MyPaginatedDataTable extends StatelessWidget {
     DataTableSource tabledata;
     int actionBtnCnts = 0;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      //dynamic tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
       dynamic tableName = _param[gName];
 
       Map tableInfo = datamodel.tableList[tableName];
-      //tableInfo.[gData].length;
       List tableData = tableInfo[gData];
       List columns = tableInfo[gColumns];
       dynamic searchValue = tableInfo[gSearch] ?? '';
@@ -40,19 +38,6 @@ class MyPaginatedDataTable extends StatelessWidget {
         if (ti != null) {
           newData.add(ti);
         }
-        /*bool searchTxtExists = false;
-        for (MapEntry element in ti.entries) {
-          var elementKey = element.key;
-
-          if (searchValue == '' ||
-              (element.value ?? '').indexOf(searchValue) > -1) {
-            searchTxtExists = true;
-            break;
-          }
-        }
-        if (searchTxtExists) {
-          newData.add(ti);
-        }*/
       }
 
       tableInfo[gDataSearch] = newData;
@@ -61,21 +46,7 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       sortTable(int columnIndex, bool ascending) {
         int sortIndex = columnIndex - actionBtnCnts;
-        /*int index = 0;
-        for (int i = 0; i < columns.length; i++) {
-          if (datamodel.isHiddenColumn(columns, i)) {
-            continue;
-          }
-          if (index == sortIndex) {
-            sortIndex = i;
-            break;
-          }
-          index++;
-        }*/
-
         datamodel.tableSort(tableName, sortIndex, ascending, context);
-
-        print('============columnIndex is $sortIndex, ascending is $ascending');
         datamodel.myNotifyListeners();
       }
 
@@ -86,19 +57,8 @@ class MyPaginatedDataTable extends StatelessWidget {
             tableInfo[gAttr][gCanDelete] ||
             (tableInfo[gAttr][gDetail] ?? "") != "") {
           result.add(DataColumn(label: Text("")));
-          //actionBtnCnts++;
           actionBtnCnts = 1;
         }
-        /*if (tableInfo[gAttr][gCanDelete]) {
-          result.add(DataColumn(label: Text("")));
-          //actionBtnCnts++;
-          actionBtnCnts = 1;
-        }
-        if ((tableInfo[gAttr][gDetail] ?? "") != "") {
-          result.add(DataColumn(label: Text("")));
-          //actionBtnCnts++;
-          actionBtnCnts = 1;
-        }*/
         for (int i = 0; i < columns.length; i++) {
           if (datamodel.isHiddenColumn(columns, i)) {
             continue;
@@ -109,43 +69,6 @@ class MyPaginatedDataTable extends StatelessWidget {
         }
         return result;
       }
-
-      /*getTableBtns(tableInfo, datamodel, context) {
-        Map attr = tableInfo[gAttr];
-        var value = tableInfo[gSearch] ?? '';
-
-        MapEntry searchItem =
-            datamodel.getTableItemByName(tableInfo, gSearch, value);
-        Map searchItemValue = searchItem.value;
-        searchItemValue.putIfAbsent(gAction, () => gLocalAction);
-        searchItemValue.putIfAbsent(gContext, () => context);
-        searchItemValue.putIfAbsent(gTableID, () => tableInfo[gTableID]);
-        searchItemValue.putIfAbsent(gOldvalue, () => value);
-        
-        List<Widget> items = [];
-        items.add(TextFieldWidget(item: searchItem));
-
-        if (attr[gCanInsert]) {
-          items.add(ElevatedButton(
-              onPressed: () {
-                _param[gData][gRow] = datamodel.newForm(_param[gData], context);
-                datamodel.showTableForm(_param[gData], context);
-                //tableAddNew(tableName);
-              },
-              child: MyLabel({gLabel: gAddnew})));
-        }
-        attr[gCanDelete] = false;
-        if (attr[gCanDelete]) {
-          items.add(ElevatedButton(
-              onPressed: () {
-                //tableAddNew(tableName);
-              },
-              child: MyLabel({gLabel: gDelete})));
-        }
-        //dynamic tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
-
-        return items;
-      }*/
 
       getShowIndex(sortColumnIndex) {
         int result = 0;
@@ -161,16 +84,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         return result;
       }
 
-      //datamodel.initPaginateDataTable(tableName,actionBtnCnts, tabledata, getTableColumns());
-      //dynamic item = datamodel.getTableSearchItem(tableInfo);
-
-      return /*MaterialApp(
-        debugShowCheckedModeBanner: false,
-        //theme: tableTheme,
-        home: Scaffold(
-          body: */
-          PaginatedDataTable(
-        //header: MyLabel(data),
+      return PaginatedDataTable(
         key: tableInfo[gKey],
         rowsPerPage: datamodel.getRowsPerPage(tableInfo),
         availableRowsPerPage: [5, 10, 15, 20, 50],
@@ -188,8 +102,6 @@ class MyPaginatedDataTable extends StatelessWidget {
         sortColumnIndex:
             actionBtnCnts + getShowIndex(tableInfo[gSortColumnIndex]),
       );
-      //),
-      //);
     });
   }
 }

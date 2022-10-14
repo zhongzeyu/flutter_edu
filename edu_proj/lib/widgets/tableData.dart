@@ -10,17 +10,8 @@ class TableData extends DataTableSource {
   int _selectRowCount = 0;
 
   TableData(this._param, this._context);
-  // Generate some made-up data
-  /*final List<Map<dynamic, dynamic>> _data = List.generate(
-      200,
-      (index) => {
-            "id": index,
-            "title": "Item $index",
-            "price": Random().nextInt(10000)
-          });
-*/
+
   bool get isRowCountApproximate => false;
-  //int get rowCount => _data.length;
 
   int get rowCount => (_param[gDataSearch] ?? _param[gData]).length;
   int get selectedRowCount => _selectRowCount;
@@ -28,22 +19,7 @@ class TableData extends DataTableSource {
   DataRow getRow(int index) {
     List<DataCell> dataCellList = [];
     List<Widget> actionList = [];
-    /*Map aparam = {
-      //gValue: 0xf00d,
-      //gLabel: gEdit,
-      gAction: gLocalAction,
-      gPadding: 0.0,
-      gWidth: 50.0,
-      gTableID: _param[gTableID],
-      gRow: (_param[gDataSearch] ?? _param[gData])[index],
-      gContext: _context
-    };*/
     if (_param[gAttr][gCanEdit]) {
-      /*Map thisParam = new Map.from(aparam);
-      thisParam[gLabel] = gEdit;
-      thisParam[gValue] = 0xe21a;
-      
-      actionList.add(MyIcon(thisParam));*/
       actionList.add(MyButton({
         gLabel: gEdit,
         gAction: gLocalAction,
@@ -54,11 +30,6 @@ class TableData extends DataTableSource {
       }));
     }
     if (_param[gAttr][gCanDelete]) {
-      /*Map thisParam = new Map.from(aparam);
-      thisParam[gLabel] = gDelete;
-      thisParam[gValue] = 0xe1b9;
-      actionList.add(MyIcon(thisParam));*/
-
       actionList.add(MyButton({
         gLabel: gDelete,
         gAction: gLocalAction,
@@ -67,15 +38,8 @@ class TableData extends DataTableSource {
         gContext: _context,
         gWidth: 50.0
       }));
-
-      //dataCellList.add(DataCell(MyIcon(thisParam)));
     }
     if ((_param[gAttr][gDetail] ?? "") != "") {
-      /*Map thisParam = new Map.from(aparam);
-      thisParam[gLabel] = gDetail;
-      thisParam[gValue] = 0xe1ff;
-      actionList.add(MyIcon(thisParam));*/
-
       actionList.add(MyButton({
         gLabel: gDetail,
         gAction: gLocalAction,
