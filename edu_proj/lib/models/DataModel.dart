@@ -550,6 +550,122 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
+  Future downloadFile(filename, context, needRemove, subject) async {
+    dynamic filePath = '';
+
+    try {
+      dynamic myUrl = 'http://' +
+          MyConfig.URL.name +
+          '/' +
+          MyConfig.DOWNLOAD.name +
+          '?filename=$filename&needRemove=$needRemove';
+
+      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //var response = await request;
+      if (response.statusCode == 200) {
+        var bytes = response.bodyBytes;
+        //await consolidateHttpClientResponseBytes(response);
+        //Directory dir = await getApplicationDocumentsDirectory();
+        Directory dir = await getTemporaryDirectory();
+        dynamic tempPath = dir.path;
+        //showMsg(context, tempPath);
+
+        filePath = '$tempPath/$filename';
+        File file = File(filePath);
+        await file.writeAsBytes(bytes);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                PDFScreen({gPath: filePath, gSubject: subject}),
+          ),
+        );
+      } else {
+        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
+      }
+    } catch (ex) {
+      showMsg(context, ex.toString(), null);
+    }
+    //print('======== filePath is $filePath');
+  }
+
+  downloadAddress(searchTxt, context, haveNext) async {
+    var searchType = "SearchTerm";
+    List tmpListAddress = [];
+    bool needFindUS = false;
+    if (haveNext ?? false) {
+      searchType = "LastId";
+    } else {
+      needFindUS = true;
+    }
+    List tmpListAddress1 =
+        await downloadAddressDetail(searchType + "=" + searchTxt, context);
+    if (tmpListAddress1.length > 0) {
+      tmpListAddress1.forEach((element) {
+        tmpListAddress.add(element);
+      });
+    }
+    if (needFindUS) {
+      List tmpListAddress2 = await downloadAddressDetail(
+          searchType + "=" + searchTxt + "&Country=US", context);
+      if (tmpListAddress2.length > 0) {
+        tmpListAddress2.forEach((element) {
+          tmpListAddress.add(element);
+        });
+      }
+    }
+
+    List<dynamic> result = [];
+    //result.add('');
+    for (int i = 0; i < tmpListAddress.length; i++) {
+      dynamic element = tmpListAddress[i];
+      if (element["Next"] == "Find") {
+        List resultSub = await downloadAddress(element["Id"], context, true);
+        resultSub.forEach((element1) {
+          result.add(element1);
+        });
+      } else {
+        var address = element["Text"] + " " + element["Description"];
+        result.add(address);
+      }
+    }
+    return result;
+  }
+
+  Future downloadAddressDetail(param, context) async {
+    List result = [];
+    try {
+      dynamic myUrl = MyConfig.URLAddress.name + param;
+
+      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //var response = await request;
+      if (response.statusCode == 200) {
+        Utf8Decoder decode = new Utf8Decoder();
+        Map data = Map.of(jsonDecode(decode.convert(response.bodyBytes)));
+        if (data == null) {
+          return;
+        }
+        List itemList = data["Items"];
+        if (itemList.length < 1) {
+          return;
+        }
+        itemList.forEach((element) {
+          Map oneItem = Map.of(element);
+          result.add(oneItem);
+        });
+      } else {
+        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
+      }
+    } catch (ex) {
+      showMsg(context, ex.toString(), null);
+    }
+    //result = getArrayMatch(result, param);
+    return result;
+    //print('======== filePath is $filePath');
+  }
+
   encryptByDES(datalist) {
     var key = _sessionkey;
     var json = jsonEncode(datalist); //.toString();
@@ -740,6 +856,52 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
+  getArrayMatch(List list, var msg) {
+    List msgList = msg.toString().toLowerCase().split(" ");
+    Map temp = {};
+    list.forEach((element) {
+      temp.putIfAbsent(element,
+          () => getStrDistance(element.toString().toLowerCase(), msgList));
+    });
+    Map mapKeys = getMapSortByValue(temp, true);
+    List valueList = mapKeys.values.toList();
+    Map mapNew = {};
+    temp.forEach((key, value) {
+      List mapNewValue = [];
+      if (mapNew.containsKey(value)) {
+        mapNewValue = mapNew[value];
+      } else {
+        mapNew[value] = mapNewValue;
+      }
+      mapNewValue.add(key);
+    });
+    List result = [];
+    for (int i = 0; i < valueList.length; i++) {
+      List mapNewValue = mapNew[valueList[i]];
+      for (int j = 0; j < mapNewValue.length; j++) {
+        result.add(mapNewValue[j]);
+      }
+    }
+    return result;
+  }
+
+  getMapSortByKey(Map map, bool isAsc) {
+    final sortedKeys = SplayTreeMap.from(
+        map,
+        (keys1, keys2) =>
+            isAsc ? keys1.compareTo(keys2) : keys2.compareTo(keys1));
+    return sortedKeys;
+  }
+
+  getMapSortByValue(Map map, bool isAsc) {
+    final sortedKeys = SplayTreeMap.from(
+        map,
+        (keys1, keys2) => isAsc
+            ? map[keys1].compareTo(map[keys2])
+            : map[keys2].compareTo(map[keys1]));
+    return sortedKeys;
+  }
+
   getButtons(param) {
     List<dynamic> list = param[gBtns];
     List<Widget> result = [];
@@ -747,6 +909,29 @@ class DataModel extends ChangeNotifier {
       result.add(MyButton(element));
     });
     return Column(children: result);
+  }
+
+  getButtonsList(context, detail, colorIndex, params) {
+    List<Widget> list = [];
+
+    int colorIndex = -1;
+    if (isNull(detail)) {
+      return list;
+    }
+    detail.forEach((element) {
+      colorIndex += 1;
+      if (colorIndex >= _colorList.length) {
+        colorIndex = 0;
+      }
+      element.putIfAbsent(gColor, () => _colorList[colorIndex]);
+      element.putIfAbsent(gWidth, () => 140.0);
+      element.putIfAbsent(gName, () => params[gName] ?? '');
+      element.putIfAbsent(gType, () => params[gType] ?? '');
+
+      list.add(MyButton(element));
+    });
+
+    return list;
   }
 
   getCard(List data, context, param0, backcolor) {
@@ -787,29 +972,6 @@ class DataModel extends ChangeNotifier {
     return list;
   }
 
-  getButtonsList(context, detail, colorIndex, params) {
-    List<Widget> list = [];
-
-    int colorIndex = -1;
-    if (isNull(detail)) {
-      return list;
-    }
-    detail.forEach((element) {
-      colorIndex += 1;
-      if (colorIndex >= _colorList.length) {
-        colorIndex = 0;
-      }
-      element.putIfAbsent(gColor, () => _colorList[colorIndex]);
-      element.putIfAbsent(gWidth, () => 140.0);
-      element.putIfAbsent(gName, () => params[gName] ?? '');
-      element.putIfAbsent(gType, () => params[gType] ?? '');
-
-      list.add(MyButton(element));
-    });
-
-    return list;
-  }
-
   getCardTitle(data, backcolor) {
     return MyLabel({
       gLabel: data[gLabel],
@@ -830,22 +992,6 @@ class DataModel extends ChangeNotifier {
     }
 
     return Row(children: bottom);
-  }
-
-  getTitle(param, context, backcolor) {
-    dynamic aLabel = param[gLabel];
-    if (aLabel == null) {
-      if (param[gData] != null) {
-        aLabel = param[gData][gLabel] ?? param[gData][gName];
-      }
-    }
-    if (aLabel == null) {
-      aLabel = "";
-    }
-
-    return MyLabel({
-      gLabel: aLabel,
-    }, backcolor);
   }
 
   getDetailWidget(param, context, backcolor) {
@@ -912,6 +1058,17 @@ class DataModel extends ChangeNotifier {
 
     getTableByTableID(gZzydictionary, gLabel + "='" + dpid + "'", context);
   }*/
+  getDpListByKey(key, context, value) {
+    List result = [];
+    if (_dpList.containsKey(key)) {
+      result = _dpList[key];
+    }
+    if (result.length < 1) {
+      result.add(value);
+    }
+
+    return result;
+  }
 
   getDynamicWidgets(List param, context, backcolor) {
     List<Widget> widgetList = [];
@@ -1023,32 +1180,6 @@ class DataModel extends ChangeNotifier {
     }*/
     //return Icons.device_unknown;
     return IconData(iconname, fontFamily: 'MaterialIcons');
-  }
-
-  setForm(formName, context) {
-    if (_formLists[formName] != null) {
-      return;
-    }
-    try {
-      sendRequestOne(
-          gGetForm,
-          {gFormid: formName, gCompany: _globalCompanyid, gEmail: _myId},
-          context);
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  setImage(imgName, context) {
-    if (_imgList[imgName] != null) {
-      return;
-    }
-    try {
-      sendRequestOne(gGetImageLink,
-          {gImgID: imgName, gCompany: _globalCompanyid}, context);
-    } catch (e) {
-      throw e;
-    }
   }
 
   getInputType(s) {
@@ -1419,6 +1550,22 @@ class DataModel extends ChangeNotifier {
     return source0;
   }
 
+  getStrDistance(str, List msgList) {
+    int result = 0;
+    msgList.forEach((element) {
+      int index = str.indexOf(element);
+      if (index > -1) {
+        result += index;
+        var strLeft = str.substring(0, index);
+        var strRight = str.substring(index + element.length);
+        str = strRight + strLeft;
+      } else {
+        result += str.length;
+      }
+    });
+    return result;
+  }
+
   getTab(tabname, context) {
     if (_tabList[tabname] != null) {
       return _tabList[tabname];
@@ -1563,18 +1710,6 @@ class DataModel extends ChangeNotifier {
     sendRequestOne(gProcess, [element], context);
   }
 
-  getDpListByKey(key, context, value) {
-    List result = [];
-    if (_dpList.containsKey(key)) {
-      result = _dpList[key];
-    }
-    if (result.length < 1) {
-      result.add(value);
-    }
-
-    return result;
-  }
-
   getTableItemByName(tableInfo, itemName, value) {
     MapEntry item = MapEntry(itemName, {
       gWidth: 150.0,
@@ -1603,6 +1738,22 @@ class DataModel extends ChangeNotifier {
       result.add(map);
     });
     return result;
+  }
+
+  getTitle(param, context, backcolor) {
+    dynamic aLabel = param[gLabel];
+    if (aLabel == null) {
+      if (param[gData] != null) {
+        aLabel = param[gData][gLabel] ?? param[gData][gName];
+      }
+    }
+    if (aLabel == null) {
+      aLabel = "";
+    }
+
+    return MyLabel({
+      gLabel: aLabel,
+    }, backcolor);
   }
 
   getTreeNodesFromTable(tableName, context, level) {
@@ -2601,7 +2752,9 @@ class DataModel extends ChangeNotifier {
     }
     //
     List result = await downloadAddress(searchTxt, context, false);
-    _dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = result;
+    List resultSort = getArrayMatch(result, searchTxt);
+    _dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = resultSort;
+    //_dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = result;
     myNotifyListeners();
   }
 
@@ -2711,6 +2864,20 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
+  setForm(formName, context) {
+    if (_formLists[formName] != null) {
+      return;
+    }
+    try {
+      sendRequestOne(
+          gGetForm,
+          {gFormid: formName, gCompany: _globalCompanyid, gEmail: _myId},
+          context);
+    } catch (e) {
+      throw e;
+    }
+  }
+
   setFormList(actionData) {
     List<dynamic> thisList = actionData;
     for (int i = 0; i < thisList.length; i++) {
@@ -2756,6 +2923,18 @@ class DataModel extends ChangeNotifier {
       setFormValue(gLogin, gEmail, prefs.getString('myid') ?? '');
     }
     //print(jsonEncode(_formLists[formID]));
+  }
+
+  setImage(imgName, context) {
+    if (_imgList[imgName] != null) {
+      return;
+    }
+    try {
+      sendRequestOne(gGetImageLink,
+          {gImgID: imgName, gCompany: _globalCompanyid}, context);
+    } catch (e) {
+      throw e;
+    }
   }
 
   showAlertDialog(BuildContext context, title, msg, requestFirst) {
@@ -2818,128 +2997,12 @@ class DataModel extends ChangeNotifier {
     //sendRequestOne(gFiledownload, {gFilename: filename}, context);
   }
 
-  Future downloadFile(filename, context, needRemove, subject) async {
-    dynamic filePath = '';
-
-    try {
-      dynamic myUrl = 'http://' +
-          MyConfig.URL.name +
-          '/' +
-          MyConfig.DOWNLOAD.name +
-          '?filename=$filename&needRemove=$needRemove';
-
-      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
-      Response response = (await httpClient.get(Uri.parse(myUrl)));
-      //var response = await request;
-      if (response.statusCode == 200) {
-        var bytes = response.bodyBytes;
-        //await consolidateHttpClientResponseBytes(response);
-        //Directory dir = await getApplicationDocumentsDirectory();
-        Directory dir = await getTemporaryDirectory();
-        dynamic tempPath = dir.path;
-        //showMsg(context, tempPath);
-
-        filePath = '$tempPath/$filename';
-        File file = File(filePath);
-        await file.writeAsBytes(bytes);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                PDFScreen({gPath: filePath, gSubject: subject}),
-          ),
-        );
-      } else {
-        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
-      }
-    } catch (ex) {
-      showMsg(context, ex.toString(), null);
-    }
-    //print('======== filePath is $filePath');
-  }
-
-  downloadAddress(searchTxt, context, haveNext) async {
-    var searchType = "SearchTerm";
-    List tmpListAddress = [];
-    bool needFindUS = false;
-    if (haveNext ?? false) {
-      searchType = "LastId";
-    } else {
-      needFindUS = true;
-      tmpListAddress = await downloadAddressDetail(
-          searchType + "=" + searchTxt + "&Country=US", context);
-    }
-    List tmpListAddress1 =
-        await downloadAddressDetail(searchType + "=" + searchTxt, context);
-    if (tmpListAddress1.length > 0) {
-      tmpListAddress1.forEach((element) {
-        tmpListAddress.add(element);
-      });
-    }
-    if (needFindUS) {
-      List tmpListAddress2 = await downloadAddressDetail(
-          searchType + "=" + searchTxt + "&Country=US", context);
-      if (tmpListAddress2.length > 0) {
-        tmpListAddress2.forEach((element) {
-          tmpListAddress.add(element);
-        });
-      }
-    }
-
-    List<dynamic> result = [];
-    //result.add('');
-    tmpListAddress.forEach((element) async {
-      if (element["Next"] == "Find") {
-        List resultSub = await downloadAddress(element["Id"], context, true);
-        resultSub.forEach((element1) {
-          result.add(element1);
-        });
-      } else {
-        var address = element["Text"] + " " + element["Description"];
-        result.add(address);
-      }
-    });
-    return result;
-  }
-
-  showDropList(dpid, item, context) {}
-
   setAddressForItem(oneAddress, item, context) {
     var address = oneAddress["Text"] + " " + oneAddress["Description"];
     setFormValueItem(item, address);
   }
 
-  Future downloadAddressDetail(param, context) async {
-    List result = [];
-    try {
-      dynamic myUrl = MyConfig.URLAddress.name + param;
-
-      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
-      Response response = (await httpClient.get(Uri.parse(myUrl)));
-      //var response = await request;
-      if (response.statusCode == 200) {
-        Utf8Decoder decode = new Utf8Decoder();
-        Map data = Map.of(jsonDecode(decode.convert(response.bodyBytes)));
-        if (data == null) {
-          return;
-        }
-        List itemList = data["Items"];
-        if (itemList.length < 1) {
-          return;
-        }
-        itemList.forEach((element) {
-          Map oneItem = Map.of(element);
-          result.add(oneItem);
-        });
-      } else {
-        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
-      }
-    } catch (ex) {
-      showMsg(context, ex.toString(), null);
-    }
-    return result;
-    //print('======== filePath is $filePath');
-  }
+  showDropList(dpid, item, context) {}
 
   showScreenPage(actionData, context, backcolor) {
     for (int i = 0; i < actionData.length; i++) {
