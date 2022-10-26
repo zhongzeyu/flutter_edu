@@ -747,16 +747,16 @@ class DataModel extends ChangeNotifier {
         }
 
         //set to default value if empty
-        /*obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
+        obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
           //var key = element.entries.first.key;
           var objI = element.value;
           if (objI[gId] != '' &&
               //objI[gIsPrimary] != null &&
               //objI[gIsPrimary] &&
-              (data[objI[gId]] == null || data[objI[gId]] == '')) {
+              (isNull(data[objI[gId]]))) {
             data[objI[gId]] = objI[gOldvalue] ?? objI[gDefaultValue];
           }
-        });*/
+        });
         //send request;
         sendRequestFormChange(data, context); //refresh Form
 
@@ -1737,10 +1737,11 @@ class DataModel extends ChangeNotifier {
     List detail = [];
 
     if (tableInfo[gAttr][gCanEdit]) {
-      detail.add({gLabel: gAddnew, gTableID: tableName, gWidth: 100});
+      detail.add(
+          {gLabel: gAddnew, gTableID: tableName, gWidth: 100, gData: data});
     }
-    detail.add({gLabel: gPdf, gTableID: tableName, gWidth: 60});
-    detail.add({gLabel: gExcel, gTableID: tableName, gWidth: 60});
+    detail.add({gLabel: gPdf, gTableID: tableName, gWidth: 60, gData: data});
+    detail.add({gLabel: gExcel, gTableID: tableName, gWidth: 60, gData: data});
     param[index++] = {
       gItem: jsonEncode(
           {gType: gBtns, gAction: gTable, gValue: tableName, gItems: detail})
@@ -2259,7 +2260,8 @@ class DataModel extends ChangeNotifier {
         var tableid = map[gActionid];
         _lastBackGroundColor = _defaultBackGroundColor;
 
-        showTable(tableid, context, map[gLabel] ?? "", "", backcolor, null);
+        showTable(
+            tableid, context, map[gLabel] ?? "", "", backcolor, null, null);
       }
     } catch (e) {
       showMsg(context, e, null);
@@ -2374,7 +2376,7 @@ class DataModel extends ChangeNotifier {
           await setFormList(actionData);
         } else if (action == gShowTable) {
           await showTable(actionData[0][gTableID], context,
-              actionData[0][gLabel] ?? "", "", "", null);
+              actionData[0][gLabel] ?? "", "", "", null, null);
         } else if (action == gSetDroplist) {
           await setDroplist();
         }
@@ -2394,7 +2396,7 @@ class DataModel extends ChangeNotifier {
           _whereList[data0[gActionid] + '_' + data0[gLabel]] = data0;
 
           showTable(data0[gActionid], context, data0[gLabel], data0[gTranspass],
-              null, data0[gActionid] + '_' + data0[gLabel]);
+              null, data0[gActionid] + '_' + data0[gLabel], data0[gWhere]);
           return;
         }
       }
@@ -2917,9 +2919,33 @@ class DataModel extends ChangeNotifier {
     var tableName = data[gActionid] ?? data[gTableID];
     Map<dynamic, dynamic> formDefine = _formLists[tableName];
     Map<dynamic, dynamic> items = formDefine[gItems];
+    Map mapWhereList = {};
+    if (data[gData] != null) {
+      Map mapData = Map.of(data[gData]);
+      if (!isNull(mapData[gWhere])) {
+        List whereList = mapData[gWhere].split(" and ");
+        whereList.forEach((element) {
+          if (element.toString().indexOf("=") > 0) {
+            String aKey = element
+                .toString()
+                .substring(0, element.toString().indexOf("="));
+            String aValue = element
+                .toString()
+                .substring(element.toString().indexOf("=") + 1);
+            if (aValue.indexOf("'") == 0) {
+              aValue = aValue.substring(1, aValue.length - 1);
+            }
+            mapWhereList[aKey] = aValue;
+          }
+        });
+      }
+    }
     items.entries.forEach((item) {
       item.value[gOldvalue] = null;
-
+      if (mapWhereList.containsKey(item.value[gId])) {
+        if (isNull(item.value[gDefaultValue]))
+          item.value[gDefaultValue] = mapWhereList[item.value[gId]];
+      }
       item.value[gValue] = item.value[gDefaultValue];
       item.value[gTxtEditingController]..text = item.value[gDefaultValue];
     });
@@ -3244,7 +3270,8 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
-  showTable(dynamic tableid, context, title, transpass, backcolor, other) {
+  showTable(
+      dynamic tableid, context, title, transpass, backcolor, other, where) {
     if (_tableList[tableid] == null) {
       retrieveTableFromDB(tableid, context);
     } else {
@@ -3253,14 +3280,16 @@ class DataModel extends ChangeNotifier {
           MaterialPageRoute(
               builder: (context) => MyDetailNew(
                   getTableBodyParam(
-                      {gTableID: tableid, gOther: other}, context),
+                      {gTableID: tableid, gOther: other, gWhere: where},
+                      context),
                   backcolor)));
       if (strSubexists(transpass, gPopupnew)) {
         Map param = {
           gTableID: tableid,
           gType: gTable,
           gLabel: title,
-          gTranspass: transpass
+          gTranspass: transpass,
+          gWhere: where
         };
         //trigger add new
         newForm(param, context);
