@@ -141,6 +141,7 @@ const gLetterSpacing = 'letterSpacing';
 const gLocalAction = 'localAction';
 const gLogin = 'login';
 const gLogout = 'logout';
+const gLogmerge = 'logmerge';
 
 const gMain = 'main';
 const gManageAccounts = 'manage_accounts';
@@ -218,6 +219,7 @@ const gSetMyTab = 'setMyTab';
 const gSetI10n = 'setI10n';
 const gSetImgList = 'setImgList';
 const gSetSessionkey = 'setSessionkey';
+const gSetTab = 'setTab';
 const gSetTableList = 'setTableList';
 const gShowErr = 'showErr';
 const gShowExcel = "showExcel";

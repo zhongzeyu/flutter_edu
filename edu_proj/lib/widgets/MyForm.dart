@@ -61,7 +61,8 @@ class MyForm extends StatelessWidget {
                 );
               } else {
                 //if had droplist, use dropdown
-                if (!datamodel.isNull(item.value[gDroplist])) {
+                if (!datamodel.isNull(item.value[gDroplist]) &&
+                    (item.value[gType] ?? "") != gLabel) {
                   //if (datamodel.dpList[item.value[gDroplist]] != null) {
                   result.add(
                     MyDropdown(item, _formName, thisbackcolor),

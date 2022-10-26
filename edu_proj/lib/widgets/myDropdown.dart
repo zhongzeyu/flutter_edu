@@ -15,8 +15,8 @@ class MyDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       //List itemList = datamodel.dpList[item.value[gDroplist]];
+      dynamic itemvalue = item.value[gValue];
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
-
       return Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +49,7 @@ class MyDropdown extends StatelessWidget {
                       fontWeight: item.value[gFontWeight],
                       letterSpacing: item.value[gLetterSpacing],
                     ),
-                    value: item.value[gValue],
+                    value: itemvalue,
                     icon: Icon(
                       Icons.arrow_downward,
                       color: cBackColor,
@@ -65,7 +65,7 @@ class MyDropdown extends StatelessWidget {
                       return DropdownMenuItem<dynamic>(
                         value: value,
                         child: MyLabel({
-                          gLabel: value,
+                          gLabel: datamodel.getSCurrent(value),
                         }, cBackColor.value),
                       );
                     }).toList(),

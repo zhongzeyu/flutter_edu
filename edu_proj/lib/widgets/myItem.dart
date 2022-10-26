@@ -10,7 +10,6 @@ import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
 import 'package:edu_proj/widgets/myPic.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
-//import 'package:edu_proj/widgets/myTab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -124,7 +123,6 @@ class MyItem extends StatelessWidget {
             )
           ],
         ));
-        //result.add(Expanded(child: datamodel.getTabBody(tabID, context)));
       } else {
         result.add(
             MyLabel({gLabel: "not available", gFontSize: 20.0}, backcolor));
@@ -138,13 +136,5 @@ class MyItem extends StatelessWidget {
       }
       return result[0];
     });
-    //return Image.asset('/images/' + _param['img'], package: packageName);
-
-    /*return Image(
-      image: NetworkImage(_param[gImg]),
-      fit: BoxFit.fitWidth,
-    );*/
-    //return Image.network(_param[gImg]);
-    //return FittedBox(child: Image.network(_param[gImg]), fit: BoxFit.fitHeight);
   }
 }

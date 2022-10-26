@@ -47,7 +47,6 @@ dependencies:
   share_plus: ^4.0.3
   shared_preferences:
   scrollable_positioned_list:
-  flutter_multi_formatter: ^2.8.0
     
     
   #flutter_treeview: ^1.0.6+1

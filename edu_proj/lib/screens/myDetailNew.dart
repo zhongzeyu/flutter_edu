@@ -40,7 +40,7 @@ class MyDetailNew extends StatelessWidget {
             mapBottoms.add(Map.of(value1[i]));
           }*/
         } else if (key1 == gItem) {
-          if (((value1 + "") ?? "").indexOf(gHometab) > 0) {
+          if (value1 is String && ((value1 + "") ?? "").indexOf(gHometab) > 0) {
             isHome = true;
           }
         }

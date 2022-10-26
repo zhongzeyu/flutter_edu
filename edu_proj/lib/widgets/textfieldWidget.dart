@@ -4,10 +4,45 @@ import 'dart:async';
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
+import 'package:flutter/services.dart';
+//import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import 'myLabel.dart';
+
+class InternationalPhoneFormatter extends TextInputFormatter {
+  InternationalPhoneFormatter();
+  String internationalPhoneFormat(value) {
+    String nums = value.replaceAll(RegExp(r'[\D]'), '');
+    String internationalPhoneFormatted = nums.length >= 1
+        ? (nums.length > 0 ? ' (' : '') +
+            nums.substring(0, nums.length >= 3 ? 3 : null) +
+            (nums.length > 3 ? ') ' : '') +
+            (nums.length > 3
+                ? nums.substring(3, nums.length >= 6 ? 6 : null) +
+                    (nums.length > 6
+                        ? '-' + nums.substring(6, nums.length >= 10 ? 10 : null)
+                        : '')
+                : '')
+        : nums;
+    return internationalPhoneFormatted;
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String text = newValue.text;
+
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    return newValue.copyWith(
+        text: internationalPhoneFormat(text),
+        selection: new TextSelection.collapsed(
+            offset: internationalPhoneFormat(text).length));
+  }
+}
 
 class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
@@ -22,6 +57,7 @@ class TextFieldWidget extends StatelessWidget {
 
   textChange(
       dynamic text, MapEntry item, DataModel datamodel, BuildContext context) {
+    item.value[gValue] = text;
     if (item.value[gType] == gAddress) {
       item.value[gAction] = gLocalAction;
       item.value[gFormName] = formname;
@@ -65,6 +101,13 @@ class TextFieldWidget extends StatelessWidget {
       TextEditingController txtController = item.value[gTxtEditingController];
       if (datamodel.isNull(txtController.text)) {
         txtController.text = "";
+      } else {
+        dynamic aValue =
+            datamodel.getValueByType(item.value[gValue], item.value);
+        /*if (item.value[gDroplist] != '') {
+          aValue = datamodel.getSCurrent(aValue);
+        }*/
+        txtController.text = aValue;
       }
 
       return Container(
@@ -75,7 +118,7 @@ class TextFieldWidget extends StatelessWidget {
                 controller: txtController,
                 autofocus: item.value[gFocus] ?? false,
                 //focusNode: item.value[gFocusNode],
-                keyboardType: item.value[gInputType],
+                keyboardType: datamodel.getInputType(item.value[gInputType]),
                 maxLength: item.value[gLength],
                 style: TextStyle(
                   color: cBackColor,
@@ -106,7 +149,7 @@ class TextFieldWidget extends StatelessWidget {
                     enabled: ((item.value[gType] ?? "") != gLabel)),
                 obscureText: isPassword && item.value[gPasswordShow],
                 inputFormatters: ((item.value[gType] ?? "") == gPhone)
-                    ? [PhoneInputFormatter()]
+                    ? [InternationalPhoneFormatter()]
                     : null,
                 validator: (dynamic value) {
                   if (item.value[gRequired] && value.isEmpty) {
@@ -187,7 +230,7 @@ class TextFieldWidget extends StatelessWidget {
                               '_' +
                               item.value[gId]][index];
                           return ListTile(
-                            leading: IconButton(
+                            /*leading: IconButton(
                               icon: Icon(
                                   IconData(
                                     0xee45,
@@ -198,10 +241,13 @@ class TextFieldWidget extends StatelessWidget {
                               onPressed: () {
                                 setItemI(item, anItem, datamodel);
                               },
-                            ),
+                            ),*/
                             title: MyLabel({
                               gLabel: anItem,
                             }, backcolor),
+                            onTap: () {
+                              setItemI(item, anItem, datamodel);
+                            },
                           );
                         }),
                   )
