@@ -95,6 +95,19 @@ class TextFieldWidget extends StatelessWidget {
               datamodel.myNotifyListeners();
             });
       }
+      if (item.value[gType] == gDate) {
+        item.value[gSuffixIcon] = IconButton(
+            icon: Icon(
+              (item.value[gShowDetail] ?? false)
+                  ? Icons.arrow_upward
+                  : Icons.arrow_downward,
+              //color: Theme.of(context).disabledColor,
+            ),
+            onPressed: () {
+              item.value[gShowDetail] = !(item.value[gShowDetail] ?? false);
+              datamodel.myNotifyListeners();
+            });
+      }
       item.value[gTxtEditingController].selection = TextSelection.fromPosition(
           TextPosition(offset: item.value[gTxtEditingController].text.length));
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
@@ -108,6 +121,77 @@ class TextFieldWidget extends StatelessWidget {
           aValue = datamodel.getSCurrent(aValue);
         }*/
         txtController.text = aValue;
+      }
+      getItemSubWidget(item) {
+        if (item.value[gType] == gAddress &&
+            datamodel.dpList[
+                    gAddress + '_' + formname + '_' + item.value[gId]] !=
+                null &&
+            datamodel.dpList[gAddress + '_' + formname + '_' + item.value[gId]]
+                    .length >
+                0) {
+          return SizedBox(
+            height: gSizedboxHeight,
+            child:
+                /*ListWheelScrollView.useDelegate(
+                      itemExtent: 50.0,
+                      //diameterRatio: 0.25,
+
+                      //useMagnifier: true,
+                      //magnification: 1.5,
+                      childDelegate: ListWheelChildBuilderDelegate(
+                          builder: (BuildContext context, int index) {
+                            final anItem = datamodel.dpList[gAddress +
+                                '_' +
+                                formname +
+                                '_' +
+                                item.value[gId]][index];
+                            return InkWell(
+                              child: MyLabel({
+                                gLabel: anItem,
+                              }, backcolor),
+                              onTap: () {
+                                setItemI(item, anItem, datamodel);
+                              },
+                            );
+                          },
+                          childCount: datamodel
+                              .dpList[gAddress +
+                                  '_' +
+                                  formname +
+                                  '_' +
+                                  item.value[gId]]
+                              .length),
+                      */
+                ListView.builder(
+                    itemCount: datamodel
+                        .dpList[
+                            gAddress + '_' + formname + '_' + item.value[gId]]
+                        .length,
+                    itemBuilder: (context, index) {
+                      final anItem = datamodel.dpList[gAddress +
+                          '_' +
+                          formname +
+                          '_' +
+                          item.value[gId]][index];
+                      return InkWell(
+                        child: MyLabel({
+                          gLabel: anItem,
+                        }, backcolor),
+                        onTap: () {
+                          setItemI(item, anItem, datamodel);
+                        },
+                      );
+                    }),
+          );
+        }
+        if (item.value[gType] == gDate && (item.value[gShowDetail] ?? false)) {
+          return datamodel.getDatePicker(item.value[gValue], backcolor, context,
+              formname, item.value[gId]);
+        }
+        return SizedBox(
+          height: 0.0,
+        );
       }
 
       return Container(
@@ -198,62 +282,7 @@ class TextFieldWidget extends StatelessWidget {
                   //set focus
                   datamodel.setFormFocus(formname, item.value[gId]);
                 }),
-            (item.value[gType] == gAddress &&
-                    datamodel.dpList[gAddress +
-                            '_' +
-                            formname +
-                            '_' +
-                            item.value[gId]] !=
-                        null &&
-                    datamodel
-                            .dpList[gAddress +
-                                '_' +
-                                formname +
-                                '_' +
-                                item.value[gId]]
-                            .length >
-                        0)
-                ? SizedBox(
-                    height: 200.0,
-                    child: ListView.builder(
-                        itemCount: datamodel
-                            .dpList[gAddress +
-                                '_' +
-                                formname +
-                                '_' +
-                                item.value[gId]]
-                            .length,
-                        itemBuilder: (context, index) {
-                          final anItem = datamodel.dpList[gAddress +
-                              '_' +
-                              formname +
-                              '_' +
-                              item.value[gId]][index];
-                          return ListTile(
-                            /*leading: IconButton(
-                              icon: Icon(
-                                  IconData(
-                                    0xee45,
-                                    fontFamily: 'MaterialIcons',
-                                  ),
-                                  color: datamodel.fromBdckcolor(backcolor)),
-                              tooltip: datamodel.getSCurrent("Add " + gAddress),
-                              onPressed: () {
-                                setItemI(item, anItem, datamodel);
-                              },
-                            ),*/
-                            title: MyLabel({
-                              gLabel: anItem,
-                            }, backcolor),
-                            onTap: () {
-                              setItemI(item, anItem, datamodel);
-                            },
-                          );
-                        }),
-                  )
-                : SizedBox(
-                    height: 0.0,
-                  )
+            getItemSubWidget(item),
           ],
         ),
       );

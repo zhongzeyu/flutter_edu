@@ -31,7 +31,6 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-//import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -706,7 +705,7 @@ class DataModel extends ChangeNotifier {
           if (objI[gHash] != null && objI[gHash]) {
             value = hash(value);
           }
-          if (type == gDate) {
+          if (type == gDate && !isNull(value)) {
             value = value.format(gDateformat);
             //data[objI[gDbid]] =
             //  DateFormat(gDateformat).format(value);
@@ -959,6 +958,242 @@ class DataModel extends ChangeNotifier {
     });
     return result;
   }
+
+  setDplistDay(sYear, sMonth) {
+    if (sYear == '' || sMonth == '') {
+      _dpList[gDay] = [];
+      return;
+    }
+    if (sMonth == '01' ||
+        sMonth == '03' ||
+        sMonth == '05' ||
+        sMonth == '07' ||
+        sMonth == '08' ||
+        sMonth == '10' ||
+        sMonth == '12') {
+      _dpList[gDay] = _dpList[gDay31];
+      return;
+    }
+    if (sMonth == '04' || sMonth == '06' || sMonth == '09' || sMonth == '11') {
+      _dpList[gDay] = _dpList[gDay30];
+      return;
+    }
+    int iYear = int.parse(sYear);
+    if (iYear % 4 == 0) {
+      _dpList[gDay] = _dpList[gDay29];
+      return;
+    }
+    _dpList[gDay] = _dpList[gDay28];
+    return;
+  }
+
+  setDplistYear() {
+    if ((_dpList[gYear] ?? []).length < 1) {
+      int iYear = new DateTime.now().year;
+      List result = [];
+      for (int i = iYear + 2; i > iYear - 100; i--) {
+        result.add(i.toString());
+      }
+      _dpList[gYear] = result;
+      List resultMonth = [];
+      List resultDay28 = [];
+      List resultDay29 = [];
+      List resultDay30 = [];
+      List resultDay31 = [];
+      for (int i = 1; i < 10; i++) {
+        resultMonth.add('0' + i.toString());
+        resultDay28.add('0' + i.toString());
+        resultDay29.add('0' + i.toString());
+        resultDay30.add('0' + i.toString());
+        resultDay31.add('0' + i.toString());
+      }
+      for (int i = 10; i < 13; i++) {
+        resultMonth.add(i.toString());
+      }
+      _dpList[gMonth] = resultMonth;
+
+      for (int i = 10; i < 29; i++) {
+        resultDay28.add(i.toString());
+        resultDay29.add(i.toString());
+        resultDay30.add(i.toString());
+        resultDay31.add(i.toString());
+      }
+      resultDay29.add('29');
+      resultDay30.add('29');
+      resultDay31.add('29');
+      resultDay30.add('30');
+      resultDay31.add('30');
+      resultDay31.add('31');
+      _dpList[gDay28] = resultDay28;
+      _dpList[gDay29] = resultDay29;
+      _dpList[gDay30] = resultDay30;
+      _dpList[gDay31] = resultDay31;
+    }
+  }
+
+  getDatePickerItems(
+      sizeList, sList, backcolor, selectedIndex, context, formname, id) {
+    List<Widget> result = [];
+    /*for (int i = 0; i < controller.length; i++) {
+      result.add(SizedBox(
+        height: gSizedboxHeight - 10.0,
+        width: sizeList[i],
+        child: ListView.builder(
+            controller: controller[i],
+            itemCount: _dpList[sList[i]].length,
+            itemBuilder: (context, index) {
+              final anItem = _dpList[sList[i]][index];
+              return InkWell(
+                child: (selectedIndex[i] == index)
+                    ? Text(anItem)
+                    : MyLabel({
+                        gLabel: anItem,
+                      }, backcolor),
+                onTap: () {
+                  //setItemI(item, anItem, datamodel);
+                },
+              );
+            }),
+      ));
+    }*/
+
+    for (int i = 0; i < sizeList.length; i++) {
+      List<Widget> subList = [];
+      List list = _dpList[sList[i]];
+      result.add(MyLabel({
+        gLabel: "Please select " + sList[i] + ":",
+      }, backcolor));
+      for (int j = 0; j < list.length; j++) {
+        bool isSelected = false;
+        if (selectedIndex[i] > -1 && selectedIndex[i] == j) {
+          isSelected = true;
+        }
+        subList.add(isSelected
+            ? Text(list[j])
+            : InkWell(
+                child: MyLabel({
+                  gLabel: list[j],
+                }, backcolor),
+                onTap: () {
+                  var data = getFormValue(formname, id, gTxtEditingController);
+                  List dateList = [];
+                  if (data != null && data.length > 0) {
+                    dateList = data.split('-');
+                  }
+                  if (dateList.length < 1) {
+                    dateList.add('');
+                  }
+                  if (dateList.length < 2) {
+                    dateList.add('');
+                  }
+                  if (dateList.length < 3) {
+                    dateList.add('');
+                  }
+                  dateList[i] = list[j];
+
+                  if (dateList[2] == '31') {
+                    if (dateList[1] == '02' ||
+                        dateList[1] == '04' ||
+                        dateList[1] == '06' ||
+                        dateList[1] == '09' ||
+                        dateList[1] == '11') {
+                      dateList[2] = '';
+                    }
+                  } else if (dateList[2] == '30') {
+                    if (dateList[1] == '02') {
+                      dateList[2] = '';
+                    }
+                  } else if (dateList[2] == '29') {
+                    if (dateList[1] == '02') {
+                      if (dateList[0].length < 4) {
+                        dateList[2] = '';
+                      } else {
+                        int iYear = int.parse(dateList[0]);
+                        if (iYear % 4 > 0) {
+                          dateList[2] = '';
+                        }
+                      }
+                    }
+                  }
+                  setFormValue(formname, id,
+                      dateList[0] + '-' + dateList[1] + '-' + dateList[2]);
+                  setDplistDay(dateList[0], dateList[1]);
+                  myNotifyListeners();
+                  //setItemI(item, anItem, datamodel);
+                },
+              ));
+      }
+      result.add(Wrap(
+          spacing: 5.0, //gap between adjacent items
+          runSpacing: 4.0, //gap between lines
+          direction: Axis.horizontal,
+          children: subList));
+    }
+
+    return result;
+  }
+
+  getDatePicker(aDate, backcolor, context, formname, id) {
+    if (isNull(aDate)) {
+      aDate = '';
+      /*var now = new DateTime.now();
+      var formatter = new DateFormat('yyyy-MM-dd');
+      aDate = formatter.format(now);*/
+    }
+    setDplistYear();
+    /*List controller = [
+      ScrollController(),
+      ScrollController(),
+      ScrollController()
+    ];*/
+    List selectedIndex = [-1, -1, -1];
+    List sizeList = [200.0, 40.0, 40.0];
+    List sList = [gYear, gMonth, gDay];
+    for (int i = 0; i < sList.length; i++) {}
+    List sListValue = aDate.split('-');
+    if (sListValue.length < 2) {
+      sListValue.add('');
+    }
+    if (sListValue.length < 3) {
+      sListValue.add('');
+    }
+    setDplistDay(sListValue[0], sListValue[1]);
+    for (int j = 0; j < sList.length; j++) {
+      for (int i = 0; i < _dpList[sList[j]].length; i++) {
+        if (_dpList[sList[j]][i] == sListValue[j]) {
+          selectedIndex[j] = i;
+          break;
+        }
+      }
+    }
+
+    Widget result = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        //spacing: 20.0, //gap between adjacent items
+        //runSpacing: 4.0, //gap between lines
+        //direction: Axis.horizontal,
+        //children: getDatePickerItems(controller, sizeList, sList, backcolor,
+        //  selectedIndex, context)));
+        children: getDatePickerItems(
+            sizeList, sList, backcolor, selectedIndex, context, formname, id));
+
+    //_debouncer.run(() => getDatePickerAfter(controller, selectedIndex, sList));
+    return result;
+  }
+
+  /*getDatePickerAfter(List controller, selectedIndex, sList) {
+    for (int i = 0; i < controller.length; i++) {
+      int itemLength = _dpList[sList[i]].length;
+      double contentSize = controller[i].position.viewportDimension +
+          controller[i].position.maxScrollExtent;
+      final target = contentSize * selectedIndex[i] / itemLength;
+      controller[i].position.animateTo(
+            target,
+            duration: const Duration(milliseconds: 1),
+            curve: Curves.easeInOut,
+          );
+    }
+  }*/
 
   getDetailBottom(param, context) {
     //add  bottomImages
