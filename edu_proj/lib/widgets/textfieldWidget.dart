@@ -149,6 +149,7 @@ class TextFieldWidget extends StatelessWidget {
 
   setItemI(item, value, DataModel datamodel) {
     datamodel.setFormValue(formname, item.value[gId], value);
+    datamodel.setFormNextFocus(formname, item.value[gId]);
     datamodel.dpList[gAddress + '_' + formname + '_' + item.value[gId]] = null;
     datamodel.myNotifyListeners();
   }
@@ -257,87 +258,92 @@ class TextFieldWidget extends StatelessWidget {
         child: Column(
           children: [
             TextFormField(
-                controller: txtController,
-                autofocus: item.value[gFocus] ?? false,
-                //focusNode: item.value[gFocusNode],
-                keyboardType: datamodel.getInputType(item.value[gInputType]),
-                maxLength: item.value[gLength],
-                style: TextStyle(
-                  color: cBackColor,
-                  fontSize: item.value[gFontSize],
-                  fontStyle: item.value[gFontStyle],
-                  fontWeight: item.value[gFontWeight],
-                  letterSpacing: item.value[gLetterSpacing],
-                ),
-                decoration: InputDecoration(
-                    labelText: datamodel.getSCurrent(item.value[gLabel]),
-                    labelStyle: TextStyle(
-                      color: cBackColor,
-                      fontSize: item.value[gFontSize],
-                      fontStyle: item.value[gFontStyle],
-                      fontWeight: item.value[gFontWeight],
-                      letterSpacing: item.value[gLetterSpacing],
-                    ),
-                    hintText: item.value[gPlaceHolder],
-                    hintStyle: TextStyle(
-                      color: cBackColor,
-                      fontSize: item.value[gFontSize],
-                      fontStyle: item.value[gFontStyle],
-                      fontWeight: item.value[gFontWeight],
-                      letterSpacing: item.value[gLetterSpacing],
-                    ),
-                    suffixIcon: item.value[gSuffixIcon],
-                    //prefixIcon: item.value['prefixIcon'],
-                    enabled: ((item.value[gType] ?? "") != gLabel)),
-                obscureText: isPassword && item.value[gPasswordShow],
-                inputFormatters: getItemFormatters(item),
-                validator: (dynamic value) {
-                  if (item.value[gRequired] && value.isEmpty) {
-                    return datamodel.getSCurrent(
-                        gIsrequired + "{" + item.value[gLabel] + "}");
-                  }
-                  if (item.value[gType] == gEmail &&
-                      !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                          .hasMatch(value)) {
-                    return datamodel
-                        .getSCurrent(gInvalidname + "{" + gEmail + "}");
-                  }
-                  if (item.value[gMinLength] != null &&
-                      item.value[gMinLength] != '0' &&
-                      value.length < item.value[gMinLength]) {
-                    return datamodel.getSCurrent(gMininput +
-                        "{" +
-                        item.value[gMinLength] +
-                        "}{" +
-                        item.value[gUnit] +
-                        "}");
-                  }
-                  if (item.value[gLength] != null &&
-                      item.value[gLength] != '0' &&
-                      value.length > item.value[gLength]) {
-                    return datamodel.getSCurrent(gMaxinput +
-                        "{" +
-                        item.value[gLength] +
-                        "}{" +
-                        item.value[gUnit] +
-                        "}");
-                  }
-                  return null;
-                },
-                onSaved: (dynamic value) {
-                  item.value[gValue] = value;
-                },
-                onChanged: (text) {
-                  _debouncer
-                      .run(() => textChange(text, item, datamodel, context));
-                },
-                onTap: () {
-                  if (datamodel.isNull(formname)) {
-                    return;
-                  }
-                  //set focus
-                  datamodel.setFormFocus(formname, item.value[gId]);
-                }),
+              controller: txtController,
+              autofocus: item.value[gFocus] ?? false,
+              //focusNode: item.value[gFocusNode],
+              keyboardType: datamodel.getInputType(item.value[gInputType]),
+              maxLength: item.value[gLength],
+              style: TextStyle(
+                color: cBackColor,
+                fontSize: item.value[gFontSize],
+                fontStyle: item.value[gFontStyle],
+                fontWeight: item.value[gFontWeight],
+                letterSpacing: item.value[gLetterSpacing],
+              ),
+              decoration: InputDecoration(
+                  labelText: datamodel.getSCurrent(item.value[gLabel]),
+                  labelStyle: TextStyle(
+                    color: cBackColor,
+                    fontSize: item.value[gFontSize],
+                    fontStyle: item.value[gFontStyle],
+                    fontWeight: item.value[gFontWeight],
+                    letterSpacing: item.value[gLetterSpacing],
+                  ),
+                  hintText: item.value[gPlaceHolder],
+                  hintStyle: TextStyle(
+                    color: cBackColor,
+                    fontSize: item.value[gFontSize],
+                    fontStyle: item.value[gFontStyle],
+                    fontWeight: item.value[gFontWeight],
+                    letterSpacing: item.value[gLetterSpacing],
+                  ),
+                  suffixIcon: item.value[gSuffixIcon],
+                  //prefixIcon: item.value['prefixIcon'],
+                  enabled: ((item.value[gType] ?? "") != gLabel)),
+              obscureText: isPassword && item.value[gPasswordShow],
+              inputFormatters: getItemFormatters(item),
+              validator: (dynamic value) {
+                if (item.value[gRequired] && value.isEmpty) {
+                  return datamodel.getSCurrent(
+                      gIsrequired + "{" + item.value[gLabel] + "}");
+                }
+                if (item.value[gType] == gEmail &&
+                    !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                        .hasMatch(value)) {
+                  return datamodel
+                      .getSCurrent(gInvalidname + "{" + gEmail + "}");
+                }
+                if (item.value[gMinLength] != null &&
+                    item.value[gMinLength] != '0' &&
+                    value.length < item.value[gMinLength]) {
+                  return datamodel.getSCurrent(gMininput +
+                      "{" +
+                      item.value[gMinLength] +
+                      "}{" +
+                      item.value[gUnit] +
+                      "}");
+                }
+                if (item.value[gLength] != null &&
+                    item.value[gLength] != '0' &&
+                    value.length > item.value[gLength]) {
+                  return datamodel.getSCurrent(gMaxinput +
+                      "{" +
+                      item.value[gLength] +
+                      "}{" +
+                      item.value[gUnit] +
+                      "}");
+                }
+                return null;
+              },
+              onSaved: (dynamic value) {
+                item.value[gValue] = value;
+              },
+              onChanged: (text) {
+                _debouncer
+                    .run(() => textChange(text, item, datamodel, context));
+              },
+              onTap: () {
+                if (datamodel.isNull(formname)) {
+                  return;
+                }
+                //set focus
+                datamodel.setFormFocus(formname, item.value[gId]);
+              },
+              onEditingComplete: () {
+                datamodel.setFormNextFocus(formname, item.value[gId]);
+                datamodel.myNotifyListeners();
+              },
+            ),
             getItemSubWidget(item),
           ],
         ),

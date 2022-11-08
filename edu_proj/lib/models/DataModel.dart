@@ -1167,6 +1167,14 @@ class DataModel extends ChangeNotifier {
                   }
                   setFormValue(formname, id,
                       dateList[0] + '-' + dateList[1] + '-' + dateList[2]);
+                  if (dateList[2] != '') {
+                    //close the detail
+                    setFormValueShow(formname, id);
+                    setFormNextFocus(formname, id);
+
+                    myNotifyListeners();
+                    return;
+                  }
                   setDplistDay(dateList[0], dateList[1]);
 
                   myNotifyListeners();
@@ -1277,6 +1285,9 @@ class DataModel extends ChangeNotifier {
               }, backcolor),
               onTap: () {
                 setFormValue(formname, id, list[j]);
+                //close the detail
+                setFormValueShow(formname, id);
+                setFormNextFocus(formname, id);
                 myNotifyListeners();
               },
             ));
@@ -3377,15 +3388,46 @@ class DataModel extends ChangeNotifier {
       }
       //first value null get focus
       items.entries.forEach((item) {
-        bool isValueNull = isNull(item.value[gValue]);
-        var txtValue = item.value[gTxtEditingController].value.text;
-        bool isTxtNull = isNull(txtValue);
-        if (isValueNull && isTxtNull) {
-          item.value[gFocus] = true;
-          return;
-        }
+        setFormFocusItem(item);
       });
     }
+  }
+
+  setFormFocusItem(item) {
+    if ((item.value[gIsHidden] ?? "false") != gTrue &&
+        (item.value[gType] ?? "") != gHidden) {
+      bool isValueNull = isNull(item.value[gValue]);
+      var txtValue = item.value[gTxtEditingController].value.text;
+      bool isTxtNull = isNull(txtValue);
+      if (isValueNull && isTxtNull) {
+        item.value[gFocus] = true;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  setFormNextFocus(formid, colId) {
+    if (isNull(colId)) {
+      return;
+    }
+    Map<dynamic, dynamic> items = _formLists[formid][gItems];
+    items.entries.forEach((item) {
+      item.value[gFocus] = false;
+    });
+
+    bool beginFocus = false;
+    items.entries.forEach((item) {
+      if (beginFocus) {
+        if (setFormFocusItem(item)) {
+          return;
+        }
+      }
+
+      if (item.value[gId] == colId) {
+        beginFocus = true;
+      }
+    });
   }
 
   setFormValue(formid, colId, value) {
@@ -3397,6 +3439,11 @@ class DataModel extends ChangeNotifier {
     item[gTxtEditingController]..text = value;
 
     //
+  }
+
+  setFormValueShow(formid, colId) {
+    var item = _formLists[formid][gItems][colId];
+    item[gShowDetail] = !(item[gShowDetail] ?? false);
   }
 
   setLocale(value) async {
