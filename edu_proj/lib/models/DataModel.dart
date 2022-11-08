@@ -97,6 +97,20 @@ class DataModel extends ChangeNotifier {
         MyConfig.URL.name +
         '/images/main.jpg' //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   };
+  Map<dynamic, dynamic> _monthMap = {
+    '01': 'Jan',
+    '02': 'Feb',
+    '03': 'Mar',
+    '04': 'Apr',
+    '05': 'May',
+    '06': 'Jun',
+    '07': 'Jul',
+    '08': 'Aug',
+    '09': 'Sep',
+    '10': 'Oct',
+    '11': 'Nov',
+    '12': 'Dec',
+  };
   Map<dynamic, dynamic> _dpList = {};
   Map<dynamic, dynamic> _whereList = {};
 
@@ -116,6 +130,7 @@ class DataModel extends ChangeNotifier {
   Map<dynamic, dynamic> get tabList => _tabList;
   Map<dynamic, dynamic> get dpList => _dpList;
   Map<dynamic, dynamic> get whereList => _whereList;
+
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
   Map get systemParams => _systemParams;
@@ -172,6 +187,53 @@ class DataModel extends ChangeNotifier {
     _tabList[tabName][gData].add(
         {gLabel: data[gLabel], gType: data[gType], gActionid: data[gActionid]});
     _tabList[tabName][gTabIndex] = _tabList[tabName][gData].length - 1;
+  }
+
+  addToList(List sizeList, aValue) {
+    int listLength = sizeList.length;
+    List maxList = sizeList[listLength - 1].toString().split('~');
+    List minList = sizeList[0].toString().split('~');
+    int iMax =
+        maxList.length > 1 ? int.parse(maxList[1]) : int.parse(maxList[0]);
+    int iMin = int.parse(minList[0]);
+
+    List resultList = [];
+    List aValueList = aValue.toString().split('~');
+    int iLeft = int.parse(aValueList[0]);
+    int iRight = int.parse(aValueList[1]);
+    int iMiddle = ((iLeft + iRight) / 2).round();
+    /*if (iMin <= iLeft - 1) {
+      if (iMin == iLeft - 1) {
+        resultList.add(iMin.toString());
+      } else {
+        resultList.add(iMin.toString() + '~' + (iLeft - 1).toString());
+      }
+    }*/
+    addToListSub(resultList, iMin, iLeft - 1);
+
+    resultList.add(iLeft.toString());
+
+    //resultList.add((iLeft + 1).toString() + '~' + (iMiddle - 1).toString());
+    addToListSub(resultList, iLeft + 1, iMiddle - 1);
+
+    resultList.add(iMiddle.toString());
+    //resultList.add((iMiddle + 1).toString() + '~' + (iRight - 1).toString());
+    addToListSub(resultList, iMiddle + 1, iRight - 1);
+    resultList.add(iRight.toString());
+    //resultList.add((iRight + 1).toString() + '~' + (iMax).toString());
+    addToListSub(resultList, iRight + 1, iMax);
+
+    return resultList;
+  }
+
+  addToListSub(List resultList, a, b) {
+    if (a <= b) {
+      if (a == b) {
+        resultList.add(a.toString());
+      } else {
+        resultList.add(a.toString() + '~' + b.toString());
+      }
+    }
   }
 
   addZzylog(data, context) {
@@ -990,10 +1052,12 @@ class DataModel extends ChangeNotifier {
   setDplistYear() {
     if ((_dpList[gYear] ?? []).length < 1) {
       int iYear = new DateTime.now().year;
+      int iYearMiddle = iYear - 49;
       List result = [];
-      for (int i = iYear + 2; i > iYear - 100; i--) {
-        result.add(i.toString());
-      }
+      result.add((iYear - 100).toString() + '~' + (iYearMiddle - 1).toString());
+      result.add(iYearMiddle.toString());
+      result.add((iYearMiddle + 1).toString() + '~' + (iYear + 2).toString());
+
       _dpList[gYear] = result;
       List resultMonth = [];
       List resultDay28 = [];
@@ -1034,47 +1098,33 @@ class DataModel extends ChangeNotifier {
   getDatePickerItems(
       sizeList, sList, backcolor, selectedIndex, context, formname, id) {
     List<Widget> result = [];
-    /*for (int i = 0; i < controller.length; i++) {
-      result.add(SizedBox(
-        height: gSizedboxHeight - 10.0,
-        width: sizeList[i],
-        child: ListView.builder(
-            controller: controller[i],
-            itemCount: _dpList[sList[i]].length,
-            itemBuilder: (context, index) {
-              final anItem = _dpList[sList[i]][index];
-              return InkWell(
-                child: (selectedIndex[i] == index)
-                    ? Text(anItem)
-                    : MyLabel({
-                        gLabel: anItem,
-                      }, backcolor),
-                onTap: () {
-                  //setItemI(item, anItem, datamodel);
-                },
-              );
-            }),
-      ));
-    }*/
 
     for (int i = 0; i < sizeList.length; i++) {
       List<Widget> subList = [];
       List list = _dpList[sList[i]];
-      result.add(MyLabel({
-        gLabel: "Please select " + sList[i] + ":",
-      }, backcolor));
+      result.add(Text(''));
       for (int j = 0; j < list.length; j++) {
         bool isSelected = false;
         if (selectedIndex[i] > -1 && selectedIndex[i] == j) {
           isSelected = true;
         }
         subList.add(isSelected
-            ? Text(list[j])
+            ? Text((i == 1) ? _monthMap[list[j]] : list[j])
             : InkWell(
                 child: MyLabel({
-                  gLabel: list[j],
+                  gLabel: (list[j].indexOf('~') > 0)
+                      ? ' * * * '
+                      : (i == 1)
+                          ? _monthMap[list[j]]
+                          : list[j],
                 }, backcolor),
                 onTap: () {
+                  if (list[j].indexOf('~') > 0) {
+                    _dpList[sList[i]] = addToList(list, list[j]);
+                    myNotifyListeners();
+
+                    return;
+                  }
                   var data = getFormValue(formname, id, gTxtEditingController);
                   List dateList = [];
                   if (data != null && data.length > 0) {
@@ -1118,14 +1168,15 @@ class DataModel extends ChangeNotifier {
                   setFormValue(formname, id,
                       dateList[0] + '-' + dateList[1] + '-' + dateList[2]);
                   setDplistDay(dateList[0], dateList[1]);
+
                   myNotifyListeners();
                   //setItemI(item, anItem, datamodel);
                 },
               ));
       }
       result.add(Wrap(
-          spacing: 5.0, //gap between adjacent items
-          runSpacing: 4.0, //gap between lines
+          spacing: 10.0, //gap between adjacent items
+          runSpacing: 20.0, //gap between lines
           direction: Axis.horizontal,
           children: subList));
     }
@@ -1178,6 +1229,64 @@ class DataModel extends ChangeNotifier {
             sizeList, sList, backcolor, selectedIndex, context, formname, id));
 
     //_debouncer.run(() => getDatePickerAfter(controller, selectedIndex, sList));
+    return result;
+  }
+
+  getDPPicker(item, backcolor, context, formname, id) {
+    List sList =
+        getDpListByKey(item.value[gDroplist], context, item.value[gValue]);
+    int selectedIndex = -1;
+    for (int i = 0; i < sList.length; i++) {
+      if (sList[i] == item.value[gValue]) {
+        selectedIndex = i;
+        break;
+      }
+    }
+
+    Widget result = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        //spacing: 20.0, //gap between adjacent items
+        //runSpacing: 4.0, //gap between lines
+        //direction: Axis.horizontal,
+        //children: getDatePickerItems(controller, sizeList, sList, backcolor,
+        //  selectedIndex, context)));
+        children: getDPPickerItems(
+            sList, backcolor, selectedIndex, context, formname, id));
+
+    //_debouncer.run(() => getDatePickerAfter(controller, selectedIndex, sList));
+    return result;
+  }
+
+  getDPPickerItems(list, backcolor, selectedIndex, context, formname, id) {
+    List<Widget> result = [];
+
+    List<Widget> subList = [];
+    result.add(Text(''));
+    for (int j = 0; j < list.length; j++) {
+      bool isSelected = false;
+      if (selectedIndex > -1 && selectedIndex == j) {
+        isSelected = true;
+      }
+      subList.add(isSelected
+          ? MyLabel({
+              gLabel: list[j],
+            }, Colors.white.value)
+          : InkWell(
+              child: MyLabel({
+                gLabel: list[j],
+              }, backcolor),
+              onTap: () {
+                setFormValue(formname, id, list[j]);
+                myNotifyListeners();
+              },
+            ));
+    }
+    result.add(Wrap(
+        spacing: 10.0, //gap between adjacent items
+        runSpacing: 20.0, //gap between lines
+        direction: Axis.horizontal,
+        children: subList));
+
     return result;
   }
 
@@ -3286,6 +3395,7 @@ class DataModel extends ChangeNotifier {
   setFormValueItem(item, value) {
     item[gValue] = value;
     item[gTxtEditingController]..text = value;
+
     //
   }
 

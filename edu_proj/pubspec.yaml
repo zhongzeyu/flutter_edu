@@ -33,7 +33,7 @@ dependencies:
   json_annotation: ^4.0.0-0
   http:
   fluttertoast: ^8.0.7
-  flutter_string_encryption: ^0.3.1
+  #flutter_string_encryption: ^0.3.1
   encrypt: ^5.0.0
   flutter_svg: ^0.22.0
   #shared_preferences: 0.5.12+4
@@ -46,7 +46,7 @@ dependencies:
   uc_pdfview:
   share_plus: ^4.0.3
   shared_preferences:
-  scrollable_positioned_list:
+  #scrollable_positioned_list:
     
     
   #flutter_treeview: ^1.0.6+1

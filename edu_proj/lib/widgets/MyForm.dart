@@ -7,7 +7,7 @@ import 'package:edu_proj/widgets/myPinCode.dart';
 import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'myDropdown.dart';
+//import 'myDropdown.dart';
 import 'myGlass.dart';
 
 class MyForm extends StatelessWidget {
@@ -32,6 +32,7 @@ class MyForm extends StatelessWidget {
           return MyLabel(
               {gLabel: gNotavailable, gFontSize: 20.0}, thisbackcolor);
         }
+        //datamodel.dpList[gYear] = [];
         Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
         Map<dynamic, dynamic> items = formDefine[gItems];
         //Color cBackColor = datamodel.fromBdckcolor(backcolor);
@@ -61,28 +62,21 @@ class MyForm extends StatelessWidget {
                 );
               } else {
                 //if had droplist, use dropdown
-                if (!datamodel.isNull(item.value[gDroplist]) &&
+                /*if (!datamodel.isNull(item.value[gDroplist]) &&
                     (item.value[gType] ?? "") != gLabel) {
                   //if (datamodel.dpList[item.value[gDroplist]] != null) {
                   result.add(
                     MyDropdown(item, _formName, thisbackcolor),
                   );
                   //}
-                } else {
-                  result.add(
-                    TextFieldWidget(
-                        item: item,
-                        backcolor: thisbackcolor,
-                        formname: _formName
-                        /*
-                onTab: () => {_onTab(item.value['id'], size)},
-                onChanged: (dynamic value) =>
-                    {_onChange(item.value['id'], value)},
-                textFieldController: item.value['txtEditingController'],
-                */
-                        ),
-                  );
-                }
+                } else {*/
+                result.add(
+                  TextFieldWidget(
+                      item: item,
+                      backcolor: thisbackcolor,
+                      formname: _formName),
+                );
+                //}
               }
             }
           });

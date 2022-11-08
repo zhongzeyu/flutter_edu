@@ -10,6 +10,83 @@ import 'package:provider/provider.dart';
 
 import 'myLabel.dart';
 
+class DateFormatter extends TextInputFormatter {
+  DateFormatter();
+  String dateFormatter(value) {
+    String nums = value.replaceAll(RegExp(r'[\D]'), '');
+    String year = nums;
+    if (nums.length > 4) {
+      year = nums.substring(0, 4);
+    }
+    String month = '';
+    if (nums.length > 4) {
+      month = nums.substring(4, 6);
+    }
+    String day = '';
+    if (nums.length > 6) {
+      day = nums.substring(6);
+    }
+    if (day.length > 2) {
+      day = day.substring(0, 2);
+    }
+    if (month.length > 0) {
+      int intMonth = int.parse(month);
+      if (intMonth > 12 || intMonth < 1) {
+        month = '';
+        day = '';
+      } else {
+        if (day.length > 0) {
+          int intDay = int.parse(day);
+          if (intDay > 31 || intDay < 1) {
+            day = '';
+          } else if (intDay == 31 &&
+              (intMonth == 2 ||
+                  intMonth == 4 ||
+                  intMonth == 6 ||
+                  intMonth == 9 ||
+                  intMonth == 11)) {
+            day = '';
+          } else if (intDay == 30 && intMonth == 2) {
+            day = '';
+          } else if (intDay == 29) {
+            int intYear = int.parse(year);
+            if (intYear % 4 > 0) {
+              day = '';
+            }
+          }
+        }
+      }
+    }
+
+    String result = year;
+    if (year.length == 4) {
+      result = result + "-";
+      result = result + month;
+      if (month.length == 2) {
+        result = result + "-";
+        result = result + day;
+      }
+    }
+
+    return result;
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String text = newValue.text;
+
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    return newValue.copyWith(
+        text: dateFormatter(text),
+        selection:
+            new TextSelection.collapsed(offset: dateFormatter(text).length));
+  }
+}
+
 class InternationalPhoneFormatter extends TextInputFormatter {
   InternationalPhoneFormatter();
   String internationalPhoneFormat(value) {
@@ -95,7 +172,7 @@ class TextFieldWidget extends StatelessWidget {
               datamodel.myNotifyListeners();
             });
       }
-      if (item.value[gType] == gDate) {
+      if (item.value[gType] == gDate || item.value[gDroplist] != '') {
         item.value[gSuffixIcon] = IconButton(
             icon: Icon(
               (item.value[gShowDetail] ?? false)
@@ -105,6 +182,7 @@ class TextFieldWidget extends StatelessWidget {
             ),
             onPressed: () {
               item.value[gShowDetail] = !(item.value[gShowDetail] ?? false);
+              datamodel.setFormFocus(formname, item.value[gId]);
               datamodel.myNotifyListeners();
             });
       }
@@ -132,66 +210,46 @@ class TextFieldWidget extends StatelessWidget {
                 0) {
           return SizedBox(
             height: gSizedboxHeight,
-            child:
-                /*ListWheelScrollView.useDelegate(
-                      itemExtent: 50.0,
-                      //diameterRatio: 0.25,
-
-                      //useMagnifier: true,
-                      //magnification: 1.5,
-                      childDelegate: ListWheelChildBuilderDelegate(
-                          builder: (BuildContext context, int index) {
-                            final anItem = datamodel.dpList[gAddress +
-                                '_' +
-                                formname +
-                                '_' +
-                                item.value[gId]][index];
-                            return InkWell(
-                              child: MyLabel({
-                                gLabel: anItem,
-                              }, backcolor),
-                              onTap: () {
-                                setItemI(item, anItem, datamodel);
-                              },
-                            );
-                          },
-                          childCount: datamodel
-                              .dpList[gAddress +
-                                  '_' +
-                                  formname +
-                                  '_' +
-                                  item.value[gId]]
-                              .length),
-                      */
-                ListView.builder(
-                    itemCount: datamodel
-                        .dpList[
-                            gAddress + '_' + formname + '_' + item.value[gId]]
-                        .length,
-                    itemBuilder: (context, index) {
-                      final anItem = datamodel.dpList[gAddress +
-                          '_' +
-                          formname +
-                          '_' +
-                          item.value[gId]][index];
-                      return InkWell(
-                        child: MyLabel({
-                          gLabel: anItem,
-                        }, backcolor),
-                        onTap: () {
-                          setItemI(item, anItem, datamodel);
-                        },
-                      );
-                    }),
+            child: ListView.builder(
+                itemCount: datamodel
+                    .dpList[gAddress + '_' + formname + '_' + item.value[gId]]
+                    .length,
+                itemBuilder: (context, index) {
+                  final anItem = datamodel.dpList[
+                      gAddress + '_' + formname + '_' + item.value[gId]][index];
+                  return InkWell(
+                    child: MyLabel({
+                      gLabel: anItem,
+                    }, backcolor),
+                    onTap: () {
+                      setItemI(item, anItem, datamodel);
+                    },
+                  );
+                }),
           );
-        }
-        if (item.value[gType] == gDate && (item.value[gShowDetail] ?? false)) {
+        } else if (item.value[gType] == gDate &&
+            (item.value[gShowDetail] ?? false)) {
+          item.value[gFocus] = true;
           return datamodel.getDatePicker(item.value[gValue], backcolor, context,
               formname, item.value[gId]);
+        } else if (item.value[gDroplist] != '' &&
+            (item.value[gShowDetail] ?? false)) {
+          item.value[gFocus] = true;
+          return datamodel.getDPPicker(
+              item, backcolor, context, formname, item.value[gId]);
         }
         return SizedBox(
           height: 0.0,
         );
+      }
+
+      getItemFormatters(item) {
+        if ((item.value[gType] ?? "") == gPhone) {
+          return [InternationalPhoneFormatter()];
+        } else if ((item.value[gType] ?? "") == gDate) {
+          return [DateFormatter()];
+        }
+        return null;
       }
 
       return Container(
@@ -232,9 +290,7 @@ class TextFieldWidget extends StatelessWidget {
                     //prefixIcon: item.value['prefixIcon'],
                     enabled: ((item.value[gType] ?? "") != gLabel)),
                 obscureText: isPassword && item.value[gPasswordShow],
-                inputFormatters: ((item.value[gType] ?? "") == gPhone)
-                    ? [InternationalPhoneFormatter()]
-                    : null,
+                inputFormatters: getItemFormatters(item),
                 validator: (dynamic value) {
                   if (item.value[gRequired] && value.isEmpty) {
                     return datamodel.getSCurrent(
