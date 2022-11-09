@@ -33,6 +33,7 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/pdfScreen.dart';
 
@@ -761,6 +762,7 @@ class DataModel extends ChangeNotifier {
         if (type == gId) {
           data[gId] = objI[gValue];
         } else if (objI[gType] == gLabel) {
+        } else if (objI[gType] == gHidden) {
         } else if (objI[gDbid] != null && objI[gDbid] != '') {
           var value = objI[gValue];
           //data[objI[gDbid]] = value;
@@ -768,7 +770,7 @@ class DataModel extends ChangeNotifier {
             value = hash(value);
           }
           if (type == gDate && !isNull(value)) {
-            value = value.format(gDateformat);
+            //value = value.format(gDateformat);
             //data[objI[gDbid]] =
             //  DateFormat(gDateformat).format(value);
           } else if (type == gDatetime) {
@@ -814,8 +816,10 @@ class DataModel extends ChangeNotifier {
           if (objI[gId] != '' &&
               //objI[gIsPrimary] != null &&
               //objI[gIsPrimary] &&
-              (isNull(data[objI[gId]]))) {
-            data[objI[gId]] = objI[gOldvalue] ?? objI[gDefaultValue];
+              (isNull(data[objI[gId]])) &&
+              isNull(objI[gOldvalue]) &&
+              !isNull(objI[gDefaultValue])) {
+            data[objI[gId]] = objI[gDefaultValue];
           }
         });
         //send request;
@@ -2636,6 +2640,40 @@ class DataModel extends ChangeNotifier {
     };
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => MyDetailNew(param, backcolor)));
+  }
+
+  phonecall(sNum) {
+    String nums = sNum.replaceAll(RegExp(r'[\D]'), '');
+    final anUri = Uri.parse('tel:' + nums);
+    _launch(anUri);
+  }
+
+  sendEmail(email) {
+    sendEmailBody(email, '', '');
+  }
+
+  sendEmailBody(email, subject, body) {
+    final anUri = Uri(
+        scheme: 'mailto',
+        path: email,
+        query: 'subject=' + subject.toString() + '&body=' + body.toString());
+    _launch(anUri);
+  }
+
+  sms(sNum) {
+    final anUri = Uri.parse('sms:' + sNum);
+    _launch(anUri);
+  }
+
+  loadUrl(url) {
+    final anUri = Uri.parse(url);
+    _launch(anUri);
+  }
+
+  void _launch(url) async {
+    if (url != null) {
+      await launchUrl(url);
+    }
   }
 
   processRequest(dataRequest, context) async {

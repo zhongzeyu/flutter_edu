@@ -45,7 +45,11 @@ dependencies:
   path_provider:
   uc_pdfview:
   share_plus: ^4.0.3
+  url_launcher: ^6.1.5
   shared_preferences:
+
+  
+  
   #scrollable_positioned_list:
     
     

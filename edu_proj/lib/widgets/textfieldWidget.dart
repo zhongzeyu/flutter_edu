@@ -134,7 +134,10 @@ class TextFieldWidget extends StatelessWidget {
 
   textChange(
       dynamic text, MapEntry item, DataModel datamodel, BuildContext context) {
-    item.value[gValue] = text;
+    //item.value[gValue] = text;
+    if (item.value[gDroplist] == '') {
+      item.value[gValue] = text;
+    }
     if (item.value[gType] == gAddress) {
       item.value[gAction] = gLocalAction;
       item.value[gFormName] = formname;
@@ -173,7 +176,8 @@ class TextFieldWidget extends StatelessWidget {
               datamodel.myNotifyListeners();
             });
       }
-      if (item.value[gType] == gDate || item.value[gDroplist] != '') {
+      if ((item.value[gType] == gDate || item.value[gDroplist] != '') &&
+          (item.value[gType] ?? "") != gLabel) {
         item.value[gSuffixIcon] = IconButton(
             icon: Icon(
               (item.value[gShowDetail] ?? false)
@@ -187,6 +191,37 @@ class TextFieldWidget extends StatelessWidget {
               datamodel.myNotifyListeners();
             });
       }
+      if (item.value[gType] == gEmail) {
+        item.value[gSuffixIcon] = IconButton(
+            icon: Icon(Icons.email_outlined
+                //color: Theme.of(context).disabledColor,
+                ),
+            onPressed: () {
+              //datamodel.setFormFocus(formname, item.value[gId]);
+              datamodel.sendEmail(item.value[gValue]);
+            });
+      }
+      if (item.value[gType] == gPhone) {
+        item.value[gSuffixIcon] = IconButton(
+            icon: Icon(Icons.phone_outlined
+                //color: Theme.of(context).disabledColor,
+                ),
+            onPressed: () {
+              //datamodel.setFormFocus(formname, item.value[gId]);
+              datamodel.phonecall(item.value[gValue]);
+            });
+      }
+      if (item.value[gType] == gUrl) {
+        item.value[gSuffixIcon] = IconButton(
+            icon: Icon(Icons.web_outlined
+                //color: Theme.of(context).disabledColor,
+                ),
+            onPressed: () {
+              //datamodel.setFormFocus(formname, item.value[gId]);
+              datamodel.loadUrl(item.value[gValue]);
+            });
+      }
+
       item.value[gTxtEditingController].selection = TextSelection.fromPosition(
           TextPosition(offset: item.value[gTxtEditingController].text.length));
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
@@ -326,7 +361,8 @@ class TextFieldWidget extends StatelessWidget {
                 return null;
               },
               onSaved: (dynamic value) {
-                item.value[gValue] = value;
+                textChange(value, item, datamodel, context);
+                //item.value[gValue] = value;
               },
               onChanged: (text) {
                 _debouncer
