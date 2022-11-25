@@ -3063,6 +3063,8 @@ class DataModel extends ChangeNotifier {
       if (_token != '') {
         requestFirst[gToken] = _token;
         requestFirst[gCompanyid] = _globalCompanyid;
+        //if is company detail, zzyuser, company, change the companyid to parentid in the where condition.
+
       }
       //#add timestamp for process table
 
