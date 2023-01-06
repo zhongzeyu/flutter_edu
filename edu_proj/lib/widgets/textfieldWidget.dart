@@ -333,6 +333,7 @@ class TextFieldWidget extends StatelessWidget {
                       gIsrequired + "{" + item.value[gLabel] + "}");
                 }
                 if (item.value[gType] == gEmail &&
+                    !value.isEmpty &&
                     !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                         .hasMatch(value)) {
                   return datamodel

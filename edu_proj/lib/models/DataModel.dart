@@ -3531,7 +3531,7 @@ class DataModel extends ChangeNotifier {
     _token = data[gToken];
     _myId = data[gEmail];
 
-    _globalCompanyid = data[gCompanyid];
+    _globalCompanyid = data[gParentid];
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('myid', _myId);
     //myNotifyListeners();
