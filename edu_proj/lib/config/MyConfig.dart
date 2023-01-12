@@ -3,6 +3,7 @@ enum MyConfig {
   URLAddress,
   PROJ,
   DOWNLOAD,
+  UPLOAD,
 }
 
 extension MyConfigExtension on MyConfig {
@@ -12,6 +13,7 @@ extension MyConfigExtension on MyConfig {
       'https://ws1.postescanada-canadapost.ca/AddressComplete/Interactive/Find/v2.10/json3ex.ws?Key=HG78-NR98-GK34-JA39&',
       'smilesmart',
       'download',
+      'upload',
     ][this.index];
   }
 }

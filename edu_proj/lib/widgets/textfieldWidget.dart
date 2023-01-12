@@ -152,6 +152,7 @@ class TextFieldWidget extends StatelessWidget {
 
   setItemI(item, value, DataModel datamodel) {
     datamodel.setFormValue(formname, item.value[gId], value);
+    //datamodel.setFormValueShow(formname, item.value[gId]);
     datamodel.setFormNextFocus(formname, item.value[gId]);
     datamodel.dpList[gAddress + '_' + formname + '_' + item.value[gId]] = null;
     datamodel.myNotifyListeners();
@@ -219,6 +220,15 @@ class TextFieldWidget extends StatelessWidget {
             onPressed: () {
               //datamodel.setFormFocus(formname, item.value[gId]);
               datamodel.loadUrl(item.value[gValue]);
+            });
+      }
+      if (item.value[gIsFile] == true) {
+        item.value[gSuffixIcon] = IconButton(
+            icon: Icon(Icons.file_upload_outlined
+                //color: Theme.of(context).disabledColor,
+                ),
+            onPressed: () {
+              datamodel.loadFile(formname, item);
             });
       }
 

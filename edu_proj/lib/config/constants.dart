@@ -127,8 +127,8 @@ const gImg = 'img';
 const gImgID = 'imgID';
 const gImgTitle = 'imgTitle';
 const gInvalidname = 'invalidname';
+const gIsFile = 'isFile';
 const gIsHidden = 'isHidden';
-
 const gIsKeyword = 'isKeyword';
 const gIsPrimary = 'isPrimary';
 const gIsrequired = 'isrequired';

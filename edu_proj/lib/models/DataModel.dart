@@ -25,6 +25,7 @@ import 'package:edu_proj/widgets/myScreen.dart';
 //import 'package:edu_proj/widgets/myTree.dart';
 //import 'package:edu_proj/widgets/picsAndButtons.dart';
 import 'package:edu_proj/widgets/radios.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
@@ -1978,14 +1979,22 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableItemByName(tableInfo, itemName, value) {
+    value = '';
+    TextEditingController searchController = TextEditingController(text: value);
+    /*TextEditingController searchController = TextEditingController.fromValue(
+        TextEditingValue(
+            text: value,
+            selection: TextSelection.fromPosition(TextPosition(
+                affinity: TextAffinity.downstream, offset: value.length))));*/
+
     MapEntry item = MapEntry(itemName, {
       gWidth: 150.0,
       gType: itemName,
       gLabel: itemName,
-      gFocus: false,
+      gFocus: true,
       gValue: value,
       gInputType: itemName,
-      gTxtEditingController: TextEditingController(text: value)
+      gTxtEditingController: searchController
     });
 
     return item;
@@ -2189,7 +2198,7 @@ class DataModel extends ChangeNotifier {
         if (isNull(result)) {
           return 0;
         }
-        return int.parse(result);
+        return int.parse("$result");
       }
     }
     if (isRaw) {
@@ -2663,6 +2672,34 @@ class DataModel extends ChangeNotifier {
   sms(sNum) {
     final anUri = Uri.parse('sms:' + sNum);
     _launch(anUri);
+  }
+
+  pickFiles() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+    if (result == null) {
+      return result;
+    }
+    PlatformFile file = result.files.first;
+    return file;
+  }
+
+  loadFile(formname, item) async {
+    PlatformFile file = await pickFiles();
+    var filename = file.name;
+    dynamic myUrl = 'http://' + MyConfig.URL.name + '/' + MyConfig.UPLOAD.name;
+    var request = http.MultipartRequest('POST', Uri.parse(myUrl));
+    request.fields['param0'] = filename;
+    request.fields['param1'] = _globalCompanyid;
+    /*http.MultipartFile multipartFile =
+        await http.MultipartFile.fromPath("image", file.name);*/
+    request.files.add(http.MultipartFile.fromBytes(_globalCompanyid, file.bytes,
+        filename: filename));
+    //upload file
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      setFormValue(formname, item.value[gId], filename);
+      myNotifyListeners();
+    }
   }
 
   loadUrl(url) {
@@ -3172,10 +3209,16 @@ class DataModel extends ChangeNotifier {
 
       valueItemList = Map.from(valueItemList);
     });
-    formValue[gItems] = Map.from(itemList);
+    Map dataMap = Map.from(itemList);
+    /* formValue[gItems] = Map.from(itemList);
     formValue[gItems].forEach((key, value) {
       formValue[gItems][key] = Map.of(value);
+    });*/
+    dataMap.forEach((key, value) {
+      dataMap[key] = Map.of(value);
     });
+    formValue[gItems] = Map.fromEntries(dataMap.entries.toList()
+      ..sort((e1, e2) => e1.value['seq'] - e2.value['seq']));
 
     _formLists[formID] = formValue;
     if (formID == gLogin) {
@@ -3354,6 +3397,11 @@ class DataModel extends ChangeNotifier {
     items.entries.forEach((item) {
       item.value[gOldvalue] =
           (dataRow == null) ? null : dataRow[item.value[gId]];
+      item.value[gShowDetail] = false;
+      //if is address
+      if (item.value[gType] == gAddress) {
+        dpList[gAddress + '_' + tableName + '_' + item.value[gId]] = null;
+      }
 
       item.value[gValue] = item.value[gOldvalue];
       item.value[gTxtEditingController]
@@ -3483,7 +3531,12 @@ class DataModel extends ChangeNotifier {
 
   setFormValueShow(formid, colId) {
     var item = _formLists[formid][gItems][colId];
-    item[gShowDetail] = !(item[gShowDetail] ?? false);
+    setFormValueShowValue(formid, colId, !(item[gShowDetail] ?? false));
+  }
+
+  setFormValueShowValue(formid, colId, value) {
+    var item = _formLists[formid][gItems][colId];
+    item[gShowDetail] = value;
   }
 
   setLocale(value) async {
