@@ -56,27 +56,18 @@ class MyForm extends StatelessWidget {
             //datamodel.setFormValue(_formName, item.value[gId], itemValue);
             if ((item.value[gIsHidden] ?? "false") != gTrue &&
                 (item.value[gType] ?? "") != gHidden) {
-              if ((item.value[gType] ?? "") == gPincode) {
+              if ((item.value[gInputType] ?? "") == gCode) {
+                //if ((item.value[gType] ?? "") == gPincode) {
                 result.add(
                   MyPinCode(item.value, _formName),
                 );
               } else {
-                //if had droplist, use dropdown
-                /*if (!datamodel.isNull(item.value[gDroplist]) &&
-                    (item.value[gType] ?? "") != gLabel) {
-                  //if (datamodel.dpList[item.value[gDroplist]] != null) {
-                  result.add(
-                    MyDropdown(item, _formName, thisbackcolor),
-                  );
-                  //}
-                } else {*/
                 result.add(
                   TextFieldWidget(
                       item: item,
                       backcolor: thisbackcolor,
                       formname: _formName),
                 );
-                //}
               }
             }
           });

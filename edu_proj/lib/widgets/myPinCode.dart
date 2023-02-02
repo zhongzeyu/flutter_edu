@@ -11,13 +11,16 @@ class MyPinCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController textEditingController = TextEditingController();
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       return Padding(
           padding: const EdgeInsets.all(18.0),
           child: PinCodeTextField(
             appContext: context,
             autoFocus: true,
+            autoDismissKeyboard: true,
             length: _param[gLength],
+            controller: textEditingController,
 //onChanged: (pin) => _registerVerifyController.onChange(pin),
             keyboardType: TextInputType.number,
 //enabled: !_registerVerifyController.isLoading.value,
@@ -39,10 +42,7 @@ class MyPinCode extends StatelessWidget {
             //  _param, pin, context, _formName),
             //onCompleted: (pin) => datamodel.formSubmit(context, _formName),
             onCompleted: (pin) {
-              var email =
-                  datamodel.getFormValue(gLogin, gEmail, gTxtEditingController);
-              datamodel.setFormValue(
-                  _formName, _param[gId], email + gDelimeterItem + pin);
+              datamodel.setFormValue(_formName, _param[gId], pin);
             },
             onChanged: (dynamic value) {},
             /*onChanged: (dynamic value) {

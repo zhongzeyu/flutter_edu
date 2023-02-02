@@ -740,9 +740,9 @@ class DataModel extends ChangeNotifier {
   }
 
   forgetpassword(context) {
-    var data = getFormValue(gLogin, gEmail, gTxtEditingController);
-    if (data != null && data.length > 0) {
-      this.sendRequestOne(gForgetpassword, data, context);
+    var email = getFormValue(gLogin, gEmail, gTxtEditingController);
+    if (email != null && email.length > 0) {
+      this.sendRequestOne(gForgetpassword, email, context);
     } else {
       showMsg(context, getSCurrent(gPlsenteremail), null);
     }
@@ -2772,8 +2772,14 @@ class DataModel extends ChangeNotifier {
           await removeLastScreens(context);
         } else if (action == gResetpassword) {
           await resetPassword(context, actionData);
+          /*} else if (action == gSetFormDefaultValue) {
+          await setFormDefaultValue(actionData);*/
+        } else if (action == gSetI10n) {
+          await setI10n(actionData);
         } else if (action == gSetImgList) {
           await setImgList(actionData);
+        } else if (action == 'setInitForm') {
+          await setInitForm(actionData);
         } else if (action == 'setMyAction') {
           await setMyAction(actionData);
         } else if (action == gSetMyInfo) {
@@ -2782,12 +2788,8 @@ class DataModel extends ChangeNotifier {
           await setMyMenu(actionData);
         } else if (action == gSetMyTab) {
           await setMyTab(actionData);
-        } else if (action == gSetI10n) {
-          await setI10n(actionData);
         } else if (action == gSetTab) {
           await setTab(actionData, context);
-        } else if (action == 'setInitForm') {
-          await setInitForm(actionData);
         } else if (action == gSetSessionkey) {
           await setSessionkey(actionData[0]['key']);
         } else if (action == gSetTableList) {
@@ -3063,6 +3065,9 @@ class DataModel extends ChangeNotifier {
 
   sendRequestFormChange(data, context) {
     try {
+      if (data[gFormid] == gVerifycode || data[gFormid] == gChangepassword) {
+        data[gEmail] = _myId;
+      }
       sendRequestOne('formchange', [data], context);
     } catch (e) {
       throw e;
@@ -3176,12 +3181,21 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  setFormList(actionData) {
+  setFormList(actionData) async {
     List<dynamic> thisList = actionData;
     for (int i = 0; i < thisList.length; i++) {
       Map<dynamic, dynamic> thisListI = thisList[i];
       var formID = thisListI[gFormName];
-      setFormListOne(formID, thisListI);
+      await setFormListOne(formID, thisListI);
+      if (formID == gVerifycode) {
+        var email = getFormValue(gLogin, gEmail, gTxtEditingController);
+        setFormValue(gVerifycode, gEmail, email);
+        _myId = email;
+      } else if (formID == gChangepassword) {
+        var email = getFormValue(gLogin, gEmail, gTxtEditingController);
+        setFormValue(gChangepassword, gEmail, email);
+        _myId = email;
+      }
     }
     myNotifyListeners();
   }
@@ -3199,7 +3213,7 @@ class DataModel extends ChangeNotifier {
     itemList.entries.forEach((elementItemList) {
       Map<dynamic, dynamic> valueItemList = elementItemList.value;
 
-      valueItemList[gInputType] = valueItemList[gInputType];
+      //valueItemList[gInputType] = valueItemList[gInputType];
       valueItemList[gTxtEditingController] =
           TextEditingController(text: valueItemList[gDefaultValue]);
       valueItemList[gValue] = '';
@@ -3226,6 +3240,7 @@ class DataModel extends ChangeNotifier {
 
       setFormValue(gLogin, gEmail, prefs.getString('myid') ?? '');
     }
+
     //print(jsonEncode(_formLists[formID]));
   }
 
@@ -3306,6 +3321,27 @@ class DataModel extends ChangeNotifier {
     var address = oneAddress["Text"] + " " + oneAddress["Description"];
     setFormValueItem(item, address);
   }
+
+  /*setFormDefaultValue(actionData) {
+    for (int i = 0; i < actionData.length; i++) {
+      Map<dynamic, dynamic> ai = actionData[i];
+      dynamic formname = '';
+      dynamic itemname = '';
+      dynamic value = '';
+      ai.entries.forEach((element) {
+        if (element.key == gForm) {
+          formname = element.value;
+        } else if (element.key == gItem) {
+          itemname = element.value;
+        } else if (element.key == gValue) {
+          value = element.value;
+        }
+      });
+      if (_formLists[formname] != null) {
+        _formLists[formname][gItems][itemname][gDefaultValue] = value;
+      }
+    }
+  }*/
 
   showDropList(dpid, item, context) {}
 
@@ -3697,6 +3733,7 @@ class DataModel extends ChangeNotifier {
   showMsg(context, dynamic result, backcolor) {
     /*Navigator.of(context)
         .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);*/
+    backcolor = Colors.white.value;
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -3714,10 +3751,9 @@ class DataModel extends ChangeNotifier {
                     constraints: BoxConstraints(maxHeight: _scrollHeight),
                     child: SingleChildScrollView(
                       physics: const ClampingScrollPhysics(),
-                      child: Text(
-                        result.toString(),
-                        style: TextStyle(fontSize: 15.0),
-                      ),
+                      child: MyLabel({
+                        gLabel: result.toString(),
+                      }, backcolor),
                     ),
                   ),
                   Divider(),

@@ -71,7 +71,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
           },
         );
       } else {
-        Share.shareFiles(
+        Share.shareXFiles(
           [widget._param[gPath]],
           subject: widget._param[gSubject],
         );
@@ -86,7 +86,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
               onPressed: () {
                 /*Share.share(
                     'Register  App with my referral code text to get \$20.');*/
-                Share.shareFiles(
+                Share.shareXFiles(
                   [widget._param[gPath]],
                   subject: widget._param[gSubject],
                 );

@@ -41,6 +41,7 @@ const gCharge = 'Charge';
 const gCheckverifycode = 'checkverifycode';
 const gChild = 'child';
 const gClose = 'close';
+const gCode = 'code';
 const gCollapsed = 'Collapsed';
 const gColor = 'color';
 const gColorIndex = 'colorIndex';
@@ -218,6 +219,7 @@ const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';
 
 const gSetDroplist = 'setDroplist';
+//const gSetFormDefaultValue = 'setFormDefaultValue';
 const gSetFormList = 'setFormList';
 const gSetMyMenu = 'setMyMenu';
 const gSetMyInfo = 'setMyInfo';
