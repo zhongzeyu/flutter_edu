@@ -99,6 +99,9 @@ class DataModel extends ChangeNotifier {
         MyConfig.URL.name +
         '/images/main.jpg' //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   };
+
+  Map<dynamic, Image> _imgCache = {};
+
   Map<dynamic, dynamic> _monthMap = {
     '01': 'Jan',
     '02': 'Feb',
@@ -118,6 +121,7 @@ class DataModel extends ChangeNotifier {
 
   //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
   Map get imgList => _imgList;
+  Map get imgCache => _imgCache;
   Map<dynamic, dynamic> _i10nMap = {};
   Queue _requestList = new Queue();
 
@@ -699,7 +703,6 @@ class DataModel extends ChangeNotifier {
     var key = _sessionkey;
     var json = jsonEncode(datalist); //.toString();
     var message = json;
-    //datalist.toString(); //jsonEncode(json);
     print('====message is:' + message);
     var result = '';
     //var iv = '12345678';
@@ -726,9 +729,6 @@ class DataModel extends ChangeNotifier {
     if (_sessionkey == '') {
       _requestCnt = 0;
       resetSessionKey(context);
-      //sendRequestList(context);
-      //return MyWait();
-      //return MainPage();
     }
     return _firstPage;
     /*if (_token == '' || _myId == '') {
@@ -2739,7 +2739,7 @@ class DataModel extends ChangeNotifier {
       }
       Utf8Decoder decode = new Utf8Decoder();
       List data = jsonDecode(decode.convert(response.bodyBytes));
-      print('==== response: ' + jsonEncode(data));
+      //print('==== response: ' + jsonEncode(data));
       /*Utf8Decoder decode = new Utf8Decoder();
       List data = jsonDecode(decode.convert(response.bodyBytes));*/
       //List data = jsonDecode(response.body);
@@ -3088,7 +3088,7 @@ class DataModel extends ChangeNotifier {
               {gKey: param}
             ]
           });
-        } else {}
+        }
       }
       if (_requestList.isEmpty) {
         return;
@@ -3096,6 +3096,7 @@ class DataModel extends ChangeNotifier {
       if (_requestList.length < 1) {
         return;
       }
+
       Map requestFirst = requestListRemoveFirst();
       if (requestFirst[gAction] != null &&
           requestFirst[gAction] == gLocalAction) {
@@ -3138,13 +3139,12 @@ class DataModel extends ChangeNotifier {
       }
       var dataRequest = encryptByDES(requestFirst);
       await processRequest(dataRequest, context);
+      //await sendRequestList(context);
     } catch (e) {
       showMsg(context, e, null);
       //throw e;
       //print('=====exception is ' + e);
-    } finally {
-      // await sendRequestList(context);
-    }
+    } finally {}
     //downloadResponse(data);
   }
 
@@ -3310,9 +3310,7 @@ class DataModel extends ChangeNotifier {
       showMsg(context, e, null);
       //throw e;
       //print('=====exception is ' + e);
-    } finally {
-      // await sendRequestList(context);
-    }
+    } finally {}
 
     //sendRequestOne(gFiledownload, {gFilename: filename}, context);
   }

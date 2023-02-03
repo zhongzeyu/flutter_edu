@@ -3,8 +3,10 @@ import 'dart:convert';
 
 import 'package:edu_proj/config/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../config/MyConfig.dart';
+import '../models/DataModel.dart';
 
 class MyPic extends StatelessWidget {
   final dynamic _param;
@@ -16,28 +18,32 @@ class MyPic extends StatelessWidget {
     if (_param[gImg] == null) {
       return null;
     }
+    return Consumer<DataModel>(builder: (context, datamodel, child) {
+      if (_param[gImg].toString().toLowerCase().indexOf('http') > -1) {
+        var imgName = _param[gImg]
+            .toString()
+            .substring(_param[gImg].toString().lastIndexOf('/') + 1);
+        var imgUrl = 'http://' + MyConfig.URL.name + '/images/' + imgName;
+        if (!datamodel.imgCache.containsKey(imgName)) {
+          print('=================' + imgUrl);
+          datamodel.imgCache[imgName] = Image(
+            image: NetworkImage(imgUrl),
+            fit: BoxFit.fitWidth,
+          );
+        }
 
-    if (_param[gImg].toString().toLowerCase().indexOf('http') > -1) {
-      var imgUrl = 'http://' +
-          MyConfig.URL.name +
-          '/images/' +
-          _param[gImg]
-              .toString()
-              .substring(_param[gImg].toString().lastIndexOf('/') + 1);
-      print('=================' + imgUrl);
-      return Image(
-        image: NetworkImage(imgUrl),
-        fit: BoxFit.fitWidth,
+        return datamodel.imgCache[imgName];
+      }
+
+      return Image.memory(
+        base64.decode(_param[gImg]),
+        fit: BoxFit.fill,
+        gaplessPlayback: true,
+        height: (_param[gHeight] != null) ? _param[gHeight] : null,
+        width: (_param[gWidth] != null) ? _param[gWidth] : null,
       );
-    }
+    });
 
-    return Image.memory(
-      base64.decode(_param[gImg]),
-      fit: BoxFit.fill,
-      gaplessPlayback: true,
-      height: (_param[gHeight] != null) ? _param[gHeight] : null,
-      width: (_param[gWidth] != null) ? _param[gWidth] : null,
-    );
     /*return Image(
       image: NetworkImage(_param[gImg]),
       fit: BoxFit.fitWidth,
