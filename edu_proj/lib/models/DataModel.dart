@@ -124,7 +124,7 @@ class DataModel extends ChangeNotifier {
   Map get imgCache => _imgCache;
   Map<dynamic, dynamic> _i10nMap = {};
   Queue _requestList = new Queue();
-
+  Queue _requestListRunning = new Queue();
   //dynamic get email => _email;
   dynamic get token => _token;
   Map<dynamic, Map<dynamic, dynamic>> get formLists => _formLists;
@@ -164,15 +164,6 @@ class DataModel extends ChangeNotifier {
   init() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _locale = (prefs.getString('locallan') ?? _locale);
-  }
-
-  addandsentRequest(action, data, context) {
-    try {
-      _requestList.add({gAction: action, gData: data});
-      sendRequestList(context);
-    } catch (e) {
-      throw e;
-    }
   }
 
   addTab(data, context, tabName) {
@@ -703,7 +694,7 @@ class DataModel extends ChangeNotifier {
     var key = _sessionkey;
     var json = jsonEncode(datalist); //.toString();
     var message = json;
-    print('====message is:' + message);
+    print('==request is:' + message);
     var result = '';
     //var iv = '12345678';
     if (key == '') {
@@ -2471,7 +2462,6 @@ class DataModel extends ChangeNotifier {
       MapEntry me = requestFirst[gData];
       data = me.value;
     }
-
     if (data[gLabel] != null &&
         data[gLabel] == gEdit &&
         data[gTableID] != null) {
@@ -2713,7 +2703,8 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  processRequest(dataRequest, context) async {
+  processRequest(requestFirst, context) async {
+    var dataRequest = encryptByDES(requestFirst);
     final headers = {
       'contentType':
           'text/html,application/xhtml+xml,application/xml,application/x-www-form-urlencoded',
@@ -2739,14 +2730,8 @@ class DataModel extends ChangeNotifier {
       }
       Utf8Decoder decode = new Utf8Decoder();
       List data = jsonDecode(decode.convert(response.bodyBytes));
-      //print('==== response: ' + jsonEncode(data));
-      /*Utf8Decoder decode = new Utf8Decoder();
-      List data = jsonDecode(decode.convert(response.bodyBytes));*/
-      //List data = jsonDecode(response.body);
 
-      //print(data.entries.first.key);
-      //print(data.entries.first.value);
-
+      print('==response is: ' + data.toString());
       data.forEach((element) async {
         //print(key);
         var action = '';
@@ -2921,38 +2906,86 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  requestListAddFirst(data) {
-    if (requestListExists(data)) {
+  requestListadd(data) {
+    requestListaddCommon(data, false);
+  }
+
+  requestListaddCommon(data, isFirst) {
+    if (data == null) {
       return;
     }
-    if (data != null) {
+
+    /*bool dataExists = requestListExists(data);
+    print('--------- requestList dataExists: ' +
+        dataExists.toString() +
+        ': ' +
+        data.toString());
+    if (dataExists) {
+      return;
+    }*/
+    print('--------- requestList add ' + data.toString());
+    if (isFirst) {
       _requestList.addFirst(data);
+    } else {
+      _requestList.add(data);
     }
   }
 
+  requestListAddFirst(data) {
+    requestListaddCommon(data, true);
+  }
+
   requestListExists(item) {
-    bool rtn = false;
+    if (_requestList == null) {
+      print('------- request exists: false ' + item.toString());
+      return false;
+    }
+    int length = _requestList
+        .where((element) => element.toString() == item.toString())
+        .length;
+    bool exists = length > 0;
+
+    print('------- request exists: ' +
+        exists.toString() +
+        ' [' +
+        length.toString() +
+        '] ' +
+        item.toString());
+    return exists;
+    /*String sItem = item.toString();
+    //print('--------------- requestListExists sItem' + sItem);
     if (_requestList != null) {
-      _requestList.forEach((element) {
-        var value = element.value;
-        var objIaction = value[gAction];
+      _requestList.forEach((value) {
+        String sValue = value.toString();
+        //print('--------------- requestListExists sValue: ' + sValue);
+        if (sItem == sValue) {
+          //print('--------------- requestListExists is true:' + sValue);
+          return true;
+        }
+        /*var objIaction = value[gAction];
         if (objIaction == item[gAction]) {
           var objIDataStr = value[gData].toString();
           var dataStr = item[gData].toString();
           if (objIDataStr == dataStr) {
             //duplicated, return
             // ignore: void_checks
-            rtn = true;
+
+            return true;
           }
-        }
+        }*/
       });
     }
 
-    return rtn;
+    return false;*/
   }
 
-  requestListRemoveFirst() {
-    return _requestList.removeFirst();
+  requestListRemove(requestFirst) {
+    _requestList.removeWhere(
+        (element) => element.toString() == requestFirst.toString());
+    print('---------request list remove ' + requestFirst.toString());
+    _requestListRunning.removeWhere(
+        (element) => element.toString() == requestFirst.toString());
+    print('---------request list running remove ' + requestFirst.toString());
   }
 
   resetPassword(context, data) {
@@ -3082,12 +3115,13 @@ class DataModel extends ChangeNotifier {
         if (initRequest == '') {
           wait(1);
           var param = getMod(_zzydhbase, _arandomsession, _zzyprime);
-          _requestList.addFirst({
+          Map data = {
             gAction: gGetsessionkey,
             gData: [
               {gKey: param}
             ]
-          });
+          };
+          requestListAddFirst(data);
         }
       }
       if (_requestList.isEmpty) {
@@ -3096,49 +3130,79 @@ class DataModel extends ChangeNotifier {
       if (_requestList.length < 1) {
         return;
       }
+      //while (_requestList.length > 0)
+      for (int i = 0; i < _requestList.length; i++) {
+        //Map requestFirst = _requestList.first;
+        Map requestFirst = _requestList.elementAt(i);
+        //Map requestFirst = _requestList.removeFirst();
+        //print('----------request list remove ' + requestFirst.toString());
 
-      Map requestFirst = requestListRemoveFirst();
-      if (requestFirst[gAction] != null &&
-          requestFirst[gAction] == gLocalAction) {
-        localAction(requestFirst, context);
-        return;
-      }
-      if (_token != '') {
-        requestFirst[gToken] = _token;
-        requestFirst[gCompanyid] = _globalCompanyid;
-        //if is company detail, zzyuser, company, change the companyid to parentid in the where condition.
+        if (_requestListRunning != null &&
+            _requestListRunning
+                    .where((element) =>
+                        element.toString() == requestFirst.toString())
+                    .length >
+                0) {
+          continue;
+        }
+        _requestListRunning.add(requestFirst);
 
-      }
-      //#add timestamp for process table
+        if (requestFirst[gAction] != null &&
+            requestFirst[gAction] == gLocalAction) {
+          try {
+            localAction(requestFirst, context);
+          } catch (e1) {
+            showMsg(context, e1, null);
+          } finally {
+            requestListRemove(requestFirst);
+          }
 
-      if (requestFirst[gData] != null && requestFirst[gData] is List) {
-        List requestData = requestFirst[gData];
-        var existsTables = '';
-        var existsTablesSep = '';
-        /*_tableList.forEach((key, value) {
+          return;
+        }
+        if (_token != '') {
+          requestFirst[gToken] = _token;
+          requestFirst[gCompanyid] = _globalCompanyid;
+          //if is company detail, zzyuser, company, change the companyid to parentid in the where condition.
+
+        }
+        //#add timestamp for process table
+
+        if (requestFirst[gData] != null && requestFirst[gData] is List) {
+          List requestData = requestFirst[gData];
+          var existsTables = '';
+          var existsTablesSep = '';
+          /*_tableList.forEach((key, value) {
           existsTables = existsTables + existsTablesSep + key;
           existsTablesSep = ',';
         });*/
-        _dpList.forEach((key, value) {
-          existsTables = existsTables + existsTablesSep + key;
-          existsTablesSep = ',';
-        });
-        requestData.forEach((element) {
-          if (!isNull(element[gType]) &&
-              element[gType] == gTable &&
-              !isNull(element[gActionid])) {
-            var tablename = element[gActionid];
-            var timestamp;
-            if (_tableList[tablename] != null) {
-              timestamp = _tableList[tablename][gTimestamp];
+          _dpList.forEach((key, value) {
+            existsTables = existsTables + existsTablesSep + key;
+            existsTablesSep = ',';
+          });
+          requestData.forEach((element) {
+            if (!isNull(element[gType]) &&
+                element[gType] == gTable &&
+                !isNull(element[gActionid])) {
+              var tablename = element[gActionid];
+              var timestamp;
+              if (_tableList[tablename] != null) {
+                timestamp = _tableList[tablename][gTimestamp];
+              }
+              element[gTimestamp] = timestamp;
+              element[gTablelistExist] = existsTables;
             }
-            element[gTimestamp] = timestamp;
-            element[gTablelistExist] = existsTables;
-          }
-        });
+          });
+        }
+        //var dataRequest = encryptByDES(requestFirst);
+        try {
+          await processRequest(requestFirst, context);
+        } catch (e1) {
+          showMsg(context, e1, null);
+        } finally {
+          requestListRemove(requestFirst);
+        }
       }
-      var dataRequest = encryptByDES(requestFirst);
-      await processRequest(dataRequest, context);
+
       //await sendRequestList(context);
     } catch (e) {
       showMsg(context, e, null);
@@ -3155,7 +3219,9 @@ class DataModel extends ChangeNotifier {
         return;
       }
 
-      addandsentRequest(action, data, context);
+      requestListadd({gAction: action, gData: data});
+
+      sendRequestList(context);
     } catch (e) {
       throw e;
     }
@@ -3944,6 +4010,10 @@ class DataModel extends ChangeNotifier {
 
   wait(waitSeconds) async {
     await Future.delayed(Duration(seconds: waitSeconds));
+  }
+
+  waitmilliseconds(waitMilliSeconds) async {
+    await Future.delayed(Duration(milliseconds: waitMilliSeconds));
   }
 }
 
