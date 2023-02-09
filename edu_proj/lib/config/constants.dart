@@ -141,6 +141,8 @@ const gItems = 'items';
 const gKey = 'key';
 
 const gLabel = 'label';
+const gLangcode = 'langcode';
+const gLangcontent = 'langcontent';
 const gLastaction = 'lastaction';
 const gLength = 'length';
 const gLetterSpacing = 'letterSpacing';
@@ -302,3 +304,5 @@ const gZzydictionaryitem = 'Zzydictionaryitem';
 const gZh = 'zh';
 const gZzyLanguageCode = 'Zzylanguagecode';
 const gZzylog = 'Zzylog';
+const gZzyi10nitem = 'Zzyi10nitem';
+const gZzyi10nlist = 'Zzyi10nlist';

@@ -290,6 +290,18 @@ class DataModel extends ChangeNotifier {
     }
   }
 
+  afterTableInsert(tablename, row, context) {
+    if (tablename == gZzyi10nitem) {
+      var parentid = row[gParentid];
+      var tableid = gZzyi10nlist;
+      var result = getTableByTableID(tableid, gId + '=' + parentid, context);
+      var langcode = row[gLangcode];
+      var langcontent = row[gLangcontent];
+      var sourceChck = result[0][gName];
+      _i10nMap[sourceChck][langcode] = langcontent;
+    }
+  }
+
   tableInsert(tablename, rowData, context) {
     var tableInfo = _tableList[tablename];
     List tableData = tableInfo[gData];
@@ -298,6 +310,7 @@ class DataModel extends ChangeNotifier {
     if (_dpList.containsKey(tablename)) {
       dpListInsert(tablename, row, context);
     }
+    afterTableInsert(tablename, row, context);
   }
 
   tableRemove(tablename, rowData, context) {
@@ -821,7 +834,7 @@ class DataModel extends ChangeNotifier {
       }
       alert(context, gNochange);
     } catch (e) {
-      print('======exception is ' + e.toString());
+      //print('======exception is ' + e.toString());
       //throw e;
       showMsg(context, e, null);
     }
@@ -1949,15 +1962,39 @@ class DataModel extends ChangeNotifier {
     if (tableData == null) {
       getTableFromDB(tableid, where, context);
     }
-    if (where ?? null == null) {
-      return tableData;
+
+    if (isNull(where)) {
+      return tableData[gData];
     }
+
     return getTableDataFromWhere(tableData, where);
   }
 
   getTableDataFromWhere(tableData, where) {
     //filter the table data by where condition
+    Map mapWhere = {};
+    List whereList = where.toString().split(' and ');
+    for (int i = 0; i < whereList.length; i++) {
+      List keyValue = whereList[i].toString().split('=');
+      mapWhere[keyValue[0]] = keyValue[1];
+    }
+    List result = [];
+    if (tableData != null) {
+      tableData[gData].forEach((dataRow) {
+        bool isMatch = true;
+        mapWhere.forEach((key, value) {
+          if (dataRow[key].toString() != value) {
+            isMatch = false;
+          }
+        });
+        if (isMatch) {
+          result.add(dataRow);
+        }
+      });
+    }
+    return result;
   }
+
   getTableFromDB(tableid, where, context) {
     Map element = {
       gLabel: '',
@@ -2627,7 +2664,7 @@ class DataModel extends ChangeNotifier {
     if (map[gLabel] == "Test") {
       //showTab("role", context);
     }
-    print('=====typed ' + map[gLabel]);
+    //print('=====typed ' + map[gLabel]);
   }
 
   openDetailForm(formname, context, backcolor) {
@@ -2923,7 +2960,7 @@ class DataModel extends ChangeNotifier {
     if (dataExists) {
       return;
     }*/
-    print('--------- requestList add ' + data.toString());
+    //print('--------- requestList add ' + data.toString());
     if (isFirst) {
       _requestList.addFirst(data);
     } else {
@@ -2937,7 +2974,7 @@ class DataModel extends ChangeNotifier {
 
   requestListExists(item) {
     if (_requestList == null) {
-      print('------- request exists: false ' + item.toString());
+      //print('------- request exists: false ' + item.toString());
       return false;
     }
     int length = _requestList
@@ -2945,12 +2982,12 @@ class DataModel extends ChangeNotifier {
         .length;
     bool exists = length > 0;
 
-    print('------- request exists: ' +
+    /*print('------- request exists: ' +
         exists.toString() +
         ' [' +
         length.toString() +
         '] ' +
-        item.toString());
+        item.toString());*/
     return exists;
     /*String sItem = item.toString();
     //print('--------------- requestListExists sItem' + sItem);
@@ -2982,10 +3019,10 @@ class DataModel extends ChangeNotifier {
   requestListRemove(requestFirst) {
     _requestList.removeWhere(
         (element) => element.toString() == requestFirst.toString());
-    print('---------request list remove ' + requestFirst.toString());
+    //print('---------request list remove ' + requestFirst.toString());
     _requestListRunning.removeWhere(
         (element) => element.toString() == requestFirst.toString());
-    print('---------request list running remove ' + requestFirst.toString());
+    //print('---------request list running remove ' + requestFirst.toString());
   }
 
   resetPassword(context, data) {
