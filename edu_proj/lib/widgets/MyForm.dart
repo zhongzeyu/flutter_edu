@@ -34,6 +34,7 @@ class MyForm extends StatelessWidget {
         }
         //datamodel.dpList[gYear] = [];
         Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
+        print('==== MyForm formname is ' + _formName);
         Map<dynamic, dynamic> items = formDefine[gItems];
         //Color cBackColor = datamodel.fromBdckcolor(backcolor);
         //Size size = MediaQuery.of(context).size;
@@ -57,11 +58,11 @@ class MyForm extends StatelessWidget {
             if ((item.value[gIsHidden] ?? "false") != gTrue &&
                 (item.value[gType] ?? "") != gHidden) {
               if ((item.value[gInputType] ?? "") == gCode) {
-                //if ((item.value[gType] ?? "") == gPincode) {
                 result.add(
                   MyPinCode(item.value, _formName),
                 );
               } else {
+                //print('===' + item.toString());
                 result.add(
                   TextFieldWidget(
                       item: item,
@@ -99,11 +100,16 @@ class MyForm extends StatelessWidget {
           result.add(InkWell(
             child: MyGlass(paramSubmit),
             onTap: () {
+              //print('----- myForm tap 0');
               if (!_formKey.currentState.validate()) {
-                return;
+                //print('----- myForm tap 1');
+                // return;
               }
+              //print('----- myForm tap 2');
               _formKey.currentState.save();
+              //print('----- myForm tap 3');
               datamodel.formSubmit(context, _formName);
+              //print('----- myForm tap 4');
             },
           ));
 

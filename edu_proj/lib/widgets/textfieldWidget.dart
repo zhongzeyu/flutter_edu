@@ -125,16 +125,24 @@ class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
   final int backcolor;
   final dynamic formname;
+  final dynamic tablename;
+  final dynamic id;
   final _debouncer = Debouncer(milliseconds: 500);
-  TextFieldWidget({this.item, this.backcolor, this.formname});
+  TextFieldWidget(
+      {this.item, this.backcolor, this.formname, this.tablename, this.id});
   _getWidth() {
     return null;
     //item.value[gWidth] ?? null;
   }
 
-  textChange(
-      dynamic text, MapEntry item, DataModel datamodel, BuildContext context) {
+  textChange(dynamic text, MapEntry item, DataModel datamodel,
+      BuildContext context, bool isForm) {
     //item.value[gValue] = text;
+    if (!isForm) {
+      datamodel.setTableValueItem(tablename, item.value[gId], id, text);
+      return;
+    }
+
     if (item.value[gDroplist] == '') {
       item.value[gValue] = text;
     }
@@ -151,17 +159,30 @@ class TextFieldWidget extends StatelessWidget {
   }
 
   setItemI(item, value, DataModel datamodel) {
-    datamodel.setFormValue(formname, item.value[gId], value);
-    //datamodel.setFormValueShow(formname, item.value[gId]);
-    datamodel.setFormNextFocus(formname, item.value[gId]);
-    datamodel.dpList[gAddress + '_' + formname + '_' + item.value[gId]] = null;
+    bool isForm = !datamodel.isNull(formname);
+    dynamic name = formname;
+    if (!isForm) {
+      name = tablename;
+    }
+    if (isForm) {
+      datamodel.setFormValue(name, item.value[gId], value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      datamodel.setFormNextFocus(name, item.value[gId]);
+    } else {
+      datamodel.setTableValue(name, item.value[gId], id, value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      datamodel.setTableNextFocus(name, item.value[gId], id);
+    }
+
+    datamodel.dpList[gAddress + '_' + name + '_' + item.value[gId]] = null;
+
     datamodel.myNotifyListeners();
   }
 
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       bool isPassword = (item.value[gType] == gPassword);
-
+      bool isForm = !datamodel.isNull(formname);
       if (isPassword) {
         item.value[gPasswordShow] = item.value[gPasswordShow] ?? true;
 
@@ -302,94 +323,125 @@ class TextFieldWidget extends StatelessWidget {
         width: _getWidth(),
         child: Column(
           children: [
-            TextFormField(
-              controller: txtController,
-              autofocus: item.value[gFocus] ?? false,
-              //focusNode: item.value[gFocusNode],
-              keyboardType: datamodel.getInputType(item.value[gInputType]),
-              maxLength: item.value[gLength],
-              style: TextStyle(
-                color: cBackColor,
-                fontSize: item.value[gFontSize],
-                fontStyle: item.value[gFontStyle],
-                fontWeight: item.value[gFontWeight],
-                letterSpacing: item.value[gLetterSpacing],
+            Focus(
+              onKey: (node, event) {
+                String keyLabel = event.logicalKey.keyLabel;
+                if (keyLabel == 'Tab') {
+                  //print('================' + event.logicalKey.keyLabel);
+                  if (isForm) {
+                    datamodel.setFormNextFocus(formname, item.value[gId]);
+                  } else {
+                    datamodel.setTableNextFocus(tablename, item.value[gId], id);
+                  }
+
+                  datamodel.myNotifyListeners();
+                } else {}
+                return KeyEventResult.ignored;
+              },
+              child: TextFormField(
+                controller: txtController,
+                autofocus: item.value[gFocus] ?? false,
+                //focusNode: item.value[gFocusNode],
+                keyboardType: datamodel.getInputType(item.value[gInputType]),
+                maxLength: isForm ? item.value[gLength] : null,
+                style: TextStyle(
+                  color: cBackColor,
+                  fontSize: item.value[gFontSize],
+                  fontStyle: item.value[gFontStyle],
+                  fontWeight: item.value[gFontWeight],
+                  letterSpacing: item.value[gLetterSpacing],
+                ),
+                decoration: isForm
+                    ? InputDecoration(
+                        labelText: datamodel.getSCurrent(item.value[gLabel]),
+                        labelStyle: TextStyle(
+                          color: cBackColor,
+                          fontSize: item.value[gFontSize],
+                          fontStyle: item.value[gFontStyle],
+                          fontWeight: item.value[gFontWeight],
+                          letterSpacing: item.value[gLetterSpacing],
+                        ),
+                        hintText: item.value[gPlaceHolder],
+                        hintStyle: TextStyle(
+                          color: cBackColor,
+                          fontSize: item.value[gFontSize],
+                          fontStyle: item.value[gFontStyle],
+                          fontWeight: item.value[gFontWeight],
+                          letterSpacing: item.value[gLetterSpacing],
+                        ),
+                        suffixIcon: item.value[gSuffixIcon],
+                        //prefixIcon: item.value['prefixIcon'],
+                        enabled: ((item.value[gType] ?? "") != gLabel))
+                    : InputDecoration(
+                        border: new OutlineInputBorder(
+                          //添加边框
+                          gapPadding: 0.0,
+                          borderRadius: BorderRadius.circular(2.0),
+                        ),
+                        isDense: true, // Added this
+                        //contentPadding: EdgeInsets.all(2.0),
+                        suffixIcon: item.value[gSuffixIcon],
+                        enabled: ((item.value[gType] ?? "") != gLabel)),
+                obscureText: isPassword && item.value[gPasswordShow],
+                inputFormatters: getItemFormatters(item),
+                validator: (dynamic value) {
+                  if (item.value[gRequired] && value.isEmpty) {
+                    return datamodel.getSCurrent(
+                        gIsrequired + "{" + item.value[gLabel] + "}");
+                  }
+                  if (item.value[gType] == gEmail &&
+                      !value.isEmpty &&
+                      !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                          .hasMatch(value)) {
+                    return datamodel
+                        .getSCurrent(gInvalidname + "{" + gEmail + "}");
+                  }
+                  if (item.value[gMinLength] != null &&
+                      item.value[gMinLength] != '0' &&
+                      value.length < item.value[gMinLength]) {
+                    return datamodel.getSCurrent(gMininput +
+                        "{" +
+                        item.value[gMinLength] +
+                        "}{" +
+                        item.value[gUnit] +
+                        "}");
+                  }
+                  if (item.value[gLength] != null &&
+                      item.value[gLength] != '0' &&
+                      value.length > item.value[gLength]) {
+                    return datamodel.getSCurrent(gMaxinput +
+                        "{" +
+                        item.value[gLength] +
+                        "}{" +
+                        item.value[gUnit] +
+                        "}");
+                  }
+                  return null;
+                },
+                onSaved: (dynamic value) {
+                  textChange(value, item, datamodel, context, isForm);
+                  //item.value[gValue] = value;
+                },
+                onChanged: (text) {
+                  _debouncer.run(
+                      () => textChange(text, item, datamodel, context, isForm));
+                },
+                onTap: () {
+                  if (!isForm) {
+                    return;
+                  }
+                  //set focus
+                  datamodel.setFormFocus(formname, item.value[gId]);
+                },
+                onEditingComplete: () {
+                  if (isForm) {
+                    datamodel.setFormNextFocus(formname, item.value[gId]);
+                  } else {
+                    datamodel.setTableNextFocus(tablename, item.value[gId], id);
+                  }
+                  datamodel.myNotifyListeners();
+                },
               ),
-              decoration: InputDecoration(
-                  labelText: datamodel.getSCurrent(item.value[gLabel]),
-                  labelStyle: TextStyle(
-                    color: cBackColor,
-                    fontSize: item.value[gFontSize],
-                    fontStyle: item.value[gFontStyle],
-                    fontWeight: item.value[gFontWeight],
-                    letterSpacing: item.value[gLetterSpacing],
-                  ),
-                  hintText: item.value[gPlaceHolder],
-                  hintStyle: TextStyle(
-                    color: cBackColor,
-                    fontSize: item.value[gFontSize],
-                    fontStyle: item.value[gFontStyle],
-                    fontWeight: item.value[gFontWeight],
-                    letterSpacing: item.value[gLetterSpacing],
-                  ),
-                  suffixIcon: item.value[gSuffixIcon],
-                  //prefixIcon: item.value['prefixIcon'],
-                  enabled: ((item.value[gType] ?? "") != gLabel)),
-              obscureText: isPassword && item.value[gPasswordShow],
-              inputFormatters: getItemFormatters(item),
-              validator: (dynamic value) {
-                if (item.value[gRequired] && value.isEmpty) {
-                  return datamodel.getSCurrent(
-                      gIsrequired + "{" + item.value[gLabel] + "}");
-                }
-                if (item.value[gType] == gEmail &&
-                    !value.isEmpty &&
-                    !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                        .hasMatch(value)) {
-                  return datamodel
-                      .getSCurrent(gInvalidname + "{" + gEmail + "}");
-                }
-                if (item.value[gMinLength] != null &&
-                    item.value[gMinLength] != '0' &&
-                    value.length < item.value[gMinLength]) {
-                  return datamodel.getSCurrent(gMininput +
-                      "{" +
-                      item.value[gMinLength] +
-                      "}{" +
-                      item.value[gUnit] +
-                      "}");
-                }
-                if (item.value[gLength] != null &&
-                    item.value[gLength] != '0' &&
-                    value.length > item.value[gLength]) {
-                  return datamodel.getSCurrent(gMaxinput +
-                      "{" +
-                      item.value[gLength] +
-                      "}{" +
-                      item.value[gUnit] +
-                      "}");
-                }
-                return null;
-              },
-              onSaved: (dynamic value) {
-                textChange(value, item, datamodel, context);
-                //item.value[gValue] = value;
-              },
-              onChanged: (text) {
-                _debouncer
-                    .run(() => textChange(text, item, datamodel, context));
-              },
-              onTap: () {
-                if (datamodel.isNull(formname)) {
-                  return;
-                }
-                //set focus
-                datamodel.setFormFocus(formname, item.value[gId]);
-              },
-              onEditingComplete: () {
-                datamodel.setFormNextFocus(formname, item.value[gId]);
-                datamodel.myNotifyListeners();
-              },
             ),
             getItemSubWidget(item),
           ],

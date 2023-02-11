@@ -17,7 +17,7 @@ class MyPinCode extends StatelessWidget {
           padding: const EdgeInsets.all(18.0),
           child: PinCodeTextField(
             appContext: context,
-            autoFocus: true,
+            autoFocus: _param[gFocus] ?? false,
             autoDismissKeyboard: true,
             length: _param[gLength],
             controller: textEditingController,

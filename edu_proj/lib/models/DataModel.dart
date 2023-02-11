@@ -302,11 +302,23 @@ class DataModel extends ChangeNotifier {
     }
   }
 
+  removeTableModified(tablename, id) {
+    if (isNull(_tableList[tablename][gDataModified])) {
+      return;
+    }
+    if (isNull(_tableList[tablename][gDataModified][id])) {
+      return;
+    }
+    Map modifiedRow = _tableList[tablename][gDataModified];
+    modifiedRow.remove(id);
+  }
+
   tableInsert(tablename, rowData, context) {
     var tableInfo = _tableList[tablename];
     List tableData = tableInfo[gData];
     Map row = Map.of(rowData);
     tableData.insert(0, row);
+    removeTableModified(tablename, row[gId]);
     if (_dpList.containsKey(tablename)) {
       dpListInsert(tablename, row, context);
     }
@@ -317,6 +329,7 @@ class DataModel extends ChangeNotifier {
     var tableInfo = _tableList[tablename];
     List tableData = tableInfo[gData];
     Map row = Map.of(rowData);
+    removeTableModified(tablename, row[gId]);
     tableData.removeWhere((element1) => element1[gId] == row[gId]);
 
     if (_dpList.containsKey(tablename)) {
@@ -754,12 +767,14 @@ class DataModel extends ChangeNotifier {
 
   formSubmit(BuildContext context, formid) {
     try {
+      //print('        ------------------    formSubmit 0');
       Map<dynamic, dynamic> obj = _formLists[formid][gItems];
       var changed = false;
       var data = {};
       data[gFormid] = formid;
       data[gId] = (obj[gId] != null) ? obj[gId][gValue] : '';
       data[gOptLock] = (obj[gOptLock] != null) ? obj[gOptLock][gValue] : '';
+      //print('        ------------------    formSubmit 1');
       obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
         //var key = element.entries.first.key;
         var objI = element.value;
@@ -799,6 +814,7 @@ class DataModel extends ChangeNotifier {
           }
         }
       });
+      //print('        ------------------    formSubmit 2');
       if (changed) {
         //console.log(data);
         if (formid == gChangepassword || formid == gResetpassword) {
@@ -810,8 +826,11 @@ class DataModel extends ChangeNotifier {
             showMsg(context, getSCurrent(gPasswordnotmatch), null);
             return;
           }
-          //var loginemail = getFormValue(gLogin, gEmail, gTxtEditingController);
-          data[gEmail] = _myId;
+
+          _myId = (obj[gEmail] != null) ? obj[gEmail][gValue] : '';
+          if (isNull(_myId)) {
+            return;
+          }
         }
 
         //set to default value if empty
@@ -828,8 +847,8 @@ class DataModel extends ChangeNotifier {
           }
         });
         //send request;
+        //print('        ------------------    formSubmit 3');
         sendRequestFormChange(data, context); //refresh Form
-
         return;
       }
       alert(context, gNochange);
@@ -2507,6 +2526,10 @@ class DataModel extends ChangeNotifier {
       showFormEdit(data, context);
       showTableForm(data, context, null);
     } else if (data[gLabel] != null &&
+        data[gLabel] == gSave &&
+        data[gTableID] != null) {
+      saveTableModify(data, context);
+    } else if (data[gLabel] != null &&
         data[gLabel] == gAddnew &&
         data[gTableID] != null) {
       tableAddNew(data, context);
@@ -2626,8 +2649,6 @@ class DataModel extends ChangeNotifier {
       searchAddress(data, context);
     } else if (!isNull(data[gAction1])) {
       businessFunc(data[gAction1], context);
-
-      //forgetpassword(context);
     }
   }
 
@@ -2711,6 +2732,9 @@ class DataModel extends ChangeNotifier {
   }
 
   loadFile(formname, item) async {
+    if (isNull(formname)) {
+      return;
+    }
     PlatformFile file = await pickFiles();
     var filename = file.name;
     dynamic myUrl = 'http://' + MyConfig.URL.name + '/' + MyConfig.UPLOAD.name;
@@ -2827,7 +2851,7 @@ class DataModel extends ChangeNotifier {
         } else if (action == gShowScreenPage) {
           await showScreenPage(actionData, context, Colors.black.value);
         } else if (action == gSetFormList) {
-          await setFormList(actionData);
+          await setFormList(actionData, context);
         } else if (action == gShowTable) {
           await showTable(actionData[0][gTableID], context,
               actionData[0][gLabel] ?? "", "", "", null, null);
@@ -3284,19 +3308,41 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  setFormList(actionData) async {
+  setFormList(actionData, context) async {
     List<dynamic> thisList = actionData;
     for (int i = 0; i < thisList.length; i++) {
       Map<dynamic, dynamic> thisListI = thisList[i];
       var formID = thisListI[gFormName];
+      //print('=========== setFormList formID is ' + formID);
+
       await setFormListOne(formID, thisListI);
+      //print('=========== setFormList 0 ');
       if (formID == gVerifycode) {
+        //print('=========== setFormList 00 ');
+        setFormNextFocusFalse(gLogin);
+        setFormValue(gLogin, gPassword, 'smilesmart');
+        //myNotifyListeners();
         var email = getFormValue(gLogin, gEmail, gTxtEditingController);
         setFormValue(gVerifycode, gEmail, email);
         _myId = email;
       } else if (formID == gChangepassword) {
+        //print('=========== setFormList 01 ');
         var email = getFormValue(gLogin, gEmail, gTxtEditingController);
-        setFormValue(gChangepassword, gEmail, email);
+        setFormNextFocusFalse(gLogin);
+        setFormValue(gLogin, gPassword, 'smilesmart');
+        //setFormNextFocusFalse(gVerifycode);
+        //setFormValue(gVerifycode, gCode, '1111');
+
+        //_formLists.remove(gVerifycode);
+
+        //removeLastScreens(context);
+
+        //myNotifyListeners();
+        //print('=========== setFormList 02 ');
+        setFormValue(formID, gEmail, email);
+        //print('=========== setFormList 03 ');
+        setFormFocus(formID, gPassword1);
+        //print('=========== setFormList 04 ');
         _myId = email;
       }
     }
@@ -3526,6 +3572,13 @@ class DataModel extends ChangeNotifier {
     });
   }
 
+  saveTableModify(data, context) {
+    var tableName = data[gActionid] ?? data[gTableID];
+
+    showFormTableEdit(data, context);
+    formSubmit(context, tableName);
+  }
+
   showFormEdit(data, context) {
     var tableName = data[gActionid] ?? data[gTableID];
     Map<dynamic, dynamic> formDefine = _formLists[tableName];
@@ -3543,6 +3596,22 @@ class DataModel extends ChangeNotifier {
       item.value[gValue] = item.value[gOldvalue];
       item.value[gTxtEditingController]
         ..text = (dataRow == null) ? null : dataRow[item.value[gId]].toString();
+    });
+  }
+
+  showFormTableEdit(data, context) {
+    var tableName = data[gActionid] ?? data[gTableID];
+    var id = data[gRow][gId];
+    dynamic dataRowModified = _tableList[tableName][gDataModified][id];
+    Map<dynamic, dynamic> formDefine = _formLists[tableName];
+    Map<dynamic, dynamic> items = formDefine[gItems];
+    dynamic dataRow = data[gRow];
+    items.entries.forEach((item) {
+      var colId = item.value[gId];
+      item.value[gOldvalue] = (dataRow == null) ? null : dataRow[colId];
+      item.value[gValue] = isNull(dataRowModified[colId])
+          ? item.value[gOldvalue]
+          : dataRowModified[colId];
     });
   }
 
@@ -3632,16 +3701,50 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
-  setFormNextFocus(formid, colId) {
-    if (isNull(colId)) {
+  setTableFocusItem(tableid, item, id) {
+    if ((item.value[gIsHidden] ?? "false") != gTrue &&
+        (item.value[gType] ?? "") != gHidden) {
+      bool isValueNull = isNull(item.value[gValue]);
+      var txtValue = item.value[gTxtEditingController].value.text;
+      bool isTxtNull = isNull(txtValue);
+      if (isValueNull && isTxtNull) {
+        item.value[gFocus] = true;
+        _tableList[tableid][gTableItemRow] = id;
+        _tableList[tableid][gTableItemColName] = item.value[gId];
+
+        return true;
+      }
+    }
+    return false;
+  }
+
+  setForFocueItemOne(formid, item) {
+    setFormNextFocusFalse(formid);
+    setFormFocusItem(item);
+  }
+
+  setFormNextFocusFalse(formid) {
+    if (isNull(formid)) {
       return;
     }
     Map<dynamic, dynamic> items = _formLists[formid][gItems];
     items.entries.forEach((item) {
       item.value[gFocus] = false;
     });
+  }
 
+  setFormNextFocus(formid, colId) {
+    print('============    0');
+    if (isNull(colId) || isNull(formid)) {
+      return;
+    }
+    print('============    1');
+    setFormNextFocusFalse(formid);
+    print('============    2');
+    Map<dynamic, dynamic> items = _formLists[formid][gItems];
+    print('============    3');
     bool beginFocus = false;
+    print('============    4');
     items.entries.forEach((item) {
       if (beginFocus) {
         if (setFormFocusItem(item)) {
@@ -3653,10 +3756,137 @@ class DataModel extends ChangeNotifier {
         beginFocus = true;
       }
     });
+    print('============    5');
+  }
+
+  setTableNextFocus(tableId, colId, id) {
+    if (isNull(tableId) || isNull(colId) || isNull(id)) {
+      return;
+    }
+    setFormNextFocusFalse(tableId);
+    Map<dynamic, dynamic> items = _formLists[tableId][gItems];
+    bool beginFocus = false;
+    items.entries.forEach((item) {
+      if (beginFocus) {
+        if (setTableFocusItem(tableId, item, id)) {
+          return;
+        }
+      }
+
+      if (item.value[gId] == colId) {
+        beginFocus = true;
+      }
+    });
   }
 
   setFormValue(formid, colId, value) {
+    if (isNull(formid)) {
+      return;
+    }
+
     setFormValueItem(_formLists[formid][gItems][colId], value);
+  }
+
+  setTableValue(tableid, colId, id, value) {
+    if (isNull(tableid)) {
+      return;
+    }
+    setTableValueItem(tableid, colId, id, value);
+  }
+
+  getTableModifiedValue(tableid, colId, id) {
+    if (isNull(_tableList[tableid][gDataModified])) {
+      return null;
+    }
+    Map dataModified = _tableList[tableid][gDataModified];
+    if (!dataModified.containsKey(id)) {
+      return null;
+    }
+    Map value = dataModified[id];
+    if (isNull(value[colId])) {
+      return null;
+    }
+    return value[colId];
+  }
+
+  setTableValueItem(tableid, colId, id, value) {
+    /*
+    找到修改值，
+      如果找到，比较是否相同，
+        如果相同，退出
+        否则找原值
+          如果找到原值，并相同，删除修改值，退出
+          否则，更新修改值，退出
+          {
+             如果未找到原值（新增），更新修改值， 退出
+             如果与原值不同，更新修改值， 退出
+            }
+
+    未找到修改值
+        找原值如果相等， 退出
+        添加修改值
+    */
+    //print('=================   0');
+    if (isNull(_tableList[tableid][gDataModified])) {
+      _tableList[tableid][gDataModified] = {};
+    }
+    //print('=================   1');
+    Map dataModified = _tableList[tableid][gDataModified];
+    //print('=================   2');
+    if (dataModified.containsKey(id)) {
+      Map value = dataModified[id];
+      if (!isNull(value[colId]) && value[colId] == value) {
+        return;
+      }
+      dynamic originalValue = getTableOriginalValue(tableid, id, colId);
+      if (!isNull(originalValue) &&
+          !isNull(value[colId]) &&
+          originalValue == value[colId]) {
+        value.remove(colId);
+        if (value.length < 1) {
+          dataModified.remove(id);
+        }
+        return;
+      }
+      value[colId] = value;
+      return;
+    }
+    //print('=================   3');
+    dynamic originalValue = getTableOriginalValue(tableid, id, colId);
+    if (!isNull(originalValue) && originalValue == value) {
+      return;
+    }
+    //print('=================   4');
+    if (isNull(dataModified[id])) {
+      dataModified[id] = {};
+    }
+    //print('=================   5');
+    dataModified[id][colId] = value;
+    //print('=================   6');
+  }
+
+  getTableOriginalValue(tableid, id, colId) {
+    List newData =
+        _tableList[tableid][gDataSearch] ?? _tableList[tableid][gData];
+    List colList = _tableList[tableid][gColumns];
+    Map col;
+    if (colList != null && colList.length > 0) {
+      for (int i = 0; i < colList.length; i++) {
+        if (colList[i][gId] == colId) {
+          col = colList[i];
+          break;
+        }
+      }
+    }
+    for (int i = 0; i < newData.length; i++) {
+      Map dataRow = newData[i];
+      if (dataRow[gId] == id) {
+        var dataI = dataRow[colId];
+        var value = getValueByType(dataI, col);
+        return value;
+      }
+    }
+    return null;
   }
 
   setFormValueItem(item, value) {

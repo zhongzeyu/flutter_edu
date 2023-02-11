@@ -57,6 +57,7 @@ const gCreatenewpassword = 'createnewpassword';
 
 const gData = 'data';
 const gDataIDMap = 'dataidmap';
+const gDataModified = 'dataModified';
 const gDataSearch = 'datasearch';
 const gDate = 'date';
 const gDateformat = 'yyyy-MM-dd';
@@ -176,8 +177,9 @@ const gNumber = 'number';
 const gNull = 'null';
 
 const gOldvalue = 'oldvalue';
-const gOrderby = "orderby";
 const gOptLock = "zzyoptlock";
+const gOrderby = "orderby";
+const gOriginalValue = "originalValue";
 const gOther = 'other';
 
 const gPadding = 'padding';
@@ -214,6 +216,7 @@ const gRole = 'role';
 const gRow = 'row';
 const gRowsPerPage = 'rowsPerPage';
 
+const gSave = 'Save';
 const gScreen = 'screen';
 const gSearch = 'Search';
 const gServerdown = 'serverdown';
@@ -260,6 +263,10 @@ const gTable = 'table';
 const gTableAdd = 'tableAdd';
 const gTableDelete = 'tableDelete';
 const gTableEditor = 'tableEditor';
+const gTableItem = 'tableItem';
+const gTableItemColName = 'tableItemColName';
+const gTableItemRow = 'tableItemRow';
+
 const gTablelistExist = 'tablelistExist';
 const gTabletree = "tabletree";
 const gTableUpdate = 'tableUpdate';

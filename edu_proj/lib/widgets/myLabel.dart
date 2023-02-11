@@ -20,17 +20,41 @@ class MyLabel extends StatelessWidget {
         /*if (backcolor == Colors.transparent.value) {
           labelColor = Colors.black;
         }*/
-        Text text = Text(
-          datamodel.getSCurrent(_param[gLabel] ?? _param[gValue] ?? ""),
-          //textAlign: TextAlign.left,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: _param[gFontWeight], //FontWeight.bold,
-            fontSize: _param[gFontSize],
-            color: labelColor,
-            //backgroundColor: Colors.transparent
-          ),
-        );
+        Text text;
+        if (datamodel.isNull(_param[gOriginalValue])) {
+          text = Text(
+            datamodel.getSCurrent(_param[gLabel] ?? _param[gValue] ?? ""),
+            //textAlign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontWeight: _param[gFontWeight], //FontWeight.bold,
+              fontSize: _param[gFontSize],
+              color: labelColor,
+              //backgroundColor: Colors.transparent
+            ),
+          );
+        } else {
+          text = Text.rich(TextSpan(
+              text: datamodel.getSCurrent(_param[gOriginalValue]),
+              style: TextStyle(
+                color: labelColor,
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                    text: ' -> ',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: labelColor,
+                    )),
+                TextSpan(
+                    text: datamodel
+                        .getSCurrent(_param[gLabel] ?? _param[gValue] ?? ""),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: labelColor,
+                    )),
+              ]));
+        }
         //if (_param[gAction] == null || _param[gAction] != gTextLink) {
         return text;
         //}
