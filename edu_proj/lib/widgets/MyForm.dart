@@ -13,11 +13,6 @@ import 'myGlass.dart';
 class MyForm extends StatelessWidget {
   final dynamic _param;
   final int backcolor;
-  //final FocusNode focusNode = new FocusNode();
-  //final _debouncer = Debouncer(milliseconds: 1000);
-  //final Map _paramData;
-
-  //MyForm(this._param, this._paramData);
   MyForm(this._param, this.backcolor);
 
   @override
@@ -34,7 +29,6 @@ class MyForm extends StatelessWidget {
         }
         //datamodel.dpList[gYear] = [];
         Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
-        print('==== MyForm formname is ' + _formName);
         Map<dynamic, dynamic> items = formDefine[gItems];
         //Color cBackColor = datamodel.fromBdckcolor(backcolor);
         //Size size = MediaQuery.of(context).size;
@@ -62,7 +56,6 @@ class MyForm extends StatelessWidget {
                   MyPinCode(item.value, _formName),
                 );
               } else {
-                //print('===' + item.toString());
                 result.add(
                   TextFieldWidget(
                       item: item,
@@ -100,16 +93,9 @@ class MyForm extends StatelessWidget {
           result.add(InkWell(
             child: MyGlass(paramSubmit),
             onTap: () {
-              //print('----- myForm tap 0');
-              if (!_formKey.currentState.validate()) {
-                //print('----- myForm tap 1');
-                // return;
-              }
-              //print('----- myForm tap 2');
+              if (!_formKey.currentState.validate()) {}
               _formKey.currentState.save();
-              //print('----- myForm tap 3');
               datamodel.formSubmit(context, _formName);
-              //print('----- myForm tap 4');
             },
           ));
 

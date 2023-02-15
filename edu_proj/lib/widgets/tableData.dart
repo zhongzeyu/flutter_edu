@@ -18,6 +18,35 @@ class TableData extends DataTableSource {
 
   int get rowCount => (_param[gDataSearch] ?? _param[gData]).length;
   int get selectedRowCount => _selectRowCount;
+  getOneItem(
+      items, colname, dataRow, tableName, value, isModified, originalValue) {
+    MapEntry item;
+    items.entries.forEach((itemOne) {
+      if (itemOne.value[gId] == colname) {
+        item = itemOne;
+        item.value[gOldvalue] =
+            (dataRow == null) ? null : dataRow[item.value[gId]];
+        item.value[gShowDetail] = false;
+        //if is address
+        if (item.value[gType] == gAddress) {
+          _dataModel
+                  .dpList[gAddress + '_' + tableName + '_' + item.value[gId]] =
+              null;
+        }
+
+        item.value[gValue] = value;
+        //item.value[gOldvalue];
+        item.value[gTxtEditingController]
+          ..text = (dataRow == null)
+              ? null
+              : value; //dataRow[item.value[gId]].toString();
+        item.value[gPlaceHolder] =
+            isModified ? originalValue.toString() : value.toString();
+        return item;
+      }
+    });
+    return item;
+  }
 
   DataRow getRow(int index) {
     List<DataCell> dataCellList = [];
@@ -97,32 +126,12 @@ class TableData extends DataTableSource {
         //_dataModel.showFormEdit(data, context)
 
         var tableName = _param[gTableID];
-        MapEntry item;
         Map<dynamic, dynamic> formDefine = _dataModel.formLists[tableName];
         Map<dynamic, dynamic> items = formDefine[gItems];
-        items.entries.forEach((itemOne) {
-          if (itemOne.value[gId] == colname) {
-            item = itemOne;
-            item.value[gOldvalue] =
-                (dataRow == null) ? null : dataRow[item.value[gId]];
-            item.value[gShowDetail] = false;
-            //if is address
-            if (item.value[gType] == gAddress) {
-              _dataModel.dpList[
-                  gAddress + '_' + tableName + '_' + item.value[gId]] = null;
-            }
-
-            item.value[gValue] = item.value[gOldvalue];
-            item.value[gTxtEditingController]
-              ..text = (dataRow == null)
-                  ? null
-                  : dataRow[item.value[gId]].toString();
-            item.value[gPlaceHolder] =
-                isModified ? originalValue.toString() : value.toString();
-          }
-        });
-
+        MapEntry item = getOneItem(items, colname, dataRow, tableName, value,
+            isModified, originalValue);
         //MapEntry item = _dataModel.getTableItemByName(_param, colname, value);
+        item.value[gFocus] = true;
         w = TextFieldWidget(
             item: item,
             backcolor: backColorValue,
@@ -131,9 +140,9 @@ class TableData extends DataTableSource {
             id: dataRow[gId]);
       } else {
         /*
-         检查该字段是否有修改，如果有，显示修改值，并标记为红色
+         检查该字段是否有修改，如果有，显示原值->修改值
         */
-
+        //print(' =======================  isModified ' + isModified.toString());
         w = needi10n
             ? MyLabel({
                 gLabel: value,
@@ -152,8 +161,8 @@ class TableData extends DataTableSource {
                       ]))
                 : Text(value));
         w = InkWell(
-            child: w,
-            onTap: () {
+          child: w,
+          /*onTap: () {
               if (!_param[gAttr][gCanEdit]) {
                 return;
               }
@@ -166,9 +175,23 @@ class TableData extends DataTableSource {
               _param[gTableItemRow] = dataRow[gId];
               _param[gTableItemColName] = colname;
               this._dataModel.myNotifyListeners();
-            });
+            }*/
+        );
       }
-      dataCellList.add(DataCell(w));
+      dataCellList.add(DataCell(w, showEditIcon: isModified, onTap: () {
+        if (!_param[gAttr][gCanEdit]) {
+          return;
+        }
+
+        if (_param[gColumns][i][gType] == gLabel) {
+          return;
+        }
+
+        _param[gLabel] = gTableItem;
+        _param[gTableItemRow] = dataRow[gId];
+        _param[gTableItemColName] = colname;
+        this._dataModel.myNotifyListeners();
+      }));
     }
     return DataRow(cells: dataCellList);
   }

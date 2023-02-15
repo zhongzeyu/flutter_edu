@@ -43,7 +43,6 @@ class MyItem extends StatelessWidget {
         }
       } else if (_param[gType] == gForm) {
         dynamic formID = _param[gValue];
-
         //datamodel.setFormListOne(formID, _param);
 
         result.add(MyForm(formID, backcolor));

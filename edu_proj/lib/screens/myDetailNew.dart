@@ -18,6 +18,7 @@ class MyDetailNew extends StatelessWidget {
     List mapActions = [];
     List mapBottoms = [];
     bool isHome = false;
+    print('--------- myDetailNew');
     int thisbackcolor = backcolor ?? Colors.black.value;
     _param.forEach((key, value) {
       if (value == null) {
@@ -47,17 +48,6 @@ class MyDetailNew extends StatelessWidget {
       });
     });
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      //Size size = MediaQuery.of(context).size;
-      /*var aTxt = "";
-      if (!datamodel.isNull(datamodel.formLists[gLogin])) {
-        aTxt = datamodel.formLists[gLogin][gItems][gEmail][gDefaultValue];
-      }
-      Widget aWidget = Text(
-        aTxt,
-        style: TextStyle(fontWeight: FontWeight.bold),
-      );*/
-
-      //Widget aScreen = datamodel.getFirstPage(_name);
       Map param0 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: 45,
@@ -77,7 +67,9 @@ class MyDetailNew extends StatelessWidget {
                   : IconButton(
                       icon: Icon(Icons.arrow_back),
                       onPressed: () {
-                        Navigator.pop(context);
+                        datamodel.finishme(context);
+                        //Navigator.pop(context);
+                        //Navigator.removeRoute(context, datamodel.lastRoute);
                       },
                     ),
               Expanded(
@@ -101,7 +93,6 @@ class MyDetailNew extends StatelessWidget {
         gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
         gChild: Column(
           children: [
-            //Expanded(child: PicsAndButtons(datamodel.screenLists[_name])),
             Expanded(child: MyScreen(_param, backcolor)),
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
