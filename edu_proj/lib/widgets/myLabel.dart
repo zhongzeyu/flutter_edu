@@ -27,9 +27,12 @@ class MyLabel extends StatelessWidget {
             //textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontWeight: _param[gFontWeight], //FontWeight.bold,
+              fontWeight: (datamodel.isNull(_param[gIsBold]))
+                  ? _param[gFontWeight]
+                  : FontWeight.bold, //FontWeight.bold,
               fontSize: _param[gFontSize],
-              color: labelColor,
+              color:
+                  (datamodel.isNull(_param[gIsBold])) ? labelColor : Colors.red,
               //backgroundColor: Colors.transparent
             ),
           );

@@ -31,7 +31,7 @@ class MyItem extends StatelessWidget {
       } else if (_param[gType] == gBtns) {
         if (_param[gAction] == gTable) {
           List detail = _param[gItems];
-
+          //print('============== param is ' + _param.toString());
           List list = datamodel.getButtonsList(thisContext, detail, 0, _param);
 
           result.add(Wrap(

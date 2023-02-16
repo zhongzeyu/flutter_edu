@@ -124,6 +124,8 @@ class DataModel extends ChangeNotifier {
   Map<dynamic, dynamic> _i10nMap = {};
   Queue _requestList = new Queue();
   Queue _requestListRunning = new Queue();
+  Map _itemSubList = {};
+
   //dynamic get email => _email;
   dynamic get token => _token;
 
@@ -145,6 +147,7 @@ class DataModel extends ChangeNotifier {
   Set _loadingTable = {};
   Size _sceenSize = new Size(800, 1000);
   Size get sceenSize => _sceenSize;
+  Map get itemSubList => _itemSubList;
   setScreenSize(Size size) {
     _sceenSize = size;
   }
@@ -777,7 +780,7 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  formSubmit(BuildContext context, formid) {
+  formSubmit(BuildContext context, formid) async {
     try {
       //print('        ------------------    formSubmit 0');
       Map<dynamic, dynamic> obj = _formLists[formid][gItems];
@@ -1157,6 +1160,7 @@ class DataModel extends ChangeNotifier {
                       : (i == 1)
                           ? _monthMap[list[j]]
                           : list[j],
+                  gIsBold: 'true'
                 }, backcolor),
                 onTap: () {
                   if (list[j].indexOf('~') > 0) {
@@ -1501,6 +1505,67 @@ class DataModel extends ChangeNotifier {
     }
 
     return TextInputType.text;
+  }
+
+  setItemI(item, value, formname, tablename, id) {
+    bool isForm = !isNull(formname);
+    dynamic name = formname;
+    if (!isForm) {
+      name = tablename;
+    }
+    if (isForm) {
+      setFormValue(name, item.value[gId], value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      setFormNextFocus(name, item.value[gId]);
+    } else {
+      setTableValue(name, item.value[gId], id, value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      setTableNextFocus(name, item.value[gId], id);
+    }
+
+    dpList[gAddress + '_' + name + '_' + item.value[gId]] = null;
+
+    myNotifyListeners();
+  }
+
+  getItemSubWidget(item, formname, context, tablename, id) {
+    int backcolor = Colors.white.value;
+    if (item.value[gType] == gAddress &&
+        dpList[gAddress + '_' + formname + '_' + item.value[gId]] != null &&
+        dpList[gAddress + '_' + formname + '_' + item.value[gId]].length > 0) {
+      return SizedBox(
+        height: gSizedboxHeight,
+        child: ListView.builder(
+            itemCount: dpList[gAddress + '_' + formname + '_' + item.value[gId]]
+                .length,
+            itemBuilder: (context, index) {
+              final anItem =
+                  dpList[gAddress + '_' + formname + '_' + item.value[gId]]
+                      [index];
+              return InkWell(
+                child: MyLabel({
+                  gLabel: anItem,
+                }, backcolor),
+                onTap: () {
+                  setItemI(item, anItem, formname, tablename, id);
+                  //setItemI(item, anItem, datamodel);
+                },
+              );
+            }),
+      );
+    } else if (item.value[gType] == gDate &&
+        (item.value[gShowDetail] ?? false)) {
+      item.value[gFocus] = true;
+      return getDatePicker(
+          item.value[gValue], backcolor, context, formname, item.value[gId]);
+    } else if (item.value[gDroplist] != '' &&
+        (item.value[gShowDetail] ?? false)) {
+      item.value[gFocus] = true;
+      return getDPPicker(item, backcolor, context, formname, item.value[gId]);
+    }
+    return SizedBox(
+      height: 0.0,
+    );
   }
 
   getLocalComponents(context, aColor) {
@@ -1934,6 +1999,19 @@ class DataModel extends ChangeNotifier {
     return getTableDataFromWhere(tableData, where);
   }
 
+  getTableRowByID(tableName, id) {
+    Map tableInfo = _tableList[tableName];
+    if (tableInfo[gData] == null) {
+      return null;
+    }
+
+    List result = getTableDataFromWhere(tableInfo, "id=" + id);
+    if (result.length > 0) {
+      return result.elementAt(0);
+    }
+    return null;
+  }
+
   getTableDataFromWhere(tableData, where) {
     //filter the table data by where condition
     Map mapWhere = {};
@@ -2102,6 +2180,21 @@ class DataModel extends ChangeNotifier {
     }
     detail.add({gLabel: gPdf, gTableID: tableName, gWidth: 60, gData: data});
     detail.add({gLabel: gExcel, gTableID: tableName, gWidth: 60, gData: data});
+
+    if (tableInfo[gAttr][gCanEdit]) {
+      if (!isNull(_tableList[tableName][gDataModified])) {
+        Map dataModified = _tableList[tableName][gDataModified];
+        if (dataModified != null && dataModified.length > 0) {
+          detail.add({
+            gLabel: gSaveall,
+            gTableID: tableName,
+            gWidth: 100,
+            gData: data
+          });
+        }
+      }
+    }
+
     param[index++] = {
       gItem: jsonEncode(
           {gType: gBtns, gAction: gTable, gValue: tableName, gItems: detail})
@@ -2468,6 +2561,10 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gSave &&
         data[gTableID] != null) {
       saveTableModify(data, context);
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gSaveall &&
+        data[gTableID] != null) {
+      saveTableModifyAll(data, context);
     } else if (data[gLabel] != null &&
         data[gLabel] == gAddnew &&
         data[gTableID] != null) {
@@ -3526,11 +3623,32 @@ class DataModel extends ChangeNotifier {
     });
   }
 
-  saveTableModify(data, context) {
+  saveTableModify(data, context) async {
     var tableName = data[gActionid] ?? data[gTableID];
-
+    print('==== data is ' + data.toString());
     showFormTableEdit(data, context);
-    formSubmit(context, tableName);
+    await formSubmit(context, tableName);
+  }
+
+  saveTableModifyAll(data, context) {
+    var tableName = data[gActionid] ?? data[gTableID];
+    if (isNull(_tableList[tableName][gDataModified])) {
+      print('======== dataModified is null: ' + tableName.toString());
+      return;
+    }
+    Map dataModified = _tableList[tableName][gDataModified];
+    if (dataModified.length < 1) {
+      print('======== dataModified  length is 0: ' + tableName.toString());
+      return;
+    }
+
+    dataModified.keys.forEach((id) async {
+      dynamic dataRow = getTableRowByID(tableName, id);
+      //print('======== dataRow 0 is ' + dataModified[id].toString());
+      //print('======== dataRow 1 is ' + dataRow.toString());
+      showFormTableEditTableID(context, tableName, id, dataRow);
+      await formSubmit(context, tableName);
+    });
   }
 
   showFormEdit(data, context) {
@@ -3556,10 +3674,15 @@ class DataModel extends ChangeNotifier {
   showFormTableEdit(data, context) {
     var tableName = data[gActionid] ?? data[gTableID];
     var id = data[gRow][gId];
+    dynamic dataRow = data[gRow];
+    showFormTableEditTableID(context, tableName, id, dataRow);
+  }
+
+  showFormTableEditTableID(context, tableName, id, dataRow) {
     dynamic dataRowModified = _tableList[tableName][gDataModified][id];
     Map<dynamic, dynamic> formDefine = _formLists[tableName];
     Map<dynamic, dynamic> items = formDefine[gItems];
-    dynamic dataRow = data[gRow];
+
     items.entries.forEach((item) {
       var colId = item.value[gId];
       item.value[gOldvalue] = (dataRow == null) ? null : dataRow[colId];
@@ -4019,11 +4142,17 @@ class DataModel extends ChangeNotifier {
     }
     data[gNode] = nodes;*/
   }
-
   showMsg(context, dynamic result, backcolor) {
+    Widget w = MyLabel({
+      gLabel: result.toString(),
+    }, backcolor);
+    showPopup(context, w);
+  }
+
+  showPopup(context, Widget w) {
     /*Navigator.of(context)
         .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);*/
-    backcolor = Colors.white.value;
+    int backcolor = Colors.white.value;
     showModalBottomSheet(
         context: context,
         builder: (context) {
@@ -4037,16 +4166,6 @@ class DataModel extends ChangeNotifier {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    constraints: BoxConstraints(maxHeight: _scrollHeight),
-                    child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      child: MyLabel({
-                        gLabel: result.toString(),
-                      }, backcolor),
-                    ),
-                  ),
-                  Divider(),
 //取消按钮
                   //添加个点击事件
                   InkWell(
@@ -4058,7 +4177,15 @@ class DataModel extends ChangeNotifier {
                         gLabel: gClose,
                       }, backcolor),
                     ),
-                  )
+                  ),
+                  Divider(),
+                  Container(
+                    constraints: BoxConstraints(maxHeight: _scrollHeight),
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: w,
+                    ),
+                  ),
                 ],
               ),
             ),

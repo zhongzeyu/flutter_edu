@@ -129,6 +129,7 @@ const gImg = 'img';
 const gImgID = 'imgID';
 const gImgTitle = 'imgTitle';
 const gInvalidname = 'invalidname';
+const gIsBold = 'isBold';
 const gIsFile = 'isFile';
 const gIsHidden = 'isHidden';
 const gIsKeyword = 'isKeyword';
@@ -217,6 +218,7 @@ const gRow = 'row';
 const gRowsPerPage = 'rowsPerPage';
 
 const gSave = 'Save';
+const gSaveall = 'Save all';
 const gScreen = 'screen';
 const gSearch = 'Search';
 const gServerdown = 'serverdown';

@@ -14,44 +14,185 @@ class DateFormatter extends TextInputFormatter {
   DateFormatter();
   String dateFormatter(value) {
     String nums = value.replaceAll(RegExp(r'[\D]'), '');
-    String year = nums;
-    if (nums.length > 4) {
+    String sSeg = '-';
+    List listFormat = [];
+    listFormat.add({
+      'locFrom': 0,
+      'locTo': 4,
+      'type': 'i',
+      'min': 1900,
+      'max': 3000,
+      'value:': ''
+    });
+    listFormat.add({
+      'locFrom': 4,
+      'locTo': 6,
+      'type': 'm',
+      'min': 1,
+      'max': 12,
+      'value:': ''
+    });
+    listFormat.add({
+      'locFrom': 6,
+      'locTo': 8,
+      'type': 'd',
+      'min': 1,
+      'max': 31,
+      'value:': ''
+    });
+    String result = '';
+    /*for (int i = 0; i < listFormat.length; i++) {
+      Map element = listFormat.elementAt(i);
+      String type = element['type'];
+      int locTo = element['locTo'];
+      int locFrom = element['locFrom'];
+      if (nums.length > locFrom) {
+        String aSeg = '';
+        for (int j = 0; j < ; j++) {
+          Map aJ = listFormat.elementAt(j);
+          result = result + aSeg + aJ['value'];
+          aSeg = sSeg;
+        }
+        return result;
+      }
+      if (nums.length < locTo) {
+
+      }
+    }
+
+    String sFormat = 'dddd-dd-dd';*/
+    if (nums.length < 5) {
+      return nums;
+    }
+    if (nums.length == 5) {
+      String lastChar = nums.characters.last;
+      result = nums.substring(0, 4) + sSeg;
+      if (int.parse(lastChar) > 1) {
+        result = result + '0';
+      }
+      result = result + lastChar;
+      return result;
+    }
+    if (nums.length == 6) {
+      result = nums.substring(0, 4) + sSeg;
+      int iValue = int.parse(nums.substring(4, 6));
+      if (iValue > 12 || iValue < 1) {
+        return nums.substring(0, 4);
+      }
+      result = result + nums.substring(4, 6);
+      return result;
+    }
+    if (nums.length == 7) {
+      String lastChar = nums.characters.last;
+      result = nums.substring(0, 4) + sSeg + nums.substring(4, 6) + sSeg;
+      if (int.parse(lastChar) > 3) {
+        result = result + '0';
+      }
+      result = result + lastChar;
+      return result;
+    }
+    if (nums.length > 7) {
+      result = nums.substring(0, 4) + sSeg + nums.substring(4, 6);
+      int iValue = int.parse(nums.substring(6, 8));
+      if (iValue > 31 || iValue < 1) {
+        return result;
+      }
+      if (iValue > 28) {
+        int month = int.parse(nums.substring(4, 6));
+        if (month == 2) {
+          int year = int.parse(nums.substring(0, 4));
+          if (year % 4 > 0) {
+            return result;
+          }
+        }
+        if (iValue == 31 &&
+            (month == 4 || month == 6 || month == 9 || month == 11)) {
+          return result;
+        }
+      }
+      result = result + sSeg + nums.substring(6, 8);
+      return result;
+    }
+    return nums;
+    /*String year = nums;
+
+    if (nums.length > 3) {
       year = nums.substring(0, 4);
     }
-    String month = '';
     if (nums.length > 4) {
+      return year + seg;
+    }
+
+    String sDefault = '';
+    String month = sDefault;
+    if (nums.length > 4) {
+      month = nums.substring(4, 5);
+      int intValue = int.parse(month);
+      if (intValue > 1) {
+        month = '0' + month;
+        return year + '-' + month;
+      }
+    }
+    if (nums.length > 5) {
       month = nums.substring(4, 6);
+      int intValue = int.parse(month);
+      if (intValue > 12) {
+        return year + '-';
+      }
     }
-    String day = '';
+    String day = sDefault;
     if (nums.length > 6) {
-      day = nums.substring(6);
+      day = nums.substring(6, 7);
+      int intValue = int.parse(day);
+      if (intValue > 3) {
+        day = '0' + day;
+        return year + '-' + month + '-' + day;
+      }
     }
-    if (day.length > 2) {
-      day = day.substring(0, 2);
+
+    if (nums.length > 7) {
+      day = nums.substring(6, 8);
+      int intValue = int.parse(day);
+      if (intValue > 31) {
+        return year + '-' + month + '-';
+      }
     }
+
+    return year + '-' + month + '-' + day;*/
+    //}
+
+    //if (nums.length > 4) {
+    /* day = nums.substring(6, 8);
+    //}
+    //if (day.length > 2) {
+    //day = day.substring(0, 2);
+    //}
     if (month.length > 0) {
       int intMonth = int.parse(month);
       if (intMonth > 12 || intMonth < 1) {
-        month = '';
-        day = '';
+        month = sDefault;
+        day = sDefault;
       } else {
-        if (day.length > 0) {
+        if (intMonth > 1 && intMonth < 10) {
+          month = '0' + month;
+          day = sDefault;
+        } else if (day.length > 0) {
           int intDay = int.parse(day);
           if (intDay > 31 || intDay < 1) {
-            day = '';
+            day = sDefault;
           } else if (intDay == 31 &&
               (intMonth == 2 ||
                   intMonth == 4 ||
                   intMonth == 6 ||
                   intMonth == 9 ||
                   intMonth == 11)) {
-            day = '';
+            day = sDefault;
           } else if (intDay == 30 && intMonth == 2) {
-            day = '';
+            day = sDefault;
           } else if (intDay == 29) {
             int intYear = int.parse(year);
             if (intYear % 4 > 0) {
-              day = '';
+              day = sDefault;
             }
           }
         }
@@ -68,7 +209,7 @@ class DateFormatter extends TextInputFormatter {
       }
     }
 
-    return result;
+    return result;*/
   }
 
   @override
@@ -140,6 +281,7 @@ class TextFieldWidget extends StatelessWidget {
     //item.value[gValue] = text;
     if (!isForm) {
       datamodel.setTableValueItem(tablename, item.value[gId], id, text);
+      datamodel.myNotifyListeners();
       return;
     }
 
@@ -210,7 +352,16 @@ class TextFieldWidget extends StatelessWidget {
             onPressed: () {
               item.value[gShowDetail] = !(item.value[gShowDetail] ?? false);
               datamodel.setFormFocus(formname, item.value[gId]);
-              datamodel.myNotifyListeners();
+
+              if (item.value[gShowDetail]) {
+                Widget w = datamodel.getItemSubWidget(
+                    item, formname, context, tablename, id);
+                //getItemSubWidget(item);
+                //Widget w = datamodel.itemSubList[item.value[gType]];
+                datamodel.showPopup(context, w);
+              }
+
+              //datamodel.myNotifyListeners();
             });
       }
       if (item.value[gType] == gEmail) {
@@ -317,6 +468,11 @@ class TextFieldWidget extends StatelessWidget {
           return [DateFormatter()];
         }
         return null;
+      }
+
+      Widget subWidget = getItemSubWidget(item);
+      if (subWidget != null) {
+        datamodel.itemSubList[item.value[gType]] = subWidget;
       }
 
       return Container(
@@ -443,7 +599,6 @@ class TextFieldWidget extends StatelessWidget {
                 },
               ),
             ),
-            getItemSubWidget(item),
           ],
         ),
       );
