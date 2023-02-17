@@ -31,8 +31,7 @@ class MyLabel extends StatelessWidget {
                   ? _param[gFontWeight]
                   : FontWeight.bold, //FontWeight.bold,
               fontSize: _param[gFontSize],
-              color:
-                  (datamodel.isNull(_param[gIsBold])) ? labelColor : Colors.red,
+              color: labelColor,
               //backgroundColor: Colors.transparent
             ),
           );

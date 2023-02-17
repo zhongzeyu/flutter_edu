@@ -343,23 +343,21 @@ class TextFieldWidget extends StatelessWidget {
       if ((item.value[gType] == gDate || item.value[gDroplist] != '') &&
           (item.value[gType] ?? "") != gLabel) {
         item.value[gSuffixIcon] = IconButton(
-            icon: Icon(
-              (item.value[gShowDetail] ?? false)
-                  ? Icons.arrow_upward
-                  : Icons.arrow_downward,
-              //color: Theme.of(context).disabledColor,
-            ),
+            icon: Icon(Icons.date_range_outlined
+
+                //color: Theme.of(context).disabledColor,
+                ),
             onPressed: () {
-              item.value[gShowDetail] = !(item.value[gShowDetail] ?? false);
+              item.value[gShowDetail] = true;
               datamodel.setFormFocus(formname, item.value[gId]);
 
-              if (item.value[gShowDetail]) {
-                Widget w = datamodel.getItemSubWidget(
-                    item, formname, context, tablename, id);
-                //getItemSubWidget(item);
-                //Widget w = datamodel.itemSubList[item.value[gType]];
-                datamodel.showPopup(context, w);
-              }
+              //if (item.value[gShowDetail]) {
+              Widget w = datamodel.getItemSubWidget(
+                  item, formname, context, tablename, id, backcolor);
+              //getItemSubWidget(item);
+              //Widget w = datamodel.itemSubList[item.value[gType]];
+              datamodel.showPopup(context, w, 250.0);
+              //}
 
               //datamodel.myNotifyListeners();
             });
@@ -418,7 +416,7 @@ class TextFieldWidget extends StatelessWidget {
         }*/
         txtController.text = aValue;
       }
-      getItemSubWidget(item) {
+      getItemSubWidget(item, backcolor) {
         if (item.value[gType] == gAddress &&
             datamodel.dpList[
                     gAddress + '_' + formname + '_' + item.value[gId]] !=
@@ -470,7 +468,7 @@ class TextFieldWidget extends StatelessWidget {
         return null;
       }
 
-      Widget subWidget = getItemSubWidget(item);
+      Widget subWidget = getItemSubWidget(item, backcolor);
       if (subWidget != null) {
         datamodel.itemSubList[item.value[gType]] = subWidget;
       }

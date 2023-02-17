@@ -1,0 +1,117 @@
+import 'package:edu_proj/config/constants.dart';
+import 'package:edu_proj/models/DataModel.dart';
+import 'package:edu_proj/widgets/myGlass.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'myLabel.dart';
+
+class MyPopup extends StatelessWidget {
+  final Map _param;
+  MyPopup(this._param);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DataModel>(builder: (context, datamodel, child) {
+      int btnColorValue = _param[gColor] ?? Colors.blue.value;
+      Color btnColor = Color(btnColorValue);
+      Color backColor = datamodel.fromBdckcolor(btnColorValue);
+      if (btnColor == Colors.transparent) {
+        backColor = btnColor;
+      }
+      Map param0 = {
+        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 2.0,
+        gHeight: (_param[gHeight] - 60.0) ??
+            MediaQuery.of(context).size.height * 0.5,
+        gBorderRadius: _param[gBorderRadius] ?? 10.0,
+        gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
+        gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
+        gBlur: _param[gBlur] ?? 10.0,
+        gAlignment: _param[gAlignment] ?? Alignment.topLeft,
+        gBorder: _param[gBorder] ?? 2.0,
+        gColor: backColor,
+        gBackgroundColor: Colors.teal,
+        gChild: Container(
+          //constraints: BoxConstraints(maxHeight: _scrollHeight),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: _param[gWidget] ?? MyLabel(_param, btnColor.value),
+          ),
+        )
+      };
+      Map param = {
+        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 2.0,
+        gHeight: _param[gHeight] ?? MediaQuery.of(context).size.height * 0.6,
+        gBorderRadius: _param[gBorderRadius] ?? 10.0,
+        gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
+        gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
+        gBlur: _param[gBlur] ?? 10.0,
+        gAlignment: _param[gAlignment] ?? Alignment.topLeft,
+        gBorder: _param[gBorder] ?? 2.0,
+        gColor: btnColor,
+        gBackgroundColor: backColor, //Color.fromARGB(255, 218, 165, 32),
+        gChild: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            InkWell(
+              onTap: () {
+                datamodel.removeOverlay();
+              },
+              child: Align(
+                alignment: Alignment.topRight,
+                child: SizedBox(
+                  width: 80.0,
+                  child: Row(
+                    children: [
+                      MyLabel({
+                        gLabel: gClose,
+                      }, btnColorValue),
+                      SizedBox(
+                        width: 10.0,
+                      ),
+                      Icon(Icons.close_outlined)
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Divider(),
+            MyGlass(param0),
+            /*Container(
+              //constraints: BoxConstraints(maxHeight: _scrollHeight),
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: _param[gWidget] ?? MyLabel(_param, btnColor.value),
+              ),
+            ),*/
+          ],
+        )
+      };
+      /*final double _screenHeight = MediaQuery.of(context).size.height;
+      var _screenPadding = MediaQuery.of(context).viewPadding;
+
+      final double _scrollHeight =
+          (_screenHeight - _screenPadding.top - kToolbarHeight) * 0.7;*/
+      return Material(
+        color: Colors.transparent,
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 1.0,
+            child: DefaultTextStyle(
+              style: const TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 14.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: MyGlass(param),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+}

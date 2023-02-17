@@ -20,6 +20,7 @@ import 'package:edu_proj/widgets/myItem.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 //import 'package:edu_proj/widgets/myPaginatedDataTable.dart';
 import 'package:edu_proj/widgets/myPic.dart';
+import 'package:edu_proj/widgets/myPopup.dart';
 import 'package:edu_proj/widgets/myScreen.dart';
 //import 'package:edu_proj/widgets/myTree.dart';
 //import 'package:edu_proj/widgets/picsAndButtons.dart';
@@ -125,6 +126,7 @@ class DataModel extends ChangeNotifier {
   Queue _requestList = new Queue();
   Queue _requestListRunning = new Queue();
   Map _itemSubList = {};
+  OverlayEntry overlayEntry;
 
   //dynamic get email => _email;
   dynamic get token => _token;
@@ -1528,8 +1530,8 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  getItemSubWidget(item, formname, context, tablename, id) {
-    int backcolor = Colors.white.value;
+  getItemSubWidget(item, formname, context, tablename, id, backcolor) {
+    //int backcolor = Colors.white.value;
     if (item.value[gType] == gAddress &&
         dpList[gAddress + '_' + formname + '_' + item.value[gId]] != null &&
         dpList[gAddress + '_' + formname + '_' + item.value[gId]].length > 0) {
@@ -3005,6 +3007,11 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
+  removeOverlay() {
+    overlayEntry?.remove();
+    overlayEntry = null;
+  }
+
   requestListadd(data) {
     requestListaddCommon(data, false);
   }
@@ -3476,6 +3483,60 @@ class DataModel extends ChangeNotifier {
         return alert;
       },
     );
+  }
+
+  createDragTarget({Offset offset, BuildContext context, view}) {
+    removeOverlay();
+
+    overlayEntry = new OverlayEntry(builder: (context) {
+      bool isLeft = true;
+      if (offset.dx + 100 > MediaQuery.of(context).size.width / 2) {
+        isLeft = false;
+      }
+      double maxY = MediaQuery.of(context).size.height - 100;
+
+      return new Positioned(
+          top: offset.dy < 50
+              ? 50
+              : offset.dy < maxY
+                  ? offset.dy
+                  : maxY,
+          left: isLeft ? 0 : null,
+          right: isLeft ? null : 0,
+          child: DragTarget(
+              onWillAccept: (data) {
+                return true;
+              },
+              onAccept: (data) {},
+              onLeave: (data) {},
+              builder: (BuildContext context, List incoming, List rejected) {
+                return buildDraggable(context, view);
+              }));
+    });
+    Overlay.of(context).insert(overlayEntry);
+  }
+
+  buildDraggable(context, view) {
+    return new Draggable(
+      child: view,
+      feedback: view,
+      onDragStarted: () {},
+      onDragEnd: (detail) {
+        createDragTarget(offset: detail.offset, context: context, view: view);
+      },
+      childWhenDragging: Container(),
+      ignoringFeedbackSemantics: false,
+    );
+  }
+
+  showPopup(context, w, h) {
+    removeOverlay();
+    overlayEntry = OverlayEntry(builder: (BuildContext context) {
+      return new Positioned(
+          top: MediaQuery.of(context).size.height * 0.7,
+          child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));
+    });
+    Overlay.of(context).insert(overlayEntry);
   }
 
   showPDF(actionData, context) async {
@@ -4146,10 +4207,10 @@ class DataModel extends ChangeNotifier {
     Widget w = MyLabel({
       gLabel: result.toString(),
     }, backcolor);
-    showPopup(context, w);
+    showPopupBasic(context, w);
   }
 
-  showPopup(context, Widget w) {
+  showPopupBasic(context, Widget w) {
     /*Navigator.of(context)
         .pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);*/
     int backcolor = Colors.white.value;
