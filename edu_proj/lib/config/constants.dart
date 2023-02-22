@@ -178,6 +178,7 @@ const gNumber = 'number';
 const gNull = 'null';
 
 const gOldvalue = 'oldvalue';
+const gOpacity = 'opacity';
 const gOptLock = "zzyoptlock";
 const gOrderby = "orderby";
 const gOriginalValue = "originalValue";
@@ -221,6 +222,7 @@ const gSave = 'Save';
 const gSaveall = 'Save all';
 const gScreen = 'screen';
 const gSearch = 'Search';
+const gSelectedList = 'selectedlist';
 const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';

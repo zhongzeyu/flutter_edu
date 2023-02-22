@@ -36,6 +36,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../widgets/myListPicker.dart';
 import '../widgets/pdfScreen.dart';
 
 class DataModel extends ChangeNotifier {
@@ -631,7 +632,6 @@ class DataModel extends ChangeNotifier {
         //Directory dir = await getApplicationDocumentsDirectory();
         Directory dir = await getTemporaryDirectory();
         dynamic tempPath = dir.path;
-        //showMsg(context, tempPath);
 
         filePath = '$tempPath/$filename';
         File file = File(filePath);
@@ -1097,11 +1097,14 @@ class DataModel extends ChangeNotifier {
   setDplistYear() {
     if ((_dpList[gYear] ?? []).length < 1) {
       int iYear = new DateTime.now().year;
-      int iYearMiddle = iYear - 49;
+      //int iYearMiddle = iYear - 49;
       List result = [];
-      result.add((iYear - 100).toString() + '~' + (iYearMiddle - 1).toString());
+      for (int i = 100; i >= -5; i--) {
+        result.add((iYear - i).toString());
+      }
+      /*result.add((iYear - 100).toString() + '~' + (iYearMiddle - 1).toString());
       result.add(iYearMiddle.toString());
-      result.add((iYearMiddle + 1).toString() + '~' + (iYear + 2).toString());
+      result.add((iYearMiddle + 1).toString() + '~' + (iYear + 2).toString());*/
 
       _dpList[gYear] = result;
       List resultMonth = [];
@@ -1240,10 +1243,10 @@ class DataModel extends ChangeNotifier {
 
   getDatePicker(aDate, backcolor, context, formname, id) {
     if (isNull(aDate)) {
-      aDate = '';
-      /*var now = new DateTime.now();
+      //aDate = '';
+      var now = new DateTime.now();
       var formatter = new DateFormat('yyyy-MM-dd');
-      aDate = formatter.format(now);*/
+      aDate = formatter.format(now);
     }
     setDplistYear();
     /*List controller = [
@@ -1252,7 +1255,7 @@ class DataModel extends ChangeNotifier {
       ScrollController()
     ];*/
     List selectedIndex = [-1, -1, -1];
-    List sizeList = [200.0, 40.0, 40.0];
+    //List sizeList = [200.0, 40.0, 40.0];
     List sList = [gYear, gMonth, gDay];
     for (int i = 0; i < sList.length; i++) {}
     List sListValue = aDate.split('-');
@@ -1271,8 +1274,8 @@ class DataModel extends ChangeNotifier {
         }
       }
     }
-
-    Widget result = Column(
+    //print('========selectedIndex is ' + selectedIndex.toString());
+    /*Widget result = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         //spacing: 20.0, //gap between adjacent items
         //runSpacing: 4.0, //gap between lines
@@ -1280,9 +1283,19 @@ class DataModel extends ChangeNotifier {
         //children: getDatePickerItems(controller, sizeList, sList, backcolor,
         //  selectedIndex, context)));
         children: getDatePickerItems(
-            sizeList, sList, backcolor, selectedIndex, context, formname, id));
-
-    //_debouncer.run(() => getDatePickerAfter(controller, selectedIndex, sList));
+            sizeList, sList, backcolor, selectedIndex, context, formname, id));*/
+    Map param = {
+      gAction: gLocalAction,
+      gAction1: gDroplist,
+      gHeight: null,
+      gSelectedList: selectedIndex,
+      gData: sList,
+      gWidth: [100.0, 80.0, 80.0],
+      gFormName: formname,
+      gId: id,
+      gType: gDate
+    };
+    Widget result = MyListPicker(param, backcolor);
     return result;
   }
 
@@ -2686,13 +2699,30 @@ class DataModel extends ChangeNotifier {
     } else if (!isNull(data[gType]) && data[gType] == gAddress) {
       searchAddress(data, context);
     } else if (!isNull(data[gAction1])) {
-      businessFunc(data[gAction1], context);
+      businessFunc(data[gAction1], context, data);
     }
   }
 
-  businessFunc(funcName, context) {
+  businessFunc(funcName, context, data) {
     if (funcName == "forgetpassword") {
       forgetpassword(context);
+    } else if (funcName == gDroplist) {
+      if (data[gType] == gDate) {
+        print('===  businessFunc requestFirst is ' + data.toString());
+        print('===  businessFunc data[gRow] is ' + data[gRow].toString());
+        if (data[gRow] < 2) {
+          var sYear = dpList[gYear][data[gSelectedList][0]].toString();
+          var sMonth = dpList[gMonth][data[gSelectedList][1]].toString();
+          var sDay = dpList[gDay][data[gSelectedList][2]].toString();
+          print('=========bsinessFunc, ymd is ' +
+              sYear +
+              '-' +
+              sMonth +
+              '-' +
+              sDay);
+          setDplistDay(sYear, sMonth);
+        }
+      }
     }
   }
 
@@ -3532,9 +3562,10 @@ class DataModel extends ChangeNotifier {
   showPopup(context, w, h) {
     removeOverlay();
     overlayEntry = OverlayEntry(builder: (BuildContext context) {
-      return new Positioned(
+      return MyPopup({gWidget: w, gHeight: h});
+      /*return new Positioned(
           top: MediaQuery.of(context).size.height * 0.7,
-          child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));
+          child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));*/
     });
     Overlay.of(context).insert(overlayEntry);
   }
@@ -3839,6 +3870,15 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
+  setFormFocusItemForce(item) {
+    if ((item.value[gIsHidden] ?? "false") != gTrue &&
+        (item.value[gType] ?? "") != gHidden) {
+      item.value[gFocus] = true;
+      return true;
+    }
+    return false;
+  }
+
   setTableFocusItem(tableid, item, id) {
     if ((item.value[gIsHidden] ?? "false") != gTrue &&
         (item.value[gType] ?? "") != gHidden) {
@@ -3867,8 +3907,12 @@ class DataModel extends ChangeNotifier {
     }
     Map<dynamic, dynamic> items = _formLists[formid][gItems];
     items.entries.forEach((item) {
-      item.value[gFocus] = false;
+      if (item.value[gFocus] ?? false == true) {
+        item.value[gFocus] = false;
+        return;
+      }
     });
+    return;
   }
 
   setFormNextFocus(formid, colId) {
@@ -3877,13 +3921,91 @@ class DataModel extends ChangeNotifier {
       return;
     }
     //print('============    1');
-    setFormNextFocusFalse(formid);
+
     //print('============    2');
-    Map<dynamic, dynamic> items = _formLists[formid][gItems];
+    Map<dynamic, dynamic> itemsMap = _formLists[formid][gItems];
     //print('============    3');
-    bool beginFocus = false;
+    //bool beginFocus = false;
     //print('============    4');
-    items.entries.forEach((item) {
+    /*
+    找到当前字段
+    找到下一个空且可编辑字段，设为焦点
+    如果未找到，则找到下一个最邻接可编辑字段设为焦点
+    如果未找到，退出（将自身设为焦点）
+    */
+    List items = [];
+    itemsMap.entries.forEach((item) {
+      items.add(item);
+    });
+
+    dynamic itemThis;
+    int iLoc = 0;
+    for (int i = 0; i < items.length; i++) {
+      itemThis = items[i];
+      print('=======   itemThis is ' + itemThis.toString());
+      if (itemThis.value[gId] == colId) {
+        iLoc = i;
+        break;
+      }
+    }
+    print('------------ 0 iLoc is ' + iLoc.toString());
+    //找到下一个空且可编辑字段，设为焦点
+    {
+      int iLocNext = iLoc + 1;
+      if (iLocNext >= items.length) {
+        iLocNext = 0;
+      }
+
+      while (iLocNext != iLoc) {
+        dynamic item = items[iLocNext];
+        if (setFormFocusItem(item)) {
+          setFormNextFocusFalse(formid);
+          setFormFocusItem(item);
+          return;
+        }
+        iLocNext = iLocNext + 1;
+        if (iLocNext >= items.length) {
+          iLocNext = 0;
+        }
+      }
+      print('------------ 1 can not find next empty item ');
+      //如果本身空且可编辑，设为焦点
+      if (setFormFocusItem(itemThis)) {
+        setFormNextFocusFalse(formid);
+        setFormFocusItem(itemThis);
+        print('------------ 1.1 set this item focus ');
+        return;
+      }
+    }
+    //找到下一个可编辑字段，设为焦点
+    print('----------- 2 find next editable item');
+    {
+      int iLocNext = iLoc + 1;
+      if (iLocNext >= items.length) {
+        iLocNext = 0;
+      }
+
+      while (iLocNext != iLoc) {
+        dynamic item = items[iLocNext];
+        if (setFormFocusItemForce(item)) {
+          setFormNextFocusFalse(formid);
+          setFormFocusItemForce(item);
+          return;
+        }
+        iLocNext = iLocNext + 1;
+        if (iLocNext >= items.length) {
+          iLocNext = 0;
+        }
+      }
+    }
+    print('----------- 3 set self focus if editable');
+    //将自身设为焦点
+    if (itemThis != null) {
+      setFormNextFocusFalse(formid);
+      setFormFocusItemForce(itemThis);
+    }
+
+    /* items.entries.forEach((item) {
       if (beginFocus) {
         if (setFormFocusItem(item)) {
           return;
@@ -3894,7 +4016,29 @@ class DataModel extends ChangeNotifier {
         beginFocus = true;
       }
     });
-    //print('============    5');
+
+    beginFocus = false;
+    //print('============    4');
+    items.entries.forEach((item) {
+      if (beginFocus) {
+        if (setFormFocusItemForce(item)) {
+          return;
+        }
+      }
+
+      if (item.value[gId] == colId) {
+        beginFocus = true;
+      }
+    });
+
+    items.entries.forEach((item) {
+      if (beginFocus) {
+        if (setFormFocusItemForce(item)) {
+          return;
+        }
+      }
+    });
+    //print('============    5');*/
   }
 
   setTableNextFocus(tableId, colId, id) {
@@ -4207,7 +4351,7 @@ class DataModel extends ChangeNotifier {
     Widget w = MyLabel({
       gLabel: result.toString(),
     }, backcolor);
-    showPopupBasic(context, w);
+    showPopup(context, w, 200.0);
   }
 
   showPopupBasic(context, Widget w) {

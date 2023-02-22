@@ -356,7 +356,7 @@ class TextFieldWidget extends StatelessWidget {
                   item, formname, context, tablename, id, backcolor);
               //getItemSubWidget(item);
               //Widget w = datamodel.itemSubList[item.value[gType]];
-              datamodel.showPopup(context, w, 250.0);
+              datamodel.showPopup(context, w, null);
               //}
 
               //datamodel.myNotifyListeners();

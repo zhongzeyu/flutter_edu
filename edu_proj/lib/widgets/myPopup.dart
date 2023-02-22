@@ -20,9 +20,10 @@ class MyPopup extends StatelessWidget {
         backColor = btnColor;
       }
       Map param0 = {
-        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 2.0,
-        gHeight: (_param[gHeight] - 60.0) ??
-            MediaQuery.of(context).size.height * 0.5,
+        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 12.0,
+        gHeight: datamodel.isNull(_param[gHeight])
+            ? MediaQuery.of(context).size.height * 0.5
+            : _param[gHeight] - 60.0,
         gBorderRadius: _param[gBorderRadius] ?? 10.0,
         gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
         gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
@@ -40,8 +41,10 @@ class MyPopup extends StatelessWidget {
         )
       };
       Map param = {
-        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 2.0,
-        gHeight: _param[gHeight] ?? MediaQuery.of(context).size.height * 0.6,
+        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 12.0,
+        gHeight: datamodel.isNull(_param[gHeight])
+            ? MediaQuery.of(context).size.height * 0.6
+            : _param[gHeight],
         gBorderRadius: _param[gBorderRadius] ?? 10.0,
         gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
         gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
@@ -49,7 +52,10 @@ class MyPopup extends StatelessWidget {
         gAlignment: _param[gAlignment] ?? Alignment.topLeft,
         gBorder: _param[gBorder] ?? 2.0,
         gColor: btnColor,
+        gOpacity: 1.0,
         gBackgroundColor: backColor, //Color.fromARGB(255, 218, 165, 32),
+        //gBackgroundColor: Color.fromARGB(255, 29, 1, 1),
+
         gChild: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

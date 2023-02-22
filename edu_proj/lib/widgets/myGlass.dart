@@ -37,8 +37,8 @@ class MyGlass extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    param[gColor].withOpacity(0.5),
-                    param[gColor].withOpacity(0.3),
+                    param[gColor].withOpacity(param[gOpacity] ?? 0.5),
+                    param[gColor].withOpacity(param[gOpacity] ?? 0.3),
                   ],
                   stops: const [
                     0.3,
