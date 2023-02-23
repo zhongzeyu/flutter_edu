@@ -1066,34 +1066,6 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  setDplistDay(sYear, sMonth) {
-    if (sYear == '' || sMonth == '') {
-      _dpList[gDay] = [];
-      return;
-    }
-    if (sMonth == '01' ||
-        sMonth == '03' ||
-        sMonth == '05' ||
-        sMonth == '07' ||
-        sMonth == '08' ||
-        sMonth == '10' ||
-        sMonth == '12') {
-      _dpList[gDay] = _dpList[gDay31];
-      return;
-    }
-    if (sMonth == '04' || sMonth == '06' || sMonth == '09' || sMonth == '11') {
-      _dpList[gDay] = _dpList[gDay30];
-      return;
-    }
-    int iYear = int.parse(sYear);
-    if (iYear % 4 == 0) {
-      _dpList[gDay] = _dpList[gDay29];
-      return;
-    }
-    _dpList[gDay] = _dpList[gDay28];
-    return;
-  }
-
   setDplistYear() {
     if ((_dpList[gYear] ?? []).length < 1) {
       int iYear = new DateTime.now().year;
@@ -1108,15 +1080,9 @@ class DataModel extends ChangeNotifier {
 
       _dpList[gYear] = result;
       List resultMonth = [];
-      List resultDay28 = [];
-      List resultDay29 = [];
-      List resultDay30 = [];
       List resultDay31 = [];
       for (int i = 1; i < 10; i++) {
         resultMonth.add('0' + i.toString());
-        resultDay28.add('0' + i.toString());
-        resultDay29.add('0' + i.toString());
-        resultDay30.add('0' + i.toString());
         resultDay31.add('0' + i.toString());
       }
       for (int i = 10; i < 13; i++) {
@@ -1124,22 +1090,11 @@ class DataModel extends ChangeNotifier {
       }
       _dpList[gMonth] = resultMonth;
 
-      for (int i = 10; i < 29; i++) {
-        resultDay28.add(i.toString());
-        resultDay29.add(i.toString());
-        resultDay30.add(i.toString());
+      for (int i = 10; i < 32; i++) {
         resultDay31.add(i.toString());
       }
-      resultDay29.add('29');
-      resultDay30.add('29');
-      resultDay31.add('29');
-      resultDay30.add('30');
-      resultDay31.add('30');
-      resultDay31.add('31');
-      _dpList[gDay28] = resultDay28;
-      _dpList[gDay29] = resultDay29;
-      _dpList[gDay30] = resultDay30;
-      _dpList[gDay31] = resultDay31;
+
+      _dpList[gDay] = resultDay31;
     }
   }
 
@@ -1224,7 +1179,6 @@ class DataModel extends ChangeNotifier {
                     myNotifyListeners();
                     return;
                   }
-                  setDplistDay(dateList[0], dateList[1]);
 
                   myNotifyListeners();
                   //setItemI(item, anItem, datamodel);
@@ -1265,7 +1219,6 @@ class DataModel extends ChangeNotifier {
     if (sListValue.length < 3) {
       sListValue.add('');
     }
-    setDplistDay(sListValue[0], sListValue[1]);
     for (int j = 0; j < sList.length; j++) {
       for (int i = 0; i < _dpList[sList[j]].length; i++) {
         if (_dpList[sList[j]][i] == sListValue[j]) {
@@ -2720,7 +2673,6 @@ class DataModel extends ChangeNotifier {
               sMonth +
               '-' +
               sDay);
-          setDplistDay(sYear, sMonth);
         }
       }
     }
@@ -3942,13 +3894,13 @@ class DataModel extends ChangeNotifier {
     int iLoc = 0;
     for (int i = 0; i < items.length; i++) {
       itemThis = items[i];
-      print('=======   itemThis is ' + itemThis.toString());
+      //print('=======   itemThis is ' + itemThis.toString());
       if (itemThis.value[gId] == colId) {
         iLoc = i;
         break;
       }
     }
-    print('------------ 0 iLoc is ' + iLoc.toString());
+    //print('------------ 0 iLoc is ' + iLoc.toString());
     //找到下一个空且可编辑字段，设为焦点
     {
       int iLocNext = iLoc + 1;
@@ -3968,17 +3920,17 @@ class DataModel extends ChangeNotifier {
           iLocNext = 0;
         }
       }
-      print('------------ 1 can not find next empty item ');
+      //print('------------ 1 can not find next empty item ');
       //如果本身空且可编辑，设为焦点
       if (setFormFocusItem(itemThis)) {
         setFormNextFocusFalse(formid);
         setFormFocusItem(itemThis);
-        print('------------ 1.1 set this item focus ');
+        // print('------------ 1.1 set this item focus ');
         return;
       }
     }
     //找到下一个可编辑字段，设为焦点
-    print('----------- 2 find next editable item');
+    //print('----------- 2 find next editable item');
     {
       int iLocNext = iLoc + 1;
       if (iLocNext >= items.length) {
@@ -3998,47 +3950,12 @@ class DataModel extends ChangeNotifier {
         }
       }
     }
-    print('----------- 3 set self focus if editable');
+    //print('----------- 3 set self focus if editable');
     //将自身设为焦点
     if (itemThis != null) {
       setFormNextFocusFalse(formid);
       setFormFocusItemForce(itemThis);
     }
-
-    /* items.entries.forEach((item) {
-      if (beginFocus) {
-        if (setFormFocusItem(item)) {
-          return;
-        }
-      }
-
-      if (item.value[gId] == colId) {
-        beginFocus = true;
-      }
-    });
-
-    beginFocus = false;
-    //print('============    4');
-    items.entries.forEach((item) {
-      if (beginFocus) {
-        if (setFormFocusItemForce(item)) {
-          return;
-        }
-      }
-
-      if (item.value[gId] == colId) {
-        beginFocus = true;
-      }
-    });
-
-    items.entries.forEach((item) {
-      if (beginFocus) {
-        if (setFormFocusItemForce(item)) {
-          return;
-        }
-      }
-    });
-    //print('============    5');*/
   }
 
   setTableNextFocus(tableId, colId, id) {
@@ -4108,24 +4025,24 @@ class DataModel extends ChangeNotifier {
         找原值如果相等， 退出
         添加修改值
     */
-    //print('=================   0');
+    print('=================   0');
     if (isNull(_tableList[tableid][gDataModified])) {
       _tableList[tableid][gDataModified] = {};
     }
-    //print('=================   1');
+    print('=================   1');
     Map dataModified = _tableList[tableid][gDataModified];
-    //print('=================   2');
+    print('=================   2');
     if (dataModified.containsKey(id)) {
-      //print('=================   2 0');
+      print('=================   2 0');
       Map mValue = dataModified[id];
-      //print('=================   2 1');
+      print('=================   2 1');
       if (!isNull(mValue[colId]) && mValue[colId] == value) {
         return;
       }
-      //print('=================   2 2');
+      print('=================   2 2');
       dynamic originalValue = getTableOriginalValue(tableid, id, colId);
-      //print('=================   2 3 originalValue is ' +
-      // originalValue.toString());
+      print('=================   2 3 originalValue is ' +
+          originalValue.toString());
       if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
         mValue.remove(colId);
         if (mValue.length < 1) {
@@ -4133,23 +4050,23 @@ class DataModel extends ChangeNotifier {
         }
         return;
       }
-      //print('=================   2 4');
+      print('=================   2 4');
       mValue[colId] = value;
-      //print('=================   2 5');
+      print('=================   2 5');
       return;
     }
-    //print('=================   3');
+    print('=================   3');
     dynamic originalValue = getTableOriginalValue(tableid, id, colId);
     if (!isNull(originalValue) && originalValue == value) {
       return;
     }
-    //print('=================   4');
+    print('=================   4');
     if (isNull(dataModified[id])) {
       dataModified[id] = {};
     }
-    //print('=================   5');
+    print('=================   5');
     dataModified[id][colId] = value;
-    //print('=================   6');
+    print('=================   6');
   }
 
   getTableOriginalValue(tableid, id, colId) {

@@ -13,7 +13,9 @@ import 'myLabel.dart';
 class DateFormatter extends TextInputFormatter {
   DateFormatter();
   String dateFormatter(value) {
+    //print('========  dateFormatter value is ' + value.toString());
     String nums = value.replaceAll(RegExp(r'[\D]'), '');
+    //print('========  dateFormatter nums is ' + nums.toString());
     String sSeg = '-';
     List listFormat = [];
     listFormat.add({
@@ -216,10 +218,11 @@ class DateFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
     String text = newValue.text;
-
-    if (newValue.selection.baseOffset == 0) {
+    print('============  formatEditUpdate 0');
+    /*if (newValue.selection.baseOffset == 0) {
       return newValue;
-    }
+    }*/
+    print('============  formatEditUpdate 1');
 
     return newValue.copyWith(
         text: dateFormatter(text),
@@ -284,7 +287,6 @@ class TextFieldWidget extends StatelessWidget {
       datamodel.myNotifyListeners();
       return;
     }
-
     if (item.value[gDroplist] == '') {
       item.value[gValue] = text;
     }
@@ -292,9 +294,11 @@ class TextFieldWidget extends StatelessWidget {
       item.value[gAction] = gLocalAction;
       item.value[gFormName] = formname;
     }
+    print('--------------  textChange 1' + (item.value[gAction] ?? ''));
     if ((item.value[gAction] ?? '') == '') {
       return;
     }
+    print('--------------  textChange 2');
     item.value[gSearch] = text;
     datamodel.sendRequestOne(
         item.value[gAction], item, item.value[gContext] ?? context);

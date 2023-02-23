@@ -19,27 +19,7 @@ class MyPopup extends StatelessWidget {
       if (btnColor == Colors.transparent) {
         backColor = btnColor;
       }
-      Map param0 = {
-        gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 12.0,
-        gHeight: datamodel.isNull(_param[gHeight])
-            ? MediaQuery.of(context).size.height * 0.5
-            : _param[gHeight] - 60.0,
-        gBorderRadius: _param[gBorderRadius] ?? 10.0,
-        gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
-        gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
-        gBlur: _param[gBlur] ?? 10.0,
-        gAlignment: _param[gAlignment] ?? Alignment.topLeft,
-        gBorder: _param[gBorder] ?? 2.0,
-        gColor: backColor,
-        gBackgroundColor: Colors.teal,
-        gChild: Container(
-          //constraints: BoxConstraints(maxHeight: _scrollHeight),
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: _param[gWidget] ?? MyLabel(_param, btnColor.value),
-          ),
-        )
-      };
+
       Map param = {
         gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 12.0,
         gHeight: datamodel.isNull(_param[gHeight])
@@ -82,7 +62,16 @@ class MyPopup extends StatelessWidget {
               ),
             ),
             Divider(),
-            MyGlass(param0),
+            SizedBox(
+                height: datamodel.isNull(_param[gHeight])
+                    ? MediaQuery.of(context).size.height * 0.5
+                    : _param[gHeight] - 60.0,
+                //constraints: BoxConstraints(maxHeight: _scrollHeight),
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: _param[gWidget] ?? MyLabel(_param, btnColor.value),
+                )),
+            //MyGlass(param0),
             /*Container(
               //constraints: BoxConstraints(maxHeight: _scrollHeight),
               child: SingleChildScrollView(
