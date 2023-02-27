@@ -93,7 +93,9 @@ class MyForm extends StatelessWidget {
           result.add(InkWell(
             child: MyGlass(paramSubmit),
             onTap: () {
-              if (!_formKey.currentState.validate()) {}
+              if (!_formKey.currentState.validate()) {
+                return;
+              }
               _formKey.currentState.save();
               datamodel.formSubmit(context, _formName);
             },

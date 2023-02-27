@@ -18,7 +18,6 @@ class MyDetailNew extends StatelessWidget {
     List mapActions = [];
     List mapBottoms = [];
     bool isHome = false;
-    print('--------- myDetailNew');
     int thisbackcolor = backcolor ?? Colors.black.value;
     _param.forEach((key, value) {
       if (value == null) {

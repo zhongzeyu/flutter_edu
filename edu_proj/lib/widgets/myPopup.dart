@@ -19,6 +19,40 @@ class MyPopup extends StatelessWidget {
       if (btnColor == Colors.transparent) {
         backColor = btnColor;
       }
+      getActions(context, backcolor) {
+        List actions =
+            datamodel.getActionsBasic(_param[gActions], context, backcolor);
+        return actions;
+      }
+
+      Map param0 = {
+        gWidth: MediaQuery.of(context).size.width,
+        gHeight: 45,
+        gBorderRadius: 10.0,
+        gMargin: const EdgeInsets.all(1.5),
+        gPadding: const EdgeInsets.all(5.5),
+        gBlur: 10.0,
+        gAlignment: Alignment.center,
+        gBorder: 2.0,
+        gColor: Colors.blue,
+        gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
+        gChild: Row(
+            //mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: Icon(Icons.close_outlined),
+                tooltip: datamodel.getSCurrent(gClose),
+                onPressed: () {
+                  datamodel.removeOverlay();
+                  //Navigator.pop(context);
+                  //Navigator.removeRoute(context, datamodel.lastRoute);
+                },
+              ),
+              Expanded(
+                  child: datamodel.getTitle(_param, context, backColor.value)),
+              Row(children: getActions(context, backColor.value)),
+            ])
+      };
 
       Map param = {
         gWidth: _param[gWidth] ?? MediaQuery.of(context).size.width - 12.0,
@@ -39,28 +73,7 @@ class MyPopup extends StatelessWidget {
         gChild: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            InkWell(
-              onTap: () {
-                datamodel.removeOverlay();
-              },
-              child: Align(
-                alignment: Alignment.topRight,
-                child: SizedBox(
-                  width: 80.0,
-                  child: Row(
-                    children: [
-                      MyLabel({
-                        gLabel: gClose,
-                      }, btnColorValue),
-                      SizedBox(
-                        width: 10.0,
-                      ),
-                      Icon(Icons.close_outlined)
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            MyGlass(param0),
             Divider(),
             SizedBox(
                 height: datamodel.isNull(_param[gHeight])

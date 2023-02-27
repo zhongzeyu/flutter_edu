@@ -57,6 +57,14 @@ class TableData extends DataTableSource {
       if (!_dataModel.isNull(_param[gDataModified]) &&
           !_dataModel.isNull(_param[gDataModified][dataRow[gId]])) {
         labelValue = gSave;
+        actionList.add(MyButton({
+          gLabel: gCancel,
+          gAction: gLocalAction,
+          gTableID: _param[gTableID],
+          gRow: dataRow,
+          gContext: _context,
+          gWidth: 50.0
+        }));
       }
       actionList.add(MyButton({
         gLabel: labelValue,

@@ -27,6 +27,7 @@ import 'package:edu_proj/widgets/myScreen.dart';
 import 'package:edu_proj/widgets/radios.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -127,6 +128,7 @@ class DataModel extends ChangeNotifier {
   Queue _requestList = new Queue();
   Queue _requestListRunning = new Queue();
   Map _itemSubList = {};
+  Map _dpListDefaultIndex = {};
   OverlayEntry overlayEntry;
 
   //dynamic get email => _email;
@@ -143,6 +145,7 @@ class DataModel extends ChangeNotifier {
   Map<dynamic, dynamic> get tabList => _tabList;
   Map<dynamic, dynamic> get dpList => _dpList;
   Map<dynamic, dynamic> get whereList => _whereList;
+  Map get dpListDefaultIndex => _dpListDefaultIndex;
 
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
@@ -571,7 +574,7 @@ class DataModel extends ChangeNotifier {
   }
 
   clear(context) async {
-    print('  ================== clear');
+    //print('  ================== clear');
     //setFormValue(gLogin, gEmail, '');
     //setFormValue(gLogin, gPassword, '');
     _token = '';
@@ -584,6 +587,109 @@ class DataModel extends ChangeNotifier {
     _menuLists = {};
     _dpList = {};
     removeAllScreens(context);
+  }
+
+  static String getFormatter(value, type) {
+    if (type == gDate) {
+      String nums = value.replaceAll(RegExp(r'[\D]'), '');
+      String sSeg = '-';
+      List listFormat = [];
+      listFormat.add({
+        'locFrom': 0,
+        'locTo': 4,
+        'type': 'i',
+        'min': 1900,
+        'max': 3000,
+        'value:': ''
+      });
+      listFormat.add({
+        'locFrom': 4,
+        'locTo': 6,
+        'type': 'm',
+        'min': 1,
+        'max': 12,
+        'value:': ''
+      });
+      listFormat.add({
+        'locFrom': 6,
+        'locTo': 8,
+        'type': 'd',
+        'min': 1,
+        'max': 31,
+        'value:': ''
+      });
+      String result = '';
+
+      if (nums.length < 5) {
+        return nums;
+      }
+      if (nums.length == 5) {
+        String lastChar = nums.characters.last;
+        result = nums.substring(0, 4) + sSeg;
+        if (int.parse(lastChar) > 1) {
+          result = result + '0';
+        }
+        result = result + lastChar;
+        return result;
+      }
+      if (nums.length == 6) {
+        result = nums.substring(0, 4) + sSeg;
+        int iValue = int.parse(nums.substring(4, 6));
+        if (iValue > 12 || iValue < 1) {
+          return nums.substring(0, 4);
+        }
+        result = result + nums.substring(4, 6);
+        return result;
+      }
+      if (nums.length == 7) {
+        String lastChar = nums.characters.last;
+        result = nums.substring(0, 4) + sSeg + nums.substring(4, 6) + sSeg;
+        if (int.parse(lastChar) > 3) {
+          result = result + '0';
+        }
+        result = result + lastChar;
+        return result;
+      }
+      if (nums.length > 7) {
+        result = nums.substring(0, 4) + sSeg + nums.substring(4, 6);
+        int iValue = int.parse(nums.substring(6, 8));
+        if (iValue > 31 || iValue < 1) {
+          return result;
+        }
+        if (iValue > 28) {
+          int month = int.parse(nums.substring(4, 6));
+          if (month == 2) {
+            int year = int.parse(nums.substring(0, 4));
+            if (year % 4 > 0) {
+              return result;
+            }
+          }
+          if (iValue == 31 &&
+              (month == 4 || month == 6 || month == 9 || month == 11)) {
+            return result;
+          }
+        }
+        result = result + sSeg + nums.substring(6, 8);
+        return result;
+      }
+      return nums;
+    } else if (type == gPhone) {
+      String nums = value.replaceAll(RegExp(r'[\D]'), '');
+      String internationalPhoneFormatted = nums.length >= 1
+          ? (nums.length > 0 ? ' (' : '') +
+              nums.substring(0, nums.length >= 3 ? 3 : null) +
+              (nums.length > 3 ? ') ' : '') +
+              (nums.length > 3
+                  ? nums.substring(3, nums.length >= 6 ? 6 : null) +
+                      (nums.length > 6
+                          ? '-' +
+                              nums.substring(6, nums.length >= 10 ? 10 : null)
+                          : '')
+                  : '')
+          : nums;
+      return internationalPhoneFormatted;
+    }
+    return value;
   }
 
   decryptByDES(ciphertext) {
@@ -654,7 +760,7 @@ class DataModel extends ChangeNotifier {
     //print('======== filePath is $filePath');
   }
 
-  downloadAddress(searchTxt, context, haveNext) async {
+  Future<List> downloadAddress(searchTxt, context, haveNext) async {
     var searchType = "SearchTerm";
     List tmpListAddress = [];
     bool needFindUS = false;
@@ -679,7 +785,6 @@ class DataModel extends ChangeNotifier {
         });
       }
     }
-
     List<dynamic> result = [];
     //result.add('');
     for (int i = 0; i < tmpListAddress.length; i++) {
@@ -697,11 +802,10 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  Future downloadAddressDetail(param, context) async {
+  Future<List> downloadAddressDetail(param, context) async {
     List result = [];
     try {
       dynamic myUrl = MyConfig.URLAddress.name + param;
-
       //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
       Response response = (await httpClient.get(Uri.parse(myUrl)));
       //var response = await request;
@@ -709,11 +813,11 @@ class DataModel extends ChangeNotifier {
         Utf8Decoder decode = new Utf8Decoder();
         Map data = Map.of(jsonDecode(decode.convert(response.bodyBytes)));
         if (data == null) {
-          return;
+          return result;
         }
         List itemList = data["Items"];
         if (itemList.length < 1) {
-          return;
+          return result;
         }
         itemList.forEach((element) {
           Map oneItem = Map.of(element);
@@ -753,13 +857,13 @@ class DataModel extends ChangeNotifier {
   }
 
   finishme(context) async {
-    print('============ finishme');
+    //print('============ finishme');
     Navigator.pop(context);
 
-    if (Navigator == null || Navigator.canPop(context)) {
+    /*if (Navigator == null || Navigator.canPop(context)) {
       print('============ canPop');
       clear(context);
-    }
+    }*/
   }
 
   //Widget
@@ -870,7 +974,7 @@ class DataModel extends ChangeNotifier {
       }
       alert(context, gNochange);
     } catch (e) {
-      //print('======exception is ' + e.toString());
+      print('======exception is ' + e.toString());
       //throw e;
       showMsg(context, e, null);
     }
@@ -901,7 +1005,17 @@ class DataModel extends ChangeNotifier {
 
   getActions(List param, context, int backcolor) {
     List<Widget> result = getLocalComponentsList(context, backcolor);
+    List<Widget> actions = getActionsBasic(param, context, backcolor);
+    if (actions != null) {
+      for (int i = 0; i < actions.length; i++) {
+        result.add(actions[i]);
+      }
+    }
+    return result;
+  }
 
+  getActionsBasic(List param, context, int backcolor) {
+    List<Widget> result = [];
     if (param != null && param.length > 0) {
       for (int i = 0; i < param.length; i++) {
         //dynamic pi = _param[gActions][i];
@@ -955,6 +1069,15 @@ class DataModel extends ChangeNotifier {
       }
     }
     return result;
+  }
+
+  getItemFormatters(item) {
+    if ((item.value[gType] ?? "") == gPhone) {
+      return [InternationalPhoneFormatter()];
+    } else if ((item.value[gType] ?? "") == gDate) {
+      return [DateFormatter()];
+    }
+    return null;
   }
 
   getMapSortByKey(Map map, bool isAsc) {
@@ -1195,21 +1318,14 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getDatePicker(aDate, backcolor, context, formname, id) {
+  getDatePicker(aDate, backcolor, context, formname, id, actions) {
     if (isNull(aDate)) {
-      //aDate = '';
       var now = new DateTime.now();
       var formatter = new DateFormat('yyyy-MM-dd');
       aDate = formatter.format(now);
     }
     setDplistYear();
-    /*List controller = [
-      ScrollController(),
-      ScrollController(),
-      ScrollController()
-    ];*/
     List selectedIndex = [-1, -1, -1];
-    //List sizeList = [200.0, 40.0, 40.0];
     List sList = [gYear, gMonth, gDay];
     for (int i = 0; i < sList.length; i++) {}
     List sListValue = aDate.split('-');
@@ -1221,22 +1337,15 @@ class DataModel extends ChangeNotifier {
     }
     for (int j = 0; j < sList.length; j++) {
       for (int i = 0; i < _dpList[sList[j]].length; i++) {
-        if (_dpList[sList[j]][i] == sListValue[j]) {
+        if (_dpList[sList[j]][i].toString().indexOf(sListValue[j].toString()) >
+            -1) {
           selectedIndex[j] = i;
+          _dpListDefaultIndex[sList[j]] = i;
           break;
         }
       }
     }
-    //print('========selectedIndex is ' + selectedIndex.toString());
-    /*Widget result = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        //spacing: 20.0, //gap between adjacent items
-        //runSpacing: 4.0, //gap between lines
-        //direction: Axis.horizontal,
-        //children: getDatePickerItems(controller, sizeList, sList, backcolor,
-        //  selectedIndex, context)));
-        children: getDatePickerItems(
-            sizeList, sList, backcolor, selectedIndex, context, formname, id));*/
+
     Map param = {
       gAction: gLocalAction,
       gAction1: gDroplist,
@@ -1248,22 +1357,50 @@ class DataModel extends ChangeNotifier {
       gId: id,
       gType: gDate
     };
-    Widget result = MyListPicker(param, backcolor);
+    Widget result = MyListPicker(param, backcolor, actions);
     return result;
   }
 
-  getDPPicker(item, backcolor, context, formname, id) {
-    List sList =
-        getDpListByKey(item.value[gDroplist], context, item.value[gValue]);
+  getDPPicker(item, backcolor, context, formname, id, actions) {
+    //print('========  getDPPicker 0');
+    var dpid = item.value[gDroplist];
+    //print('========  getDPPicker 1: ' + dpid.toString());
+    //print('========  getDPPicker 1 0: ' + item.value[gValue].toString());
+    List sList = getDpListByKey(dpid, context, item.value[gValue]);
+    //print('========  getDPPicker 2: ');
     int selectedIndex = -1;
+    //print('========  getDPPicker 3: ');
+    _dpListDefaultIndex[dpid] = -1;
+    bool isLabel = false;
+    if (item.value[gType] == gAddress) {
+      isLabel = true;
+    }
+    //print('========  getDPPicker 4: ');
     for (int i = 0; i < sList.length; i++) {
+      selectedIndex = 0;
+      _dpListDefaultIndex[dpid] = 0;
       if (sList[i] == item.value[gValue]) {
         selectedIndex = i;
+        _dpListDefaultIndex[dpid] = i;
         break;
       }
     }
+    //print('========  getDPPicker 5: ');
+    Map param = {
+      gAction: gLocalAction,
+      gAction1: gDroplist,
+      gHeight: null,
+      gSelectedList: [selectedIndex],
+      gData: [item.value[gDroplist]],
+      gWidth: [null],
+      gFormName: formname,
+      gId: id,
+      gType: gDate,
+      gIsLabel: isLabel
+    };
+    Widget result = MyListPicker(param, backcolor, actions);
 
-    Widget result = Column(
+    /*Widget result = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         //spacing: 20.0, //gap between adjacent items
         //runSpacing: 4.0, //gap between lines
@@ -1271,13 +1408,13 @@ class DataModel extends ChangeNotifier {
         //children: getDatePickerItems(controller, sizeList, sList, backcolor,
         //  selectedIndex, context)));
         children: getDPPickerItems(
-            sList, backcolor, selectedIndex, context, formname, id));
+            sList, backcolor, selectedIndex, context, formname, id));*/
 
     //_debouncer.run(() => getDatePickerAfter(controller, selectedIndex, sList));
     return result;
   }
 
-  getDPPickerItems(list, backcolor, selectedIndex, context, formname, id) {
+  /*getDPPickerItems(list, backcolor, selectedIndex, context, formname, id) {
     List<Widget> result = [];
 
     List<Widget> subList = [];
@@ -1311,7 +1448,7 @@ class DataModel extends ChangeNotifier {
         children: subList));
 
     return result;
-  }
+  }*/
 
   /*getDatePickerAfter(List controller, selectedIndex, sList) {
     for (int i = 0; i < controller.length; i++) {
@@ -1387,13 +1524,19 @@ class DataModel extends ChangeNotifier {
     getTableByTableID(gZzydictionary, gLabel + "='" + dpid + "'", context);
   }*/
   getDpListByKey(key, context, value) {
+    //print('========  getDpListByKey 0: key is ' + key.toString());
     List result = [];
     if (_dpList.containsKey(key)) {
-      result = _dpList[key];
+      //print('========  getDpListByKey 0 1: ');
+      result = _dpList[key] ?? [];
     }
+
+    //print('========  getDpListByKey 1: ' + result.toString());
+
     if (result.length < 1) {
       result.add(value);
     }
+    //print('========  getDpListByKey 2');
 
     return result;
   }
@@ -1496,20 +1639,36 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  getItemSubWidget(item, formname, context, tablename, id, backcolor) {
-    //int backcolor = Colors.white.value;
-    if (item.value[gType] == gAddress &&
-        dpList[gAddress + '_' + formname + '_' + item.value[gId]] != null &&
-        dpList[gAddress + '_' + formname + '_' + item.value[gId]].length > 0) {
+  getItemSubWidget(
+      item, formname, context, tablename, id, backcolor, actions) async {
+    backcolor = Colors.blue.value;
+    //print('===========  getItemSubWidget 0:');
+    var name = formname ?? tablename;
+
+    Map data = item.value;
+    if (data[gType] == gAddress) {
+      var searchTxt = data[gSearch] ?? data[gValue];
+      if ((searchTxt).length < 3) {
+        return;
+      }
+      var dpid = gAddress + '_' + name + '_' + data[gId];
+      _dpList[dpid] = [];
+      //
+      List result = await downloadAddress(searchTxt, context, false);
+      List resultSort = getArrayMatch(result, searchTxt);
+      _dpList[dpid] = resultSort;
+      item.value[gDroplist] = dpid;
+    }
+    /*if (data[gType] == gAddress &&
+        dpList[gAddress + '_' + name + '_' + data[gId]] != null &&
+        dpList[gAddress + '_' + name + '_' + data[gId]].length > 0) {
       return SizedBox(
         height: gSizedboxHeight,
         child: ListView.builder(
-            itemCount: dpList[gAddress + '_' + formname + '_' + item.value[gId]]
-                .length,
+            itemCount: dpList[gAddress + '_' + name + '_' + data[gId]].length,
             itemBuilder: (context, index) {
               final anItem =
-                  dpList[gAddress + '_' + formname + '_' + item.value[gId]]
-                      [index];
+                  dpList[gAddress + '_' + name + '_' + data[gId]][index];
               return InkWell(
                 child: MyLabel({
                   gLabel: anItem,
@@ -1521,16 +1680,17 @@ class DataModel extends ChangeNotifier {
               );
             }),
       );
-    } else if (item.value[gType] == gDate &&
-        (item.value[gShowDetail] ?? false)) {
-      item.value[gFocus] = true;
+    } else */
+    //print('===========  getItemSubWidget 1:');
+    if (data[gType] == gDate && (data[gShowDetail] ?? false)) {
+      data[gFocus] = true;
       return getDatePicker(
-          item.value[gValue], backcolor, context, formname, item.value[gId]);
-    } else if (item.value[gDroplist] != '' &&
-        (item.value[gShowDetail] ?? false)) {
-      item.value[gFocus] = true;
-      return getDPPicker(item, backcolor, context, formname, item.value[gId]);
+          data[gValue], backcolor, context, name, data[gId], actions);
+    } else if (data[gDroplist] != '' && (data[gShowDetail] ?? false)) {
+      data[gFocus] = true;
+      return getDPPicker(item, backcolor, context, name, data[gId], actions);
     }
+    //print('===========  getItemSubWidget 2:');
     return SizedBox(
       height: 0.0,
     );
@@ -2474,8 +2634,49 @@ class DataModel extends ChangeNotifier {
       );
   
   }*/
+  isItemValueValid(item, value) {
+    var result = isItemValueValidStr(item, value);
+    return result == '';
+  }
+
+  isItemValueValidStr(item, value) {
+    if (item.value[gRequired] && value.isEmpty) {
+      return getSCurrent(gIsrequired + "{" + item.value[gLabel] + "}");
+    }
+    if (item.value[gType] == gEmail &&
+        !value.isEmpty &&
+        !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+            .hasMatch(value)) {
+      return getSCurrent(gInvalidname + "{" + gEmail + "}");
+    }
+    if (item.value[gMinLength] != null &&
+        item.value[gMinLength] != '0' &&
+        value.length < item.value[gMinLength]) {
+      return getSCurrent(gMininput +
+          "{" +
+          item.value[gMinLength] +
+          "}{" +
+          item.value[gUnit] +
+          "}");
+    }
+    if (item.value[gLength] != null &&
+        item.value[gLength] != '0' &&
+        value.length > item.value[gLength]) {
+      return getSCurrent(gMaxinput +
+          "{" +
+          item.value[gLength] +
+          "}{" +
+          item.value[gUnit] +
+          "}");
+    }
+
+    return '';
+  }
+
   isNull(aValue) {
-    if (aValue == null || aValue == '' || aValue == gNull) {
+    if (aValue == null ||
+        aValue.toString() == '' ||
+        aValue.toString() == gNull) {
       return true;
     }
     return false;
@@ -2518,7 +2719,33 @@ class DataModel extends ChangeNotifier {
       MapEntry me = requestFirst[gData];
       data = me.value;
     }
-    if (data[gLabel] != null &&
+    if (data[gLabel] != null && data[gLabel] == gConfirm) {
+      if (data[gItem] != null) {
+        MapEntry item = data[gItem];
+        var id = data[gId];
+        var type = item.value[gType];
+        String value = '';
+        if (type == gDate || !isNull(item.value[gDroplist])) {
+          if (type == gDate) {
+            value = _dpList[gYear][_dpListDefaultIndex[gYear]] +
+                '-' +
+                _dpList[gMonth][_dpListDefaultIndex[gMonth]] +
+                '-' +
+                _dpList[gDay][_dpListDefaultIndex[gDay]];
+          } else if (!isNull(item.value[gDroplist])) {
+            //print('=========   confirm: ' + item.toString());
+            var dpid = item.value[gDroplist];
+            value = _dpList[dpid][_dpListDefaultIndex[dpid]];
+          }
+          bool status = setItemAferDPClick(
+              item, value, data[gFormid], data[gTableID], id);
+
+          if (status) {
+            removeOverlay();
+          }
+        }
+      }
+    } else if (data[gLabel] != null &&
         data[gLabel] == gEdit &&
         data[gTableID] != null) {
       //var tableId = data[gTableID];
@@ -2529,6 +2756,10 @@ class DataModel extends ChangeNotifier {
         data[gLabel] == gSave &&
         data[gTableID] != null) {
       saveTableModify(data, context);
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gCancel &&
+        data[gTableID] != null) {
+      cancelTableModify(data, context);
     } else if (data[gLabel] != null &&
         data[gLabel] == gSaveall &&
         data[gTableID] != null) {
@@ -2649,8 +2880,8 @@ class DataModel extends ChangeNotifier {
       searchTable(data, context);
     } else if (data[gLabel] != null && data[gLabel] == gLogout) {
       logOff(context);
-    } else if (!isNull(data[gType]) && data[gType] == gAddress) {
-      searchAddress(data, context);
+      /*} else if (!isNull(data[gType]) && data[gType] == gAddress) {
+      searchAddress(data, context);*/
     } else if (!isNull(data[gAction1])) {
       businessFunc(data[gAction1], context, data);
     }
@@ -2659,22 +2890,6 @@ class DataModel extends ChangeNotifier {
   businessFunc(funcName, context, data) {
     if (funcName == "forgetpassword") {
       forgetpassword(context);
-    } else if (funcName == gDroplist) {
-      if (data[gType] == gDate) {
-        print('===  businessFunc requestFirst is ' + data.toString());
-        print('===  businessFunc data[gRow] is ' + data[gRow].toString());
-        if (data[gRow] < 2) {
-          var sYear = dpList[gYear][data[gSelectedList][0]].toString();
-          var sMonth = dpList[gMonth][data[gSelectedList][1]].toString();
-          var sDay = dpList[gDay][data[gSelectedList][2]].toString();
-          print('=========bsinessFunc, ymd is ' +
-              sYear +
-              '-' +
-              sMonth +
-              '-' +
-              sDay);
-        }
-      }
     }
   }
 
@@ -3163,19 +3378,27 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  searchAddress(data, context) async {
+  /*searchAddress(data, context) async {
+    //print('=====  searchAddress :' + data.toString());
+    print('===============   searchAddress 0');
     var searchTxt = data[gSearch];
     if ((searchTxt + "").length < 3) {
       return;
     }
+    print('===============   searchAddress 0 1:' + data.toString());
     _dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = [];
+    print('===============   searchAddress 0 2');
     //
     List result = await downloadAddress(searchTxt, context, false);
+    print('===============   searchAddress 0 3');
     List resultSort = getArrayMatch(result, searchTxt);
+    print('===============   searchAddress 0 4');
     _dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = resultSort;
+    print('===============   searchAddress 0 5');
     //_dpList[gAddress + '_' + data[gFormName] + '_' + data[gId]] = result;
-    myNotifyListeners();
-  }
+    //myNotifyListeners();
+    print('===============   searchAddress 1');
+  }*/
 
   searchTable(data, context) {
     var tableId = data[gTableID];
@@ -3340,7 +3563,7 @@ class DataModel extends ChangeNotifier {
     for (int i = 0; i < thisList.length; i++) {
       Map<dynamic, dynamic> thisListI = thisList[i];
       var formID = thisListI[gFormName];
-      print('=========== setFormList formID is ' + formID);
+      //print('=========== setFormList formID is ' + formID);
 
       await setFormListOne(formID, thisListI);
       //print('=========== setFormList 0 ');
@@ -3432,6 +3655,32 @@ class DataModel extends ChangeNotifier {
     }
   }
 
+  setItemAferDPClick(item, value, formname, tablename, id) {
+    if (!isItemValueValid(item, value)) {
+      return false;
+    }
+    value = getFormatter(value, item.value[gType]);
+    bool isForm = !isNull(formname);
+    dynamic name = formname;
+    if (!isForm) {
+      name = tablename;
+    }
+    if (isForm) {
+      setFormValue(name, item.value[gId], value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      setFormNextFocus(name, item.value[gId]);
+    } else {
+      setTableValue(name, item.value[gId], id, value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      setTableNextFocus(name, item.value[gId], id);
+    }
+
+    dpList[gAddress + '_' + name + '_' + item.value[gId]] = null;
+
+    myNotifyListeners();
+    return true;
+  }
+
   showAlertDialog(BuildContext context, title, msg, requestFirst) {
     int backcolor = Colors.white.value;
     int frontcolor = Colors.black.value;
@@ -3511,10 +3760,10 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  showPopup(context, w, h) {
+  showPopup(context, w, h, actions) {
     removeOverlay();
     overlayEntry = OverlayEntry(builder: (BuildContext context) {
-      return MyPopup({gWidget: w, gHeight: h});
+      return MyPopup({gWidget: w, gHeight: h, gActions: actions});
       /*return new Positioned(
           top: MediaQuery.of(context).size.height * 0.7,
           child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));*/
@@ -3616,7 +3865,6 @@ class DataModel extends ChangeNotifier {
   }
 
   navigatorPush(context, Widget aScreen, msg) {
-    print('========  Navigatorpush msg: ' + msg);
     Route lastRoute = MaterialPageRoute(builder: (context) => aScreen);
     Navigator.push(context, lastRoute);
   }
@@ -3665,6 +3913,14 @@ class DataModel extends ChangeNotifier {
       item.value[gValue] = item.value[gDefaultValue];
       item.value[gTxtEditingController]..text = item.value[gDefaultValue];
     });
+  }
+
+  cancelTableModify(data, context) async {
+    var tableName = data[gActionid] ?? data[gTableID];
+    var id = data[gRow][gId];
+    Map dataModified = _tableList[tableName][gDataModified];
+    dataModified.remove(id);
+    myNotifyListeners();
   }
 
   saveTableModify(data, context) async {
@@ -3823,6 +4079,7 @@ class DataModel extends ChangeNotifier {
   }
 
   setFormFocusItemForce(item) {
+    //no matter it is null or not, auto move to next one
     if ((item.value[gIsHidden] ?? "false") != gTrue &&
         (item.value[gType] ?? "") != gHidden) {
       item.value[gFocus] = true;
@@ -3987,10 +4244,20 @@ class DataModel extends ChangeNotifier {
   }
 
   setTableValue(tableid, colId, id, value) {
+    /*print('============= setTableValue 0: ' +
+        tableid +
+        ',' +
+        colId +
+        ',' +
+        id +
+        ',' +
+        value);*/
     if (isNull(tableid)) {
       return;
     }
+    //print('============= setTableValue 1');
     setTableValueItem(tableid, colId, id, value);
+    //print('============= setTableValue 2');
   }
 
   getTableModifiedValue(tableid, colId, id) {
@@ -4025,24 +4292,16 @@ class DataModel extends ChangeNotifier {
         找原值如果相等， 退出
         添加修改值
     */
-    print('=================   0');
     if (isNull(_tableList[tableid][gDataModified])) {
       _tableList[tableid][gDataModified] = {};
     }
-    print('=================   1');
     Map dataModified = _tableList[tableid][gDataModified];
-    print('=================   2');
     if (dataModified.containsKey(id)) {
-      print('=================   2 0');
       Map mValue = dataModified[id];
-      print('=================   2 1');
       if (!isNull(mValue[colId]) && mValue[colId] == value) {
         return;
       }
-      print('=================   2 2');
       dynamic originalValue = getTableOriginalValue(tableid, id, colId);
-      print('=================   2 3 originalValue is ' +
-          originalValue.toString());
       if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
         mValue.remove(colId);
         if (mValue.length < 1) {
@@ -4050,23 +4309,17 @@ class DataModel extends ChangeNotifier {
         }
         return;
       }
-      print('=================   2 4');
       mValue[colId] = value;
-      print('=================   2 5');
       return;
     }
-    print('=================   3');
     dynamic originalValue = getTableOriginalValue(tableid, id, colId);
     if (!isNull(originalValue) && originalValue == value) {
       return;
     }
-    print('=================   4');
     if (isNull(dataModified[id])) {
       dataModified[id] = {};
     }
-    print('=================   5');
     dataModified[id][colId] = value;
-    print('=================   6');
   }
 
   getTableOriginalValue(tableid, id, colId) {
@@ -4268,7 +4521,7 @@ class DataModel extends ChangeNotifier {
     Widget w = MyLabel({
       gLabel: result.toString(),
     }, backcolor);
-    showPopup(context, w, 200.0);
+    showPopup(context, w, null, null);
   }
 
   showPopupBasic(context, Widget w) {
@@ -4512,5 +4765,48 @@ class Debouncer {
     }
 
     _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}
+
+class InternationalPhoneFormatter extends TextInputFormatter {
+  InternationalPhoneFormatter();
+  String internationalPhoneFormat(value) {
+    return DataModel.getFormatter(value, gPhone);
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String text = newValue.text;
+
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    return newValue.copyWith(
+        text: internationalPhoneFormat(text),
+        selection: new TextSelection.collapsed(
+            offset: internationalPhoneFormat(text).length));
+  }
+}
+
+class DateFormatter extends TextInputFormatter {
+  DateFormatter();
+  String dateFormatter(value) {
+    return DataModel.getFormatter(value, gDate);
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String text = newValue.text;
+    /*if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }*/
+
+    return newValue.copyWith(
+        text: dateFormatter(text),
+        selection:
+            new TextSelection.collapsed(offset: dateFormatter(text).length));
   }
 }

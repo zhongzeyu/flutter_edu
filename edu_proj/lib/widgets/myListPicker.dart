@@ -1,6 +1,7 @@
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'myLabel.dart';
@@ -20,7 +21,8 @@ class MyListPicker extends StatelessWidget {
    ,
   */
   final int backcolor;
-  MyListPicker(this._param, this.backcolor);
+  final List actions;
+  MyListPicker(this._param, this.backcolor, this.actions);
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +36,16 @@ class MyListPicker extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       double height =
           (_param[gHeight]) ?? MediaQuery.of(context).size.height * 0.4;
-      print('========== dplist is ' +
-          datamodel.dpList[_param[gData][0]].toString());
-      
+      double width = MediaQuery.of(context).size.width * 0.9;
+      //print('========== dplist is ' +          datamodel.dpList[_param[gData][0]].toString());
+      bool isLabel = false;
+      if (_param[gIsLabel] ?? false) {
+        isLabel = true;
+      }
+      Color labelColor = Colors.black;
+      if (backcolor != null) {
+        labelColor = datamodel.fromBdckcolor(backcolor);
+      }
 
       List selectedList = _param[gSelectedList];
       List<Widget> widgetList = [];
@@ -46,9 +55,10 @@ class MyListPicker extends StatelessWidget {
             width: 10.0,
           ));
         }
+        List dataList = List.of(datamodel.dpList[_param[gData][i]]);
         widgetList.add(SizedBox(
           height: height,
-          width: _param[gWidth][i],
+          width: _param[gWidth][i] ?? width,
           child: CupertinoPicker(
             scrollController: FixedExtentScrollController(
                 initialItem: _param[gSelectedList][i]),
@@ -58,18 +68,26 @@ class MyListPicker extends StatelessWidget {
             //magnification: 1.5, //当前选中item放大倍数
             itemExtent: 32.0, //行高
             onSelectedItemChanged: (value) {
-              _param[gRow] = i;
+              datamodel.dpListDefaultIndex[_param[gData][i]] = value;
+              /*_param[gRow] = i;
               _param[gIndex] = value;
               _param[gSelectedList][i] = value;
               datamodel.sendRequestOne(
-                  _param[gAction], _param, this._param[gContext] ?? context);
+                  _param[gAction], _param, this._param[gContext] ?? context);*/
             },
             //children: datamodel.dpList[param[gData][i]].map((data) {
-            children: (List.of(datamodel.dpList[_param[gData][i]])).map((data) {
-              return Center(
-                //child: MyLabel({gLabel: data}, backcolor),
-                child: MyLabel({gLabel: data}, backcolor),
-              );
+            children: (dataList).map((data) {
+              return isLabel
+                  ? Text(data,
+                      style: TextStyle(
+                        fontWeight: (datamodel.isNull(_param[gIsBold]))
+                            ? _param[gFontWeight]
+                            : FontWeight.bold, //FontWeight.bold,
+                        fontSize: _param[gFontSize],
+                        color: labelColor,
+                        //backgroundColor: Colors.transparent
+                      ))
+                  : MyLabel({gLabel: data}, backcolor);
             }).toList(),
           ),
         ));

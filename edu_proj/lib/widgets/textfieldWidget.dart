@@ -4,266 +4,9 @@ import 'dart:async';
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-//import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
 import 'package:provider/provider.dart';
 
-import 'myLabel.dart';
-
-class DateFormatter extends TextInputFormatter {
-  DateFormatter();
-  String dateFormatter(value) {
-    //print('========  dateFormatter value is ' + value.toString());
-    String nums = value.replaceAll(RegExp(r'[\D]'), '');
-    //print('========  dateFormatter nums is ' + nums.toString());
-    String sSeg = '-';
-    List listFormat = [];
-    listFormat.add({
-      'locFrom': 0,
-      'locTo': 4,
-      'type': 'i',
-      'min': 1900,
-      'max': 3000,
-      'value:': ''
-    });
-    listFormat.add({
-      'locFrom': 4,
-      'locTo': 6,
-      'type': 'm',
-      'min': 1,
-      'max': 12,
-      'value:': ''
-    });
-    listFormat.add({
-      'locFrom': 6,
-      'locTo': 8,
-      'type': 'd',
-      'min': 1,
-      'max': 31,
-      'value:': ''
-    });
-    String result = '';
-    /*for (int i = 0; i < listFormat.length; i++) {
-      Map element = listFormat.elementAt(i);
-      String type = element['type'];
-      int locTo = element['locTo'];
-      int locFrom = element['locFrom'];
-      if (nums.length > locFrom) {
-        String aSeg = '';
-        for (int j = 0; j < ; j++) {
-          Map aJ = listFormat.elementAt(j);
-          result = result + aSeg + aJ['value'];
-          aSeg = sSeg;
-        }
-        return result;
-      }
-      if (nums.length < locTo) {
-
-      }
-    }
-
-    String sFormat = 'dddd-dd-dd';*/
-    if (nums.length < 5) {
-      return nums;
-    }
-    if (nums.length == 5) {
-      String lastChar = nums.characters.last;
-      result = nums.substring(0, 4) + sSeg;
-      if (int.parse(lastChar) > 1) {
-        result = result + '0';
-      }
-      result = result + lastChar;
-      return result;
-    }
-    if (nums.length == 6) {
-      result = nums.substring(0, 4) + sSeg;
-      int iValue = int.parse(nums.substring(4, 6));
-      if (iValue > 12 || iValue < 1) {
-        return nums.substring(0, 4);
-      }
-      result = result + nums.substring(4, 6);
-      return result;
-    }
-    if (nums.length == 7) {
-      String lastChar = nums.characters.last;
-      result = nums.substring(0, 4) + sSeg + nums.substring(4, 6) + sSeg;
-      if (int.parse(lastChar) > 3) {
-        result = result + '0';
-      }
-      result = result + lastChar;
-      return result;
-    }
-    if (nums.length > 7) {
-      result = nums.substring(0, 4) + sSeg + nums.substring(4, 6);
-      int iValue = int.parse(nums.substring(6, 8));
-      if (iValue > 31 || iValue < 1) {
-        return result;
-      }
-      if (iValue > 28) {
-        int month = int.parse(nums.substring(4, 6));
-        if (month == 2) {
-          int year = int.parse(nums.substring(0, 4));
-          if (year % 4 > 0) {
-            return result;
-          }
-        }
-        if (iValue == 31 &&
-            (month == 4 || month == 6 || month == 9 || month == 11)) {
-          return result;
-        }
-      }
-      result = result + sSeg + nums.substring(6, 8);
-      return result;
-    }
-    return nums;
-    /*String year = nums;
-
-    if (nums.length > 3) {
-      year = nums.substring(0, 4);
-    }
-    if (nums.length > 4) {
-      return year + seg;
-    }
-
-    String sDefault = '';
-    String month = sDefault;
-    if (nums.length > 4) {
-      month = nums.substring(4, 5);
-      int intValue = int.parse(month);
-      if (intValue > 1) {
-        month = '0' + month;
-        return year + '-' + month;
-      }
-    }
-    if (nums.length > 5) {
-      month = nums.substring(4, 6);
-      int intValue = int.parse(month);
-      if (intValue > 12) {
-        return year + '-';
-      }
-    }
-    String day = sDefault;
-    if (nums.length > 6) {
-      day = nums.substring(6, 7);
-      int intValue = int.parse(day);
-      if (intValue > 3) {
-        day = '0' + day;
-        return year + '-' + month + '-' + day;
-      }
-    }
-
-    if (nums.length > 7) {
-      day = nums.substring(6, 8);
-      int intValue = int.parse(day);
-      if (intValue > 31) {
-        return year + '-' + month + '-';
-      }
-    }
-
-    return year + '-' + month + '-' + day;*/
-    //}
-
-    //if (nums.length > 4) {
-    /* day = nums.substring(6, 8);
-    //}
-    //if (day.length > 2) {
-    //day = day.substring(0, 2);
-    //}
-    if (month.length > 0) {
-      int intMonth = int.parse(month);
-      if (intMonth > 12 || intMonth < 1) {
-        month = sDefault;
-        day = sDefault;
-      } else {
-        if (intMonth > 1 && intMonth < 10) {
-          month = '0' + month;
-          day = sDefault;
-        } else if (day.length > 0) {
-          int intDay = int.parse(day);
-          if (intDay > 31 || intDay < 1) {
-            day = sDefault;
-          } else if (intDay == 31 &&
-              (intMonth == 2 ||
-                  intMonth == 4 ||
-                  intMonth == 6 ||
-                  intMonth == 9 ||
-                  intMonth == 11)) {
-            day = sDefault;
-          } else if (intDay == 30 && intMonth == 2) {
-            day = sDefault;
-          } else if (intDay == 29) {
-            int intYear = int.parse(year);
-            if (intYear % 4 > 0) {
-              day = sDefault;
-            }
-          }
-        }
-      }
-    }
-
-    String result = year;
-    if (year.length == 4) {
-      result = result + "-";
-      result = result + month;
-      if (month.length == 2) {
-        result = result + "-";
-        result = result + day;
-      }
-    }
-
-    return result;*/
-  }
-
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    String text = newValue.text;
-    print('============  formatEditUpdate 0');
-    /*if (newValue.selection.baseOffset == 0) {
-      return newValue;
-    }*/
-    print('============  formatEditUpdate 1');
-
-    return newValue.copyWith(
-        text: dateFormatter(text),
-        selection:
-            new TextSelection.collapsed(offset: dateFormatter(text).length));
-  }
-}
-
-class InternationalPhoneFormatter extends TextInputFormatter {
-  InternationalPhoneFormatter();
-  String internationalPhoneFormat(value) {
-    String nums = value.replaceAll(RegExp(r'[\D]'), '');
-    String internationalPhoneFormatted = nums.length >= 1
-        ? (nums.length > 0 ? ' (' : '') +
-            nums.substring(0, nums.length >= 3 ? 3 : null) +
-            (nums.length > 3 ? ') ' : '') +
-            (nums.length > 3
-                ? nums.substring(3, nums.length >= 6 ? 6 : null) +
-                    (nums.length > 6
-                        ? '-' + nums.substring(6, nums.length >= 10 ? 10 : null)
-                        : '')
-                : '')
-        : nums;
-    return internationalPhoneFormatted;
-  }
-
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    String text = newValue.text;
-
-    if (newValue.selection.baseOffset == 0) {
-      return newValue;
-    }
-
-    return newValue.copyWith(
-        text: internationalPhoneFormat(text),
-        selection: new TextSelection.collapsed(
-            offset: internationalPhoneFormat(text).length));
-  }
-}
+//import 'myLabel.dart';
 
 class TextFieldWidget extends StatelessWidget {
   final MapEntry<dynamic, dynamic> item;
@@ -271,7 +14,7 @@ class TextFieldWidget extends StatelessWidget {
   final dynamic formname;
   final dynamic tablename;
   final dynamic id;
-  final _debouncer = Debouncer(milliseconds: 500);
+  final _debouncer = Debouncer(milliseconds: 1000);
   TextFieldWidget(
       {this.item, this.backcolor, this.formname, this.tablename, this.id});
   _getWidth() {
@@ -290,16 +33,17 @@ class TextFieldWidget extends StatelessWidget {
     if (item.value[gDroplist] == '') {
       item.value[gValue] = text;
     }
+    item.value[gSearch] = text;
     if (item.value[gType] == gAddress) {
-      item.value[gAction] = gLocalAction;
-      item.value[gFormName] = formname;
+      return;
+      /*item.value[gAction] = gLocalAction;
+      item.value[gFormName] = formname;*/
     }
-    print('--------------  textChange 1' + (item.value[gAction] ?? ''));
     if ((item.value[gAction] ?? '') == '') {
       return;
     }
-    print('--------------  textChange 2');
-    item.value[gSearch] = text;
+    //print('--------------  textChange 2');
+
     datamodel.sendRequestOne(
         item.value[gAction], item, item.value[gContext] ?? context);
   }
@@ -344,23 +88,52 @@ class TextFieldWidget extends StatelessWidget {
               datamodel.myNotifyListeners();
             });
       }
-      if ((item.value[gType] == gDate || item.value[gDroplist] != '') &&
+      if ((item.value[gType] == gDate ||
+              item.value[gType] == gAddress ||
+              item.value[gDroplist] != '') &&
           (item.value[gType] ?? "") != gLabel) {
         item.value[gSuffixIcon] = IconButton(
-            icon: Icon(Icons.date_range_outlined
+            icon: Icon((item.value[gType] == gDate)
+                    ? Icons.date_range_outlined
+                    : Icons.arrow_drop_down_circle_sharp
 
                 //color: Theme.of(context).disabledColor,
                 ),
-            onPressed: () {
+            onPressed: () async {
               item.value[gShowDetail] = true;
-              datamodel.setFormFocus(formname, item.value[gId]);
+              if (isForm) {
+                datamodel.setFormFocus(formname, item.value[gId]);
+              } else {
+                datamodel.setTableFocusItem(tablename, item, item.value[gId]);
+              }
 
-              //if (item.value[gShowDetail]) {
-              Widget w = datamodel.getItemSubWidget(
-                  item, formname, context, tablename, id, backcolor);
-              //getItemSubWidget(item);
-              //Widget w = datamodel.itemSubList[item.value[gType]];
-              datamodel.showPopup(context, w, null);
+              if (item.value[gType] == gAddress) {
+                var searchTxt = item.value[gSearch] ?? item.value[gValue];
+                if (datamodel.isNull(searchTxt)) {
+                  return;
+                }
+                if ((searchTxt.toString()).length < 3) {
+                  return;
+                }
+                item.value[gFormName] = formname ?? tablename;
+              }
+              List actions = [];
+              //if (item.value[gType] == gDate) {
+              actions.add({
+                gType: gIcon,
+                gValue: 0xef49,
+                gLabel: gConfirm,
+                gAction: gLocalAction,
+                gItem: item,
+                gFormid: formname,
+                gTableID: tablename,
+                gId: id,
+              });
+              Widget w = await datamodel.getItemSubWidget(
+                  item, formname, context, tablename, id, backcolor, actions);
+
+              //}
+              datamodel.showPopup(context, w, null, actions);
               //}
 
               //datamodel.myNotifyListeners();
@@ -420,62 +193,6 @@ class TextFieldWidget extends StatelessWidget {
         }*/
         txtController.text = aValue;
       }
-      getItemSubWidget(item, backcolor) {
-        if (item.value[gType] == gAddress &&
-            datamodel.dpList[
-                    gAddress + '_' + formname + '_' + item.value[gId]] !=
-                null &&
-            datamodel.dpList[gAddress + '_' + formname + '_' + item.value[gId]]
-                    .length >
-                0) {
-          return SizedBox(
-            height: gSizedboxHeight,
-            child: ListView.builder(
-                itemCount: datamodel
-                    .dpList[gAddress + '_' + formname + '_' + item.value[gId]]
-                    .length,
-                itemBuilder: (context, index) {
-                  final anItem = datamodel.dpList[
-                      gAddress + '_' + formname + '_' + item.value[gId]][index];
-                  return InkWell(
-                    child: MyLabel({
-                      gLabel: anItem,
-                    }, backcolor),
-                    onTap: () {
-                      setItemI(item, anItem, datamodel);
-                    },
-                  );
-                }),
-          );
-        } else if (item.value[gType] == gDate &&
-            (item.value[gShowDetail] ?? false)) {
-          item.value[gFocus] = true;
-          return datamodel.getDatePicker(item.value[gValue], backcolor, context,
-              formname, item.value[gId]);
-        } else if (item.value[gDroplist] != '' &&
-            (item.value[gShowDetail] ?? false)) {
-          item.value[gFocus] = true;
-          return datamodel.getDPPicker(
-              item, backcolor, context, formname, item.value[gId]);
-        }
-        return SizedBox(
-          height: 0.0,
-        );
-      }
-
-      getItemFormatters(item) {
-        if ((item.value[gType] ?? "") == gPhone) {
-          return [InternationalPhoneFormatter()];
-        } else if ((item.value[gType] ?? "") == gDate) {
-          return [DateFormatter()];
-        }
-        return null;
-      }
-
-      Widget subWidget = getItemSubWidget(item, backcolor);
-      if (subWidget != null) {
-        datamodel.itemSubList[item.value[gType]] = subWidget;
-      }
 
       return Container(
         width: _getWidth(),
@@ -485,7 +202,6 @@ class TextFieldWidget extends StatelessWidget {
               onKey: (node, event) {
                 String keyLabel = event.logicalKey.keyLabel;
                 if (keyLabel == 'Tab') {
-                  //print('================' + event.logicalKey.keyLabel);
                   if (isForm) {
                     datamodel.setFormNextFocus(formname, item.value[gId]);
                   } else {
@@ -541,39 +257,13 @@ class TextFieldWidget extends StatelessWidget {
                         suffixIcon: item.value[gSuffixIcon],
                         enabled: ((item.value[gType] ?? "") != gLabel)),
                 obscureText: isPassword && item.value[gPasswordShow],
-                inputFormatters: getItemFormatters(item),
+                inputFormatters: datamodel.getItemFormatters(item),
                 validator: (dynamic value) {
-                  if (item.value[gRequired] && value.isEmpty) {
-                    return datamodel.getSCurrent(
-                        gIsrequired + "{" + item.value[gLabel] + "}");
+                  var validResult = datamodel.isItemValueValidStr(item, value);
+                  if (validResult != '') {
+                    return validResult;
                   }
-                  if (item.value[gType] == gEmail &&
-                      !value.isEmpty &&
-                      !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                          .hasMatch(value)) {
-                    return datamodel
-                        .getSCurrent(gInvalidname + "{" + gEmail + "}");
-                  }
-                  if (item.value[gMinLength] != null &&
-                      item.value[gMinLength] != '0' &&
-                      value.length < item.value[gMinLength]) {
-                    return datamodel.getSCurrent(gMininput +
-                        "{" +
-                        item.value[gMinLength] +
-                        "}{" +
-                        item.value[gUnit] +
-                        "}");
-                  }
-                  if (item.value[gLength] != null &&
-                      item.value[gLength] != '0' &&
-                      value.length > item.value[gLength]) {
-                    return datamodel.getSCurrent(gMaxinput +
-                        "{" +
-                        item.value[gLength] +
-                        "}{" +
-                        item.value[gUnit] +
-                        "}");
-                  }
+
                   return null;
                 },
                 onSaved: (dynamic value) {
