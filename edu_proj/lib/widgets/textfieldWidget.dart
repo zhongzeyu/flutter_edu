@@ -14,7 +14,7 @@ class TextFieldWidget extends StatelessWidget {
   final dynamic formname;
   final dynamic tablename;
   final dynamic id;
-  final _debouncer = Debouncer(milliseconds: 1000);
+  //final _debouncer = Debouncer(milliseconds: 1000);
   TextFieldWidget(
       {this.item, this.backcolor, this.formname, this.tablename, this.id});
   _getWidth() {
@@ -70,6 +70,7 @@ class TextFieldWidget extends StatelessWidget {
   }
 
   Widget build(BuildContext context) {
+    dynamic thistext;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       bool isPassword = (item.value[gType] == gPassword);
       bool isForm = !datamodel.isNull(formname);
@@ -271,8 +272,9 @@ class TextFieldWidget extends StatelessWidget {
                   //item.value[gValue] = value;
                 },
                 onChanged: (text) {
-                  _debouncer.run(
-                      () => textChange(text, item, datamodel, context, isForm));
+                  thistext = text;
+                  /*_debouncer.run(
+                      () => textChange(text, item, datamodel, context, isForm));*/
                 },
                 onTap: () {
                   if (!isForm) {
@@ -282,6 +284,7 @@ class TextFieldWidget extends StatelessWidget {
                   datamodel.setFormFocus(formname, item.value[gId]);
                 },
                 onEditingComplete: () {
+                  textChange(thistext, item, datamodel, context, isForm);
                   if (isForm) {
                     datamodel.setFormNextFocus(formname, item.value[gId]);
                   } else {

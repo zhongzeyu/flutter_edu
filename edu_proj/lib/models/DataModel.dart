@@ -730,7 +730,9 @@ class DataModel extends ChangeNotifier {
           '?filename=$filename&needRemove=$needRemove';
 
       //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      //waitDialog(context);
       Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //waitDialogClose(context);
       //var response = await request;
       if (response.statusCode == 200) {
         var bytes = response.bodyBytes;
@@ -807,7 +809,9 @@ class DataModel extends ChangeNotifier {
     try {
       dynamic myUrl = MyConfig.URLAddress.name + param;
       //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      //waitDialog(context);
       Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //waitDialogClose(context);
       //var response = await request;
       if (response.statusCode == 200) {
         Utf8Decoder decode = new Utf8Decoder();
@@ -1131,6 +1135,7 @@ class DataModel extends ChangeNotifier {
 
   getCard(List data, context, param0, backcolor) {
     List<Widget> items = [];
+
     data.forEach((element) {
       Widget testWidget =
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2016,25 +2021,72 @@ class DataModel extends ChangeNotifier {
 
   getTabBody(tabname, context, backcolor) {
     if (_tabList[tabname] == null) {
-      return Text(gNotavailable);
+      return MyLabel({gLabel: gNotavailable}, backcolor);
     }
     dynamic data = _tabList[tabname][gData][_tabList[tabname][gTabIndex]];
     if (!(data[gVisible] ?? true)) {
       return null;
     }
+    //print('===========  getTabBody gType is ' + data.toString());
     if (data[gType] == gCard) {
       return getCard(data[gBody], context, tabname, backcolor);
     } else if (data[gType].toString().endsWith(gTable)) {
       //dynamic tableName = data[gActionid];
       data[gTabName] = tabname;
       return getTableBody(data, context, backcolor);
+    } else if (data[gType] == gTab) {
+      //设置明细tab
+      List<Widget> result = [];
+      //print('== ====  data is ' + data.toString());
+      dynamic tabID = data[gTabid] + '_child';
+      List dataChild = [];
+      List dataBody = data[gBody][0][gData];
+      dataBody.forEach((element) {
+        Map data0 = Map.of(element);
+        dataChild.add(data0);
+      });
+      //print('== ====  dataChild is ' + dataChild.toString());
+
+      setTabBasic(dataChild, context, tabID);
+      var tab = getTab(tabID, context);
+      //print('== ====  tab is ' + tab.toString());
+      if (tab == null) {
+        return SizedBox();
+      }
+      //var tabData = tab[gData];
+      final double _screenHeight = MediaQuery.of(context).size.height;
+      result.add(Column(
+        children: [
+          SizedBox(
+            height: 60.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: tab[gData].length,
+              itemBuilder: (context, index) => getTabByIndex(index, tabID),
+            ),
+          ),
+          SizedBox(
+            height: _screenHeight - 400.0,
+            child: getTabBody(tabID, context, backcolor),
+          )
+        ],
+      ));
+      //show tab
+      if (result.length > 1) {
+        result[0] = Expanded(child: result[0]);
+        Widget aRow = Column(
+            mainAxisAlignment: MainAxisAlignment.center, children: result);
+        return aRow;
+      }
+      return result[0];
     } else if (data[gType] == gTabletree) {
       //dynamic tableName = data[gActionid];
       setTreeNode(data, context);
       return getTreeBody(data, context, backcolor);
     }
 
-    return Text(data[gType] + ' will be available soon');
+    return MyLabel(
+        {gLabel: data[gType] + ' will be available soon'}, backcolor);
   }
 
   getTabIndex(label, context, tabName) {
@@ -2054,7 +2106,7 @@ class DataModel extends ChangeNotifier {
     }
     titleWidgets.add(Text(getSCurrent(dataThis[gLabel]),
         style: TextStyle(
-            fontSize: 24.0,
+            fontSize: _tabList[tabName][gFontSize] ?? 24.0,
             fontWeight: index == _tabList[tabName][gTabIndex]
                 ? FontWeight.bold
                 : FontWeight.normal,
@@ -2845,6 +2897,7 @@ class DataModel extends ChangeNotifier {
               gType: _tabList[data[gTabName]][gData][data[gTabIndex]][gType],
               gActionid: _tabList[data[gTabName]][gData][data[gTabIndex]]
                   [gActionid],
+              gWhere: _tabList[data[gTabName]][gData][data[gTabIndex]][gWhere],
               gColorIndex: 0
             }
           ],
@@ -3013,15 +3066,17 @@ class DataModel extends ChangeNotifier {
     Uri uri = new Uri.http(MyConfig.URL.name, MyConfig.PROJ.name);
     http.Response response;
     try {
+      waitDialog(context);
       response =
           // ignore: return_of_invalid_type_from_catch_error
           await httpClient
               .post(uri, headers: headers, body: dataRequest)
               .catchError((error) {
         //ShowToast.warning(error.toString());
+        waitDialogClose(context);
         throw (error);
       });
-
+      waitDialogClose(context);
       if (response.statusCode != 200) {
         throw Exception(getSCurrent(
             "serverwrongcode(${response.statusCode}, ${response.body.toString()})"));
@@ -3205,8 +3260,10 @@ class DataModel extends ChangeNotifier {
   }
 
   removeOverlay() {
-    overlayEntry?.remove();
-    overlayEntry = null;
+    try {
+      overlayEntry?.remove();
+      overlayEntry = null;
+    } catch (e) {}
   }
 
   requestListadd(data) {
@@ -3535,7 +3592,7 @@ class DataModel extends ChangeNotifier {
       sendRequestList(context);
     } catch (e) {
       throw e;
-    }
+    } finally {}
   }
 
   setDropdownMenuItem(_param, newValue, context, _formName) {
@@ -4460,6 +4517,7 @@ class DataModel extends ChangeNotifier {
   setTab(List data, context) {
     int i = 0;
     dynamic tabname = "";
+
     data.forEach((element) {
       List databodyNew = [];
       Map data0 = Map.of(element);
@@ -4493,9 +4551,20 @@ class DataModel extends ChangeNotifier {
         },
       }
     ];
-
+    //print('==========  showScreenPage: ' + actionData.toString());
     showScreenPage(actionData, context, Colors.black.value);
     myNotifyListeners();
+  }
+
+  setTabBasic(List data, context, tabname) {
+    tabList[tabname] = {};
+    //data0[gIsselected] = true;
+    for (int i = 0; i < data.length; i++) {
+      data[i][gCanClose] = "false";
+    }
+    _tabList[tabname][gData] = data;
+    _tabList[tabname][gTabIndex] = 0;
+    _tabList[tabname][gFontSize] = 20.0;
   }
 
   setTableList(List<dynamic> data, context) {
@@ -4745,6 +4814,14 @@ class DataModel extends ChangeNotifier {
 
   wait(waitSeconds) async {
     await Future.delayed(Duration(seconds: waitSeconds));
+  }
+
+  waitDialog(context) {
+    //showMsg(context, "Loading", Colors.white.value);
+  }
+
+  waitDialogClose(context) {
+    //removeOverlay();
   }
 
   waitmilliseconds(waitMilliSeconds) async {
