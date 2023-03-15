@@ -123,8 +123,7 @@ class MyItem extends StatelessWidget {
           ],
         ));
       } else {
-        result.add(
-            MyLabel({gLabel: "not available", gFontSize: 20.0}, backcolor));
+        result.add(datamodel.notAvailable(backcolor));
       }
 
       if (result.length > 1) {

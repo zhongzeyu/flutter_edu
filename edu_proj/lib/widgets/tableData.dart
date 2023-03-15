@@ -117,10 +117,12 @@ class TableData extends DataTableSource {
       bool isModified = true;
       var value = _dataModel.getTableModifiedValue(
           _param[gTableID], colname, dataRow[gId]);
+
       if (_dataModel.isNull(value)) {
         value = originalValue;
         isModified = false;
       }
+
       //dataCellList.add(DataCell(Text(dataI.toString())));
       bool needi10n = false;
       if (!_dataModel.isNull(_param[gColumns][i][gDroplist])) {

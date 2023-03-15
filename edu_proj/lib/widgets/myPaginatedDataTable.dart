@@ -5,7 +5,6 @@ import 'package:edu_proj/models/DataModel.dart';
 //import 'package:edu_proj/screens/myDetail.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/tableData.dart';
-//import 'package:edu_proj/widgets/textfieldWidgetOne.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

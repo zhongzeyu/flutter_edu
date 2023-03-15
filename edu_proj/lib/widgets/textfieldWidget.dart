@@ -25,23 +25,28 @@ class TextFieldWidget extends StatelessWidget {
   textChange(dynamic text, MapEntry item, DataModel datamodel,
       BuildContext context, bool isForm) {
     //item.value[gValue] = text;
+    print('--------------  textChange 0');
     if (!isForm) {
       datamodel.setTableValueItem(tablename, item.value[gId], id, text);
       datamodel.myNotifyListeners();
       return;
     }
+    print('--------------  textChange 1');
     if (item.value[gDroplist] == '') {
       item.value[gValue] = text;
     }
     item.value[gSearch] = text;
+    print('--------------  textChange 2');
     if (item.value[gType] == gAddress) {
       return;
       /*item.value[gAction] = gLocalAction;
       item.value[gFormName] = formname;*/
     }
+    print('--------------  textChange 3');
     if ((item.value[gAction] ?? '') == '') {
       return;
     }
+    print('--------------  textChange 4');
     //print('--------------  textChange 2');
 
     datamodel.sendRequestOne(

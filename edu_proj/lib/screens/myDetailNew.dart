@@ -15,6 +15,9 @@ class MyDetailNew extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_param == null) {
+      return SizedBox();
+    }
     List mapActions = [];
     List mapBottoms = [];
     bool isHome = false;

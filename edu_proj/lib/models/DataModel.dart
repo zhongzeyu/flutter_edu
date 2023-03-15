@@ -2020,19 +2020,24 @@ class DataModel extends ChangeNotifier {
   }
 
   getTabBody(tabname, context, backcolor) {
+    print('===========  getTabBody 0');
     if (_tabList[tabname] == null) {
-      return MyLabel({gLabel: gNotavailable}, backcolor);
+      return null;
     }
+    print('===========  getTabBody 1');
     dynamic data = _tabList[tabname][gData][_tabList[tabname][gTabIndex]];
     if (!(data[gVisible] ?? true)) {
       return null;
     }
+    print('===========  getTabBody 2');
     //print('===========  getTabBody gType is ' + data.toString());
     if (data[gType] == gCard) {
       return getCard(data[gBody], context, tabname, backcolor);
     } else if (data[gType].toString().endsWith(gTable)) {
       //dynamic tableName = data[gActionid];
+      print('===========  getTabBody 2 0');
       data[gTabName] = tabname;
+      print('===========  getTabBody 2 1');
       return getTableBody(data, context, backcolor);
     } else if (data[gType] == gTab) {
       //设置明细tab
@@ -2333,12 +2338,19 @@ class DataModel extends ChangeNotifier {
     return MyScreen(getTableBodyParam(data, context), backcolor);
   }
 
+  notAvailable(backcolor) {
+    return MyLabel({gLabel: gNotavailable}, backcolor);
+  }
+
   getTableBodyParam(data, context) {
     //_tableList[tableName][gKey] = UniqueKey();
     dynamic tableName = data[gActionid] ?? data[gTableID];
     //dynamic tableName = _param[gData][gActionid] ?? _param[gData][gTableID];
 
     Map tableInfo = _tableList[tableName];
+    if (tableInfo == null) {
+      return null;
+    }
     //List tableData = tableInfo[gData];
     //List columns = tableInfo[gColumns];
 

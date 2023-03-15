@@ -4,6 +4,7 @@ import 'package:edu_proj/widgets/myGlass.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+//import 'myIcon.dart';
 import 'myLabel.dart';
 
 class MyButton extends StatelessWidget {
@@ -20,9 +21,14 @@ class MyButton extends StatelessWidget {
         backColor = btnColor;
       }
 
+      int icon = 0;
+      if (!datamodel.isNull(_param[gIcon])) {
+        icon = _param[gIcon];
+      }
+
       Map param = {
-        gWidth: _param[gWidth] ?? 200.0,
-        gHeight: _param[gHeight] ?? 40.0,
+        gWidth: (icon > 0) ? 50.0 : _param[gWidth] ?? 200.0,
+        gHeight: (icon > 0) ? 50.0 : _param[gHeight] ?? 40.0,
         gBorderRadius: _param[gBorderRadius] ?? 10.0,
         gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
         gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
@@ -32,12 +38,32 @@ class MyButton extends StatelessWidget {
         gAlignment: _param[gAlignment] ?? Alignment.topLeft,
         gBorder: _param[gBorder] ?? 2.0,
         gColor: btnColor,
-        gBackgroundColor: backColor, //Color.fromARGB(255, 218, 165, 32),
-        gChild: MyLabel(_param, btnColor.value)
+        gBackgroundColor: backColor,
+        //gBackgroundColor: Colors.transparent.value,
+        gChild: (icon > 0)
+            ? Icon(
+                IconData(
+                  icon,
+                  fontFamily: 'MaterialIcons',
+                ),
+                //color: Colors.green
+              )
+            : MyLabel(_param, btnColor.value)
       };
       return InkWell(
-        child: MyGlass(param),
+        child: (icon > 0)
+            ? Column(
+                children: [
+                  MyGlass(param),
+                  MyLabel({
+                    gLabel: _param[gLabel] ?? _param[gValue],
+                    gFontSize: 10.0
+                  }, Colors.black.value)
+                ],
+              )
+            : MyGlass(param),
         onTap: () {
+          print('===========   myButton click');
           if (_param[gType].toString().startsWith(gTab)) {
             datamodel.processTapBasic(
                 this._param[gContext] ?? context, _param, _param[gName], true);
