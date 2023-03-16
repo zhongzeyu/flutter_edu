@@ -1895,6 +1895,9 @@ class DataModel extends ChangeNotifier {
     List<Widget> result = [];
     result.add(SizedBox(height: 4.5));
     //Map map = Map.of(param[gItems]);
+    if (param == null) {
+      return result;
+    }
     Map map = Map.of(param);
     map.forEach((key, value) {
       Map mapItem = Map.of(value);
@@ -2043,7 +2046,7 @@ class DataModel extends ChangeNotifier {
       //设置明细tab
       List<Widget> result = [];
       //print('== ====  data is ' + data.toString());
-      dynamic tabID = data[gTabid] + '_child';
+      dynamic tabID = data[gTabid];
       List dataChild = [];
       List dataBody = data[gBody][0][gData];
       dataBody.forEach((element) {
@@ -2246,7 +2249,7 @@ class DataModel extends ChangeNotifier {
       gWidth: 150.0,
       gType: itemName,
       gLabel: itemName,
-      gFocus: true,
+      //gFocus: true,
       gValue: value,
       gInputType: itemName,
       gTxtEditingController: searchController
@@ -3297,6 +3300,10 @@ class DataModel extends ChangeNotifier {
     } catch (e) {}
   }
 
+  isPopOpen() {
+    return overlayEntry != null;
+  }
+
   requestListadd(data) {
     requestListaddCommon(data, false);
   }
@@ -3849,6 +3856,8 @@ class DataModel extends ChangeNotifier {
   }
 
   showPopup(context, w, h, actions) {
+    //close keyboard
+    //FocusScope.of(context).requestFocus(FocusNode());
     removeOverlay();
     overlayEntry = OverlayEntry(builder: (BuildContext context) {
       return MyPopup({gWidget: w, gHeight: h, gActions: actions});
@@ -3857,6 +3866,7 @@ class DataModel extends ChangeNotifier {
           child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));*/
     });
     Overlay.of(context).insert(overlayEntry);
+    myNotifyListeners();
   }
 
   showPDF(actionData, context) async {
@@ -3928,7 +3938,8 @@ class DataModel extends ChangeNotifier {
       });
       Map map = Map.of(data);
       _screenLists[name] = Map.fromEntries(map.entries.toList()
-        ..sort((e1, e2) => int.parse(e1.key) - int.parse(e2.key)));
+        ..sort((e1, e2) =>
+            int.parse(e1.key.toString()) - int.parse(e2.key.toString())));
 
       if (type == gScreen) {
         //print('============ showScreenPage name is ' + name.toString());
@@ -4551,11 +4562,13 @@ class DataModel extends ChangeNotifier {
   setTab(List data, context) {
     int i = 0;
     dynamic tabname = "";
+    dynamic title = "";
 
     data.forEach((element) {
       List databodyNew = [];
       Map data0 = Map.of(element);
       tabname = data0[gTabid];
+      title = data0[gLabel] ?? '';
       tabList[tabname] = {};
       _tabList[tabname][gData] = [];
       List<dynamic> data0body = data0[gBody];
@@ -4573,16 +4586,27 @@ class DataModel extends ChangeNotifier {
       _tabList[tabname][gData].add(data0);
       _tabList[tabname][gTabIndex] = 0;
     });
+    Map items = {};
+    int index = 0;
+    if (!isNull(title)) {
+      items[index] = {
+        gItem: jsonEncode({gType: gLabel, gValue: title, gFontSize: 20.0})
+      };
+      index = index + 10;
+      items[index] = {
+        gItem: jsonEncode({gType: gSizedbox, gValue: 20.0})
+      };
+      index = index + 10;
+    }
+    items[index] = {
+      gItem: jsonEncode({gType: gTab, gValue: tabname})
+    };
 
     List actionData = [
       {
         gName: tabname,
         gType: gScreen,
-        gItems: {
-          0: {
-            gItem: jsonEncode({gType: gTab, gValue: tabname})
-          }
-        },
+        gItems: items,
       }
     ];
     //print('==========  showScreenPage: ' + actionData.toString());

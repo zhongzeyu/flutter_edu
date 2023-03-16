@@ -48,6 +48,7 @@ dependencies:
   url_launcher: ^6.1.5
   shared_preferences:
   file_picker:
+  google_maps_flutter:
 
   
   

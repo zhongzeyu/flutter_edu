@@ -207,6 +207,11 @@ class TextFieldWidget extends StatelessWidget {
         }*/
         txtController.text = aValue;
       }
+      bool autofocus = item.value[gFocus] ?? false;
+
+      if (autofocus && datamodel.isPopOpen()) {
+        autofocus = false;
+      }
 
       return Container(
         width: _getWidth(),
@@ -228,7 +233,7 @@ class TextFieldWidget extends StatelessWidget {
               },
               child: TextFormField(
                 controller: txtController,
-                autofocus: item.value[gFocus] ?? false,
+                autofocus: autofocus,
                 //focusNode: item.value[gFocusNode],
                 keyboardType: datamodel.getInputType(item.value[gInputType]),
                 maxLength: isForm ? item.value[gLength] : null,
