@@ -25,28 +25,31 @@ class TextFieldWidget extends StatelessWidget {
   textChange(dynamic text, MapEntry item, DataModel datamodel,
       BuildContext context, bool isForm) {
     //item.value[gValue] = text;
-    print('--------------  textChange 0');
-    if (!isForm) {
+    //print('--------------  textChange 0');
+    if (!isForm && item.value[gType] != gSearch) {
       datamodel.setTableValueItem(tablename, item.value[gId], id, text);
       datamodel.myNotifyListeners();
+
+      //print('--------------  textChange 0 1');
       return;
     }
-    print('--------------  textChange 1');
+    //print('--------------  textChange 1');
     if (item.value[gDroplist] == '') {
       item.value[gValue] = text;
     }
     item.value[gSearch] = text;
-    print('--------------  textChange 2');
+    //print('--------------  textChange 2');
     if (item.value[gType] == gAddress) {
       return;
       /*item.value[gAction] = gLocalAction;
       item.value[gFormName] = formname;*/
     }
-    print('--------------  textChange 3');
+    //print('--------------  textChange 3');
     if ((item.value[gAction] ?? '') == '') {
+      //print('--------------  textChange 3 0');
       return;
     }
-    print('--------------  textChange 4');
+    //print('--------------  textChange 4');
     //print('--------------  textChange 2');
 
     datamodel.sendRequestOne(
@@ -101,7 +104,9 @@ class TextFieldWidget extends StatelessWidget {
         item.value[gSuffixIcon] = IconButton(
             icon: Icon((item.value[gType] == gDate)
                     ? Icons.date_range_outlined
-                    : Icons.arrow_drop_down_circle_sharp
+                    : ((item.value[gType] == gSearch)
+                        ? Icons.content_paste_search_outlined
+                        : Icons.arrow_drop_down_circle_sharp)
 
                 //color: Theme.of(context).disabledColor,
                 ),
@@ -109,6 +114,9 @@ class TextFieldWidget extends StatelessWidget {
               item.value[gShowDetail] = true;
               if (isForm) {
                 datamodel.setFormFocus(formname, item.value[gId]);
+              } else if (item.value[gType] == gSearch) {
+                textChange(thistext, item, datamodel, context, false);
+                return;
               } else {
                 datamodel.setTableFocusItem(tablename, item, item.value[gId]);
               }

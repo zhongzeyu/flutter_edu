@@ -119,6 +119,8 @@ const gHome = 'home';
 const gHometab = 'hometab';
 
 const gIcon = 'icon';
+const gIconSize = 'iconsize';
+
 const gId = 'id';
 const gIndex = 'index';
 const gInputType = 'inputType';

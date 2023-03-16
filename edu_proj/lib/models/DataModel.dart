@@ -2356,6 +2356,7 @@ class DataModel extends ChangeNotifier {
 
     Map param = {};
     int index = 0;
+    double iconSize = 40.0;
     param[index++] = {
       gItem: jsonEncode({
         gType: gSearch,
@@ -2367,11 +2368,28 @@ class DataModel extends ChangeNotifier {
     List detail = [];
 
     if (tableInfo[gAttr][gCanEdit]) {
-      detail.add(
-          {gLabel: gAddnew, gTableID: tableName, gWidth: 100, gData: data});
+      detail.add({
+        gLabel: gAddnew,
+        gTableID: tableName,
+        gIconSize: iconSize,
+        gData: data,
+        gIcon: 60999
+      });
     }
-    detail.add({gLabel: gPdf, gTableID: tableName, gWidth: 60, gData: data});
-    detail.add({gLabel: gExcel, gTableID: tableName, gWidth: 60, gData: data});
+    detail.add({
+      gLabel: gPdf,
+      gTableID: tableName,
+      gIconSize: iconSize,
+      gData: data,
+      gIcon: 62116
+    });
+    detail.add({
+      gLabel: gExcel,
+      gTableID: tableName,
+      gIconSize: iconSize,
+      gData: data,
+      gIcon: 62495
+    });
 
     if (tableInfo[gAttr][gCanEdit]) {
       if (!isNull(_tableList[tableName][gDataModified])) {
@@ -2380,8 +2398,9 @@ class DataModel extends ChangeNotifier {
           detail.add({
             gLabel: gSaveall,
             gTableID: tableName,
-            gWidth: 100,
-            gData: data
+            gIconSize: iconSize,
+            gData: data,
+            gIcon: 62260
           });
         }
       }
@@ -3907,7 +3926,10 @@ class DataModel extends ChangeNotifier {
           data = element.value;
         }
       });
-      _screenLists[name] = Map.of(data);
+      Map map = Map.of(data);
+      _screenLists[name] = Map.fromEntries(map.entries.toList()
+        ..sort((e1, e2) => int.parse(e1.key) - int.parse(e2.key)));
+
       if (type == gScreen) {
         //print('============ showScreenPage name is ' + name.toString());
         //navigatorPush(context, FirstScreen(), 'showScreenPage');

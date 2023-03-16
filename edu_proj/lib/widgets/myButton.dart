@@ -25,10 +25,10 @@ class MyButton extends StatelessWidget {
       if (!datamodel.isNull(_param[gIcon])) {
         icon = _param[gIcon];
       }
-
+      double iconSize = _param[gIconSize] ?? 50.0;
       Map param = {
-        gWidth: (icon > 0) ? 50.0 : _param[gWidth] ?? 200.0,
-        gHeight: (icon > 0) ? 50.0 : _param[gHeight] ?? 40.0,
+        gWidth: (icon > 0) ? iconSize : _param[gWidth] ?? 200.0,
+        gHeight: (icon > 0) ? iconSize : _param[gHeight] ?? 40.0,
         gBorderRadius: _param[gBorderRadius] ?? 10.0,
         gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
         gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
@@ -36,7 +36,7 @@ class MyButton extends StatelessWidget {
         //gPadding: const EdgeInsets.all(0.5),
         gBlur: _param[gBlur] ?? 10.0,
         gAlignment: _param[gAlignment] ?? Alignment.topLeft,
-        gBorder: _param[gBorder] ?? 2.0,
+        gBorder: _param[gBorder] ?? 0.5,
         gColor: btnColor,
         gBackgroundColor: backColor,
         //gBackgroundColor: Colors.transparent.value,
@@ -57,8 +57,8 @@ class MyButton extends StatelessWidget {
                   MyGlass(param),
                   MyLabel({
                     gLabel: _param[gLabel] ?? _param[gValue],
-                    gFontSize: 10.0
-                  }, Colors.black.value)
+                    gFontSize: 12.0
+                  }, _param[gBackgroundColor] ?? Colors.black.value)
                 ],
               )
             : MyGlass(param),

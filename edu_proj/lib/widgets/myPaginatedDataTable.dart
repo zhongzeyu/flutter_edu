@@ -108,7 +108,7 @@ class MyPaginatedDataTable extends StatelessWidget {
           datamodel.setRowsPerPage(tableInfo, v);
         },
         columns: getTableColumns(),
-        columnSpacing: 30,
+        columnSpacing: 20,
         horizontalMargin: 5,
         source: tabledata,
         showCheckboxColumn: true,

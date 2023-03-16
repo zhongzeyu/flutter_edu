@@ -52,18 +52,25 @@ class TableData extends DataTableSource {
     List<DataCell> dataCellList = [];
     dynamic dataRow = (_param[gDataSearch] ?? _param[gData])[index];
     List<Widget> actionList = [];
+    double size = 25.0;
+    int backgroundcolor = Colors.white.value;
     if (_param[gAttr][gCanEdit]) {
       var labelValue = gEdit;
+      var icon = 61453;
+
       if (!_dataModel.isNull(_param[gDataModified]) &&
           !_dataModel.isNull(_param[gDataModified][dataRow[gId]])) {
         labelValue = gSave;
+        icon = 62260;
         actionList.add(MyButton({
           gLabel: gCancel,
           gAction: gLocalAction,
           gTableID: _param[gTableID],
           gRow: dataRow,
           gContext: _context,
-          gWidth: 50.0
+          gIconSize: size,
+          gIcon: 62575,
+          gBackgroundColor: backgroundcolor
         }));
       }
       actionList.add(MyButton({
@@ -72,7 +79,9 @@ class TableData extends DataTableSource {
         gTableID: _param[gTableID],
         gRow: dataRow,
         gContext: _context,
-        gWidth: 50.0
+        gIconSize: size,
+        gIcon: icon,
+        gBackgroundColor: backgroundcolor
       }));
     }
     if (_param[gAttr][gCanDelete]) {
@@ -82,7 +91,9 @@ class TableData extends DataTableSource {
         gTableID: _param[gTableID],
         gRow: dataRow,
         gContext: _context,
-        gWidth: 50.0
+        gIconSize: size,
+        gIcon: 57787,
+        gBackgroundColor: backgroundcolor
       }));
     }
     if ((_param[gAttr][gDetail] ?? "") != "") {
@@ -92,7 +103,9 @@ class TableData extends DataTableSource {
         gTableID: _param[gTableID],
         gRow: dataRow,
         gContext: _context,
-        gWidth: 50.0
+        gIconSize: size,
+        gIcon: 61363,
+        gBackgroundColor: backgroundcolor
       }));
     }
     if (actionList.length > 0) {
@@ -142,6 +155,9 @@ class TableData extends DataTableSource {
             isModified, originalValue);
         //MapEntry item = _dataModel.getTableItemByName(_param, colname, value);
         item.value[gFocus] = true;
+        item.value[gFontSize] = 12.0;
+        item.value[gFontStyle] = FontStyle.italic;
+
         w = TextFieldWidget(
             item: item,
             backcolor: backColorValue,
