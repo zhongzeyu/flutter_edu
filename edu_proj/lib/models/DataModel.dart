@@ -59,6 +59,8 @@ class DataModel extends ChangeNotifier {
   http.Client httpClient = http.Client();
   //Locale _locale = const Locale('en', '');
   dynamic _locale = 'en';
+  final _debouncer = Debouncer(milliseconds: 300);
+
   /*final List<int> _colorList = [
     4282679983,
     4291930500,
@@ -149,6 +151,7 @@ class DataModel extends ChangeNotifier {
 
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
+  bool isProcessing = false;
   Map get systemParams => _systemParams;
   Set _loadingTable = {};
   Size _sceenSize = new Size(800, 1000);
@@ -189,6 +192,107 @@ class DataModel extends ChangeNotifier {
     addTabSub(data, tabName);
     changeTabPos(tabName, data[gLabel]);
     myNotifyListeners();
+  }
+
+  addTable(data, context) {
+    if (data[gBody] != null && data[gBody][gZzylog] != null) {
+      addZzylog(Map.of(data[gBody][gZzylog]), context);
+      return;
+    }
+    var isNew = false;
+    if (_tableList[data[gActionid]] == null ||
+        _tableList[data[gActionid]][gAttr][gLogmerge] != 'Y') {
+      isNew = true;
+    }
+    if (isNew) {
+      _tableList[data[gActionid]] = Map.of(data[gBody][data[gActionid]]);
+      List dataList = _tableList[data[gActionid]][gData];
+      if (dataList != null && dataList.length > 0) {
+        for (int i = 0; i < dataList.length; i++) {
+          dataList[i] = Map.of(dataList[i]);
+        }
+      }
+      List colList = _tableList[data[gActionid]][gColumns];
+      if (colList != null && colList.length > 0) {
+        for (int i = 0; i < colList.length; i++) {
+          colList[i] = Map.of(colList[i]);
+        }
+      }
+      _tableList[data[gActionid]][gAttr] =
+          Map.of(_tableList[data[gActionid]][gAttr]);
+
+      _tableList[data[gActionid]][gAscending] = true;
+      _tableList[data[gActionid]][gSortColumnIndex] = 0;
+      if (_tableList[data[gActionid]][gAttr][gOrderby] != null) {
+        //auto sort by order by
+        var orderbyList =
+            (_tableList[data[gActionid]][gAttr][gOrderby] + '').split(',');
+        for (var i = orderbyList.length - 1; i >= 0; i--) {
+          var orderbyOne = orderbyList[i].split(' ');
+          var ascending = true;
+          if (orderbyOne.length > 1) {
+            if (orderbyOne[1] != gAsc) {
+              ascending = false;
+            }
+          }
+          var columnIndex = 0;
+          for (var i = 0; i < colList.length; i++) {
+            if (colList[i][gId] == orderbyOne[0]) {
+              break;
+            }
+            if (isHiddenColumn(colList, i)) {
+              continue;
+            }
+            columnIndex++;
+          }
+          tableSort(data[gActionid], columnIndex, ascending, context);
+        }
+      }
+    }
+
+    _tableList[data[gActionid]][gTableID] = data[gActionid];
+
+    Map param = {
+      gType: gForm,
+      gFormdetail: {
+        gFormName: data[gActionid],
+        gsBackgroundColor: 4280391411,
+        gSubmit: gSubmit,
+        gImgTitle: {
+          gTitle: data[gLabel],
+          gFontSize: 40.0,
+          gHeight: 1.2,
+          gLetterSpacing: 1.0
+        },
+        gHeight: 450.5,
+        gTop: 130.0,
+        gItems: {}
+      },
+      gActions: [
+        {gType: gIcon, gValue: 58336, gAction: gMessenger}
+      ],
+      gBottomImgs: [],
+      gTitle: {},
+      gBtns: []
+    };
+
+    for (int i = 0; i < _tableList[data[gActionid]][gColumns].length; i++) {
+      //for (int i = 0; i < 3; i++) {
+      Map ti = Map.of(_tableList[data[gActionid]][gColumns][i]);
+      param[gFormdetail][gItems][ti[gDbid]] = ti;
+    }
+    _formLists[data[gActionid]] = null;
+
+    setFormListOne(data[gActionid], param[gFormdetail]);
+    if (data[gLabel] == gDroplist) {
+      //add to droplist
+      List tableData = _tableList[data[gActionid]][gData];
+      if (tableData.length > 0) {
+        tableData.forEach((element) {
+          dpListInsert(data[gActionid], element, context);
+        });
+      }
+    }
   }
 
   addTabSub(data, tabName) {
@@ -301,222 +405,6 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  afterTableInsert(tablename, row, context) {
-    if (tablename == gZzyi10nitem) {
-      var parentid = row[gParentid];
-      var tableid = gZzyi10nlist;
-      var result = getTableByTableID(tableid, gId + '=' + parentid, context);
-      var langcode = row[gLangcode];
-      var langcontent = row[gLangcontent];
-      var sourceChck = result[0][gName];
-      _i10nMap[sourceChck][langcode] = langcontent;
-    }
-  }
-
-  removeTableModified(tablename, id) {
-    if (isNull(_tableList[tablename][gDataModified])) {
-      return;
-    }
-    if (isNull(_tableList[tablename][gDataModified][id])) {
-      return;
-    }
-    Map modifiedRow = _tableList[tablename][gDataModified];
-    modifiedRow.remove(id);
-  }
-
-  tableInsert(tablename, rowData, context) {
-    var tableInfo = _tableList[tablename];
-    List tableData = tableInfo[gData];
-    Map row = Map.of(rowData);
-    tableData.insert(0, row);
-    removeTableModified(tablename, row[gId]);
-    if (_dpList.containsKey(tablename)) {
-      dpListInsert(tablename, row, context);
-    }
-    afterTableInsert(tablename, row, context);
-  }
-
-  tableRemove(tablename, rowData, context) {
-    var tableInfo = _tableList[tablename];
-    List tableData = tableInfo[gData];
-    Map row = Map.of(rowData);
-    removeTableModified(tablename, row[gId]);
-    tableData.removeWhere((element1) => element1[gId] == row[gId]);
-
-    if (_dpList.containsKey(tablename)) {
-      dpListRemove(tablename, row, context);
-    }
-  }
-
-  dpListRemove(tablename, row, context) {
-    _dpList[tablename].removeWhere((element1) => element1[gId] == row[gId]);
-    _i10nMap.removeWhere((key, value) => key == row[gId]);
-  }
-
-  dpListInsert(tablename, element, context) {
-    if (!_dpList.containsKey(tablename)) {
-      List tmp = [''];
-      _dpList[tablename] = tmp;
-    }
-    _dpList[tablename].add(element[gId]);
-
-    _i10nMap[element[gId]] = {
-      _locale: getTableKeyword(tablename, element[gId], context)
-    };
-    if (_dpList.containsKey(gZzyLanguageCode)) {
-      List languagecodeList = _dpList[gZzyLanguageCode];
-      languagecodeList.forEach((element1) {
-        _i10nMap[element[gId]][element1] =
-            getTableKeyword(tablename, element[gId], context);
-      });
-    }
-  }
-
-  addTable(data, context) {
-    if (data[gBody] != null && data[gBody][gZzylog] != null) {
-      addZzylog(Map.of(data[gBody][gZzylog]), context);
-      return;
-    }
-    var isNew = false;
-    if (_tableList[data[gActionid]] == null ||
-        _tableList[data[gActionid]][gAttr][gLogmerge] != 'Y') {
-      isNew = true;
-    }
-    if (isNew) {
-      _tableList[data[gActionid]] = Map.of(data[gBody][data[gActionid]]);
-      List dataList = _tableList[data[gActionid]][gData];
-      if (dataList != null && dataList.length > 0) {
-        for (int i = 0; i < dataList.length; i++) {
-          dataList[i] = Map.of(dataList[i]);
-        }
-      }
-      List colList = _tableList[data[gActionid]][gColumns];
-      if (colList != null && colList.length > 0) {
-        for (int i = 0; i < colList.length; i++) {
-          colList[i] = Map.of(colList[i]);
-        }
-      }
-      _tableList[data[gActionid]][gAttr] =
-          Map.of(_tableList[data[gActionid]][gAttr]);
-
-      _tableList[data[gActionid]][gAscending] = true;
-      _tableList[data[gActionid]][gSortColumnIndex] = 0;
-      if (_tableList[data[gActionid]][gAttr][gOrderby] != null) {
-        //auto sort by order by
-        var orderbyList =
-            (_tableList[data[gActionid]][gAttr][gOrderby] + '').split(',');
-        for (var i = orderbyList.length - 1; i >= 0; i--) {
-          var orderbyOne = orderbyList[i].split(' ');
-          var ascending = true;
-          if (orderbyOne.length > 1) {
-            if (orderbyOne[1] != gAsc) {
-              ascending = false;
-            }
-          }
-          var columnIndex = 0;
-          for (var i = 0; i < colList.length; i++) {
-            if (colList[i][gId] == orderbyOne[0]) {
-              break;
-            }
-            if (isHiddenColumn(colList, i)) {
-              continue;
-            }
-            columnIndex++;
-          }
-          tableSort(data[gActionid], columnIndex, ascending, context);
-        }
-      }
-    }
-
-    _tableList[data[gActionid]][gTableID] = data[gActionid];
-
-    Map param = {
-      gType: gForm,
-      gFormdetail: {
-        gFormName: data[gActionid],
-        gsBackgroundColor: 4280391411,
-        gSubmit: gSubmit,
-        gImgTitle: {
-          gTitle: data[gLabel],
-          gFontSize: 40.0,
-          gHeight: 1.2,
-          gLetterSpacing: 1.0
-        },
-        gHeight: 450.5,
-        gTop: 130.0,
-        gItems: {}
-      },
-      gActions: [
-        {gType: gIcon, gValue: 58336, gAction: gMessenger}
-      ],
-      gBottomImgs: [],
-      gTitle: {},
-      gBtns: []
-    };
-
-    for (int i = 0; i < _tableList[data[gActionid]][gColumns].length; i++) {
-      //for (int i = 0; i < 3; i++) {
-      Map ti = Map.of(_tableList[data[gActionid]][gColumns][i]);
-      param[gFormdetail][gItems][ti[gDbid]] = ti;
-    }
-    _formLists[data[gActionid]] = null;
-
-    setFormListOne(data[gActionid], param[gFormdetail]);
-    if (data[gLabel] == gDroplist) {
-      //add to droplist
-      List tableData = _tableList[data[gActionid]][gData];
-      if (tableData.length > 0) {
-        tableData.forEach((element) {
-          dpListInsert(data[gActionid], element, context);
-        });
-      }
-    }
-  }
-
-  setDroplist() {
-    Map tabledata = _tableList[gZzydictionary];
-    List tabledataList = tabledata[gData];
-    Map tabledataItem = _tableList[gZzydictionaryitem];
-    List tabledataListItem = tabledataItem[gData];
-    tabledataList.forEach((element) {
-      var parentid = element[gId];
-      var label = element[gLabel];
-      List result = [''];
-      tabledataListItem.forEach((elementItem) {
-        if (elementItem[gParentid] == parentid) {
-          dynamic value = elementItem[gLabel];
-          result.add(value);
-        }
-      });
-      _dpList[label] = result;
-    });
-  }
-
-  Future<void> alert(BuildContext context, dynamic msg) async {
-    /*return showDialog<void>(
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('AlertDialog Title'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: const <Widget>[
-              Text(msg),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Ok'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );*/
-  }
   afterSubmit(context, _formName, result) {
     Map<dynamic, dynamic> formDefine = _formLists[_formName];
     if (formDefine[gBtns] != null) {
@@ -544,6 +432,44 @@ class DataModel extends ChangeNotifier {
     }
   }
 
+  afterTableInsert(tablename, row, context) {
+    if (tablename == gZzyi10nitem) {
+      var parentid = row[gParentid];
+      var tableid = gZzyi10nlist;
+      var result = getTableByTableID(tableid, gId + '=' + parentid, context);
+      var langcode = row[gLangcode];
+      var langcontent = row[gLangcontent];
+      var sourceChck = result[0][gName];
+      _i10nMap[sourceChck][langcode] = langcontent;
+    }
+  }
+
+  Future<void> alert(BuildContext context, dynamic msg) async {
+    /*return showDialog<void>(
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('AlertDialog Title'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: const <Widget>[
+              Text(msg),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );*/
+  }
+
   beforeSubmit(context, _formName, result) {
     /*if (_formName == gLogin) {
       result.add(
@@ -566,11 +492,60 @@ class DataModel extends ChangeNotifier {
     }*/
   }
 
+  buildDraggable(context, view) {
+    return new Draggable(
+      child: view,
+      feedback: view,
+      onDragStarted: () {},
+      onDragEnd: (detail) {
+        createDragTarget(offset: detail.offset, context: context, view: view);
+      },
+      childWhenDragging: Container(),
+      ignoringFeedbackSemantics: false,
+    );
+  }
+
+  businessFunc(funcName, context, data) {
+    if (funcName == "forgetpassword") {
+      forgetpassword(context);
+    }
+  }
+
+  cancelTableModify(data, context) async {
+    var tableName = data[gActionid] ?? data[gTableID];
+    var id = data[gRow][gId];
+    Map dataModified = _tableList[tableName][gDataModified];
+    dataModified.remove(id);
+    myNotifyListeners();
+  }
+
   changePassword(context, data, backcolor) async {
     if (data != null && data.length > 0 && data[0][gLastaction] == gFinishme) {
       await finishme(context);
     }
     await openDetailForm(gChangepassword, context, backcolor);
+  }
+
+  changeTabPos(tabName, tabLabel) {
+    List tabData = _tabList[tabName][gData];
+    int iLoc = 0;
+    Map mLoc;
+    for (int i = 0; i < tabData.length; i++) {
+      Map el = tabData[i];
+      if (el[gLabel] == tabLabel) {
+        iLoc = i;
+        mLoc = el;
+      }
+    }
+    if (iLoc > 1) {
+      while (iLoc > 1) {
+        tabData[iLoc] = tabData[iLoc - 1];
+        iLoc--;
+      }
+      tabData[iLoc] = mLoc;
+    }
+
+    _tabList[tabName][gTabIndex] = iLoc;
   }
 
   clear(context) async {
@@ -589,107 +564,35 @@ class DataModel extends ChangeNotifier {
     removeAllScreens(context);
   }
 
-  static String getFormatter(value, type) {
-    if (type == gDate) {
-      String nums = value.replaceAll(RegExp(r'[\D]'), '');
-      String sSeg = '-';
-      List listFormat = [];
-      listFormat.add({
-        'locFrom': 0,
-        'locTo': 4,
-        'type': 'i',
-        'min': 1900,
-        'max': 3000,
-        'value:': ''
-      });
-      listFormat.add({
-        'locFrom': 4,
-        'locTo': 6,
-        'type': 'm',
-        'min': 1,
-        'max': 12,
-        'value:': ''
-      });
-      listFormat.add({
-        'locFrom': 6,
-        'locTo': 8,
-        'type': 'd',
-        'min': 1,
-        'max': 31,
-        'value:': ''
-      });
-      String result = '';
+  createDragTarget({Offset offset, BuildContext context, view}) {
+    removeOverlay();
 
-      if (nums.length < 5) {
-        return nums;
+    overlayEntry = new OverlayEntry(builder: (context) {
+      bool isLeft = true;
+      if (offset.dx + 100 > MediaQuery.of(context).size.width / 2) {
+        isLeft = false;
       }
-      if (nums.length == 5) {
-        String lastChar = nums.characters.last;
-        result = nums.substring(0, 4) + sSeg;
-        if (int.parse(lastChar) > 1) {
-          result = result + '0';
-        }
-        result = result + lastChar;
-        return result;
-      }
-      if (nums.length == 6) {
-        result = nums.substring(0, 4) + sSeg;
-        int iValue = int.parse(nums.substring(4, 6));
-        if (iValue > 12 || iValue < 1) {
-          return nums.substring(0, 4);
-        }
-        result = result + nums.substring(4, 6);
-        return result;
-      }
-      if (nums.length == 7) {
-        String lastChar = nums.characters.last;
-        result = nums.substring(0, 4) + sSeg + nums.substring(4, 6) + sSeg;
-        if (int.parse(lastChar) > 3) {
-          result = result + '0';
-        }
-        result = result + lastChar;
-        return result;
-      }
-      if (nums.length > 7) {
-        result = nums.substring(0, 4) + sSeg + nums.substring(4, 6);
-        int iValue = int.parse(nums.substring(6, 8));
-        if (iValue > 31 || iValue < 1) {
-          return result;
-        }
-        if (iValue > 28) {
-          int month = int.parse(nums.substring(4, 6));
-          if (month == 2) {
-            int year = int.parse(nums.substring(0, 4));
-            if (year % 4 > 0) {
-              return result;
-            }
-          }
-          if (iValue == 31 &&
-              (month == 4 || month == 6 || month == 9 || month == 11)) {
-            return result;
-          }
-        }
-        result = result + sSeg + nums.substring(6, 8);
-        return result;
-      }
-      return nums;
-    } else if (type == gPhone) {
-      String nums = value.replaceAll(RegExp(r'[\D]'), '');
-      String internationalPhoneFormatted = nums.length >= 1
-          ? (nums.length > 0 ? ' (' : '') +
-              nums.substring(0, nums.length >= 3 ? 3 : null) +
-              (nums.length > 3 ? ') ' : '') +
-              (nums.length > 3
-                  ? nums.substring(3, nums.length >= 6 ? 6 : null) +
-                      (nums.length > 6
-                          ? '-' +
-                              nums.substring(6, nums.length >= 10 ? 10 : null)
-                          : '')
-                  : '')
-          : nums;
-      return internationalPhoneFormatted;
-    }
-    return value;
+      double maxY = MediaQuery.of(context).size.height - 100;
+
+      return new Positioned(
+          top: offset.dy < 50
+              ? 50
+              : offset.dy < maxY
+                  ? offset.dy
+                  : maxY,
+          left: isLeft ? 0 : null,
+          right: isLeft ? null : 0,
+          child: DragTarget(
+              onWillAccept: (data) {
+                return true;
+              },
+              onAccept: (data) {},
+              onLeave: (data) {},
+              builder: (BuildContext context, List incoming, List rejected) {
+                return buildDraggable(context, view);
+              }));
+    });
+    Overlay.of(context).insert(overlayEntry);
   }
 
   decryptByDES(ciphertext) {
@@ -717,49 +620,6 @@ class DataModel extends ChangeNotifier {
     _tabList[tabName][gData][tabIndex][gVisible] = false;
     _tabList[tabName][gTabIndex] = 0;
     myNotifyListeners();
-  }
-
-  Future downloadFile(filename, context, needRemove, subject) async {
-    dynamic filePath = '';
-
-    try {
-      dynamic myUrl = 'http://' +
-          MyConfig.URL.name +
-          '/' +
-          MyConfig.DOWNLOAD.name +
-          '?filename=$filename&needRemove=$needRemove';
-
-      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
-      //waitDialog(context);
-      Response response = (await httpClient.get(Uri.parse(myUrl)));
-      //waitDialogClose(context);
-      //var response = await request;
-      if (response.statusCode == 200) {
-        var bytes = response.bodyBytes;
-        //await consolidateHttpClientResponseBytes(response);
-        //Directory dir = await getApplicationDocumentsDirectory();
-        Directory dir = await getTemporaryDirectory();
-        dynamic tempPath = dir.path;
-
-        filePath = '$tempPath/$filename';
-        File file = File(filePath);
-        await file.writeAsBytes(bytes);
-        navigatorPush(context, PDFScreen({gPath: filePath, gSubject: subject}),
-            'downloadFile');
-        /*Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                PDFScreen({gPath: filePath, gSubject: subject}),
-          ),
-        );*/
-      } else {
-        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
-      }
-    } catch (ex) {
-      showMsg(context, ex.toString(), null);
-    }
-    //print('======== filePath is $filePath');
   }
 
   Future<List> downloadAddress(searchTxt, context, haveNext) async {
@@ -838,6 +698,73 @@ class DataModel extends ChangeNotifier {
     //print('======== filePath is $filePath');
   }
 
+  Future downloadFile(filename, context, needRemove, subject) async {
+    dynamic filePath = '';
+
+    try {
+      dynamic myUrl = 'http://' +
+          MyConfig.URL.name +
+          '/' +
+          MyConfig.DOWNLOAD.name +
+          '?filename=$filename&needRemove=$needRemove';
+
+      //Uri uri = new Uri.http(MyConfig.URL.name,MyConfig.DOWNLOAD.name + '?filename=$filename' + filename);
+      //waitDialog(context);
+      Response response = (await httpClient.get(Uri.parse(myUrl)));
+      //waitDialogClose(context);
+      //var response = await request;
+      if (response.statusCode == 200) {
+        var bytes = response.bodyBytes;
+        //await consolidateHttpClientResponseBytes(response);
+        //Directory dir = await getApplicationDocumentsDirectory();
+        Directory dir = await getTemporaryDirectory();
+        dynamic tempPath = dir.path;
+
+        filePath = '$tempPath/$filename';
+        File file = File(filePath);
+        await file.writeAsBytes(bytes);
+        navigatorPush(context, PDFScreen({gPath: filePath, gSubject: subject}),
+            'downloadFile');
+        /*Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                PDFScreen({gPath: filePath, gSubject: subject}),
+          ),
+        );*/
+      } else {
+        showMsg(context, 'Error code: ' + response.statusCode.toString(), null);
+      }
+    } catch (ex) {
+      showMsg(context, ex.toString(), null);
+    }
+    //print('======== filePath is $filePath');
+  }
+
+  dpListInsert(tablename, element, context) {
+    if (!_dpList.containsKey(tablename)) {
+      List tmp = [''];
+      _dpList[tablename] = tmp;
+    }
+    _dpList[tablename].add(element[gId]);
+
+    _i10nMap[element[gId]] = {
+      _locale: getTableKeyword(tablename, element[gId], context)
+    };
+    if (_dpList.containsKey(gZzyLanguageCode)) {
+      List languagecodeList = _dpList[gZzyLanguageCode];
+      languagecodeList.forEach((element1) {
+        _i10nMap[element[gId]][element1] =
+            getTableKeyword(tablename, element[gId], context);
+      });
+    }
+  }
+
+  dpListRemove(tablename, row, context) {
+    _dpList[tablename].removeWhere((element1) => element1[gId] == row[gId]);
+    _i10nMap.removeWhere((key, value) => key == row[gId]);
+  }
+
   encryptByDES(datalist) {
     var key = _sessionkey;
     var json = jsonEncode(datalist); //.toString();
@@ -876,7 +803,6 @@ class DataModel extends ChangeNotifier {
       _requestCnt = 0;
       resetSessionKey(context);
       //} else {
-
     }
     return _firstPage;
   }
@@ -1007,6 +933,19 @@ class DataModel extends ChangeNotifier {
     return Color(intColor);
   }
 
+  getActionIcons(_param, context, backcolor) {
+    List<Widget> result = getLocalComponentsList(context, backcolor);
+
+    if (_param[gActions] != null) {
+      for (int i = 0; i < _param[gActions].length; i++) {
+        Map pi = Map.of(_param[gActions][i]);
+        Widget wi = getMyItem(pi, context, backcolor);
+        result.add(wi);
+      }
+    }
+    return result;
+  }
+
   getActions(List param, context, int backcolor) {
     List<Widget> result = getLocalComponentsList(context, backcolor);
     List<Widget> actions = getActionsBasic(param, context, backcolor);
@@ -1028,19 +967,6 @@ class DataModel extends ChangeNotifier {
           result.add(MyIcon(pi));
           
         }*/
-      }
-    }
-    return result;
-  }
-
-  getActionIcons(_param, context, backcolor) {
-    List<Widget> result = getLocalComponentsList(context, backcolor);
-
-    if (_param[gActions] != null) {
-      for (int i = 0; i < _param[gActions].length; i++) {
-        Map pi = Map.of(_param[gActions][i]);
-        Widget wi = getMyItem(pi, context, backcolor);
-        result.add(wi);
       }
     }
     return result;
@@ -1073,32 +999,6 @@ class DataModel extends ChangeNotifier {
       }
     }
     return result;
-  }
-
-  getItemFormatters(item) {
-    if ((item.value[gType] ?? "") == gPhone) {
-      return [InternationalPhoneFormatter()];
-    } else if ((item.value[gType] ?? "") == gDate) {
-      return [DateFormatter()];
-    }
-    return null;
-  }
-
-  getMapSortByKey(Map map, bool isAsc) {
-    final sortedKeys = SplayTreeMap.from(
-        map,
-        (keys1, keys2) =>
-            isAsc ? keys1.compareTo(keys2) : keys2.compareTo(keys1));
-    return sortedKeys;
-  }
-
-  getMapSortByValue(Map map, bool isAsc) {
-    final sortedKeys = SplayTreeMap.from(
-        map,
-        (keys1, keys2) => isAsc
-            ? map[keys1].compareTo(map[keys2])
-            : map[keys2].compareTo(map[keys1]));
-    return sortedKeys;
   }
 
   getButtons(param) {
@@ -1194,36 +1094,47 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  setDplistYear() {
-    if ((_dpList[gYear] ?? []).length < 1) {
-      int iYear = new DateTime.now().year;
-      //int iYearMiddle = iYear - 49;
-      List result = [];
-      for (int i = 100; i >= -5; i--) {
-        result.add((iYear - i).toString());
-      }
-      /*result.add((iYear - 100).toString() + '~' + (iYearMiddle - 1).toString());
-      result.add(iYearMiddle.toString());
-      result.add((iYearMiddle + 1).toString() + '~' + (iYear + 2).toString());*/
-
-      _dpList[gYear] = result;
-      List resultMonth = [];
-      List resultDay31 = [];
-      for (int i = 1; i < 10; i++) {
-        resultMonth.add('0' + i.toString());
-        resultDay31.add('0' + i.toString());
-      }
-      for (int i = 10; i < 13; i++) {
-        resultMonth.add(i.toString());
-      }
-      _dpList[gMonth] = resultMonth;
-
-      for (int i = 10; i < 32; i++) {
-        resultDay31.add(i.toString());
-      }
-
-      _dpList[gDay] = resultDay31;
+  getDatePicker(aDate, backcolor, context, formname, id, actions) {
+    if (isNull(aDate)) {
+      var now = new DateTime.now();
+      var formatter = new DateFormat('yyyy-MM-dd');
+      aDate = formatter.format(now);
     }
+    setDplistYear();
+    List selectedIndex = [-1, -1, -1];
+    List sList = [gYear, gMonth, gDay];
+    for (int i = 0; i < sList.length; i++) {}
+    List sListValue = aDate.split('-');
+    if (sListValue.length < 2) {
+      sListValue.add('');
+    }
+    if (sListValue.length < 3) {
+      sListValue.add('');
+    }
+    for (int j = 0; j < sList.length; j++) {
+      for (int i = 0; i < _dpList[sList[j]].length; i++) {
+        if (_dpList[sList[j]][i].toString().indexOf(sListValue[j].toString()) >
+            -1) {
+          selectedIndex[j] = i;
+          _dpListDefaultIndex[sList[j]] = i;
+          break;
+        }
+      }
+    }
+
+    Map param = {
+      gAction: gLocalAction,
+      gAction1: gDroplist,
+      gHeight: null,
+      gSelectedList: selectedIndex,
+      gData: sList,
+      gWidth: [100.0, 80.0, 80.0],
+      gFormName: formname,
+      gId: id,
+      gType: gDate
+    };
+    Widget result = MyListPicker(param, backcolor, actions);
+    return result;
   }
 
   getDatePickerItems(
@@ -1323,46 +1234,37 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getDatePicker(aDate, backcolor, context, formname, id, actions) {
-    if (isNull(aDate)) {
-      var now = new DateTime.now();
-      var formatter = new DateFormat('yyyy-MM-dd');
-      aDate = formatter.format(now);
-    }
-    setDplistYear();
-    List selectedIndex = [-1, -1, -1];
-    List sList = [gYear, gMonth, gDay];
-    for (int i = 0; i < sList.length; i++) {}
-    List sListValue = aDate.split('-');
-    if (sListValue.length < 2) {
-      sListValue.add('');
-    }
-    if (sListValue.length < 3) {
-      sListValue.add('');
-    }
-    for (int j = 0; j < sList.length; j++) {
-      for (int i = 0; i < _dpList[sList[j]].length; i++) {
-        if (_dpList[sList[j]][i].toString().indexOf(sListValue[j].toString()) >
-            -1) {
-          selectedIndex[j] = i;
-          _dpListDefaultIndex[sList[j]] = i;
-          break;
-        }
+  getDetailBottom(param, context) {
+    //add  bottomImages
+    List<Widget> bottom = [];
+    if (param[gBottomImgs] != null) {
+      List bottomImages = param[gBottomImgs];
+
+      for (int i = 0; i < bottomImages.length; i++) {
+        Widget wi = MyPic(bottomImages[i]);
+
+        bottom.add(wi);
       }
     }
 
-    Map param = {
-      gAction: gLocalAction,
-      gAction1: gDroplist,
-      gHeight: null,
-      gSelectedList: selectedIndex,
-      gData: sList,
-      gWidth: [100.0, 80.0, 80.0],
-      gFormName: formname,
-      gId: id,
-      gType: gDate
-    };
-    Widget result = MyListPicker(param, backcolor, actions);
+    return Row(children: bottom);
+  }
+
+  getDpListByKey(key, context, value) {
+    //print('========  getDpListByKey 0: key is ' + key.toString());
+    List result = [];
+    if (_dpList.containsKey(key)) {
+      //print('========  getDpListByKey 0 1: ');
+      result = _dpList[key] ?? [];
+    }
+
+    //print('========  getDpListByKey 1: ' + result.toString());
+
+    if (result.length < 1) {
+      result.add(value);
+    }
+    //print('========  getDpListByKey 2');
+
     return result;
   }
 
@@ -1405,145 +1307,110 @@ class DataModel extends ChangeNotifier {
     };
     Widget result = MyListPicker(param, backcolor, actions);
 
-    /*Widget result = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        //spacing: 20.0, //gap between adjacent items
-        //runSpacing: 4.0, //gap between lines
-        //direction: Axis.horizontal,
-        //children: getDatePickerItems(controller, sizeList, sList, backcolor,
-        //  selectedIndex, context)));
-        children: getDPPickerItems(
-            sList, backcolor, selectedIndex, context, formname, id));*/
-
-    //_debouncer.run(() => getDatePickerAfter(controller, selectedIndex, sList));
     return result;
   }
 
-  /*getDPPickerItems(list, backcolor, selectedIndex, context, formname, id) {
-    List<Widget> result = [];
+  static String getFormatter(value, type) {
+    if (type == gDate) {
+      String nums = value.replaceAll(RegExp(r'[\D]'), '');
+      String sSeg = '-';
+      List listFormat = [];
+      listFormat.add({
+        'locFrom': 0,
+        'locTo': 4,
+        'type': 'i',
+        'min': 1900,
+        'max': 3000,
+        'value:': ''
+      });
+      listFormat.add({
+        'locFrom': 4,
+        'locTo': 6,
+        'type': 'm',
+        'min': 1,
+        'max': 12,
+        'value:': ''
+      });
+      listFormat.add({
+        'locFrom': 6,
+        'locTo': 8,
+        'type': 'd',
+        'min': 1,
+        'max': 31,
+        'value:': ''
+      });
+      String result = '';
 
-    List<Widget> subList = [];
-    result.add(Text(''));
-    for (int j = 0; j < list.length; j++) {
-      bool isSelected = false;
-      if (selectedIndex > -1 && selectedIndex == j) {
-        isSelected = true;
+      if (nums.length < 5) {
+        return nums;
       }
-      subList.add(isSelected
-          ? MyLabel({
-              gLabel: list[j],
-            }, Colors.white.value)
-          : InkWell(
-              child: MyLabel({
-                gLabel: list[j],
-              }, backcolor),
-              onTap: () {
-                setFormValue(formname, id, list[j]);
-                //close the detail
-                setFormValueShow(formname, id);
-                setFormNextFocus(formname, id);
-                myNotifyListeners();
-              },
-            ));
-    }
-    result.add(Wrap(
-        spacing: 10.0, //gap between adjacent items
-        runSpacing: 20.0, //gap between lines
-        direction: Axis.horizontal,
-        children: subList));
-
-    return result;
-  }*/
-
-  /*getDatePickerAfter(List controller, selectedIndex, sList) {
-    for (int i = 0; i < controller.length; i++) {
-      int itemLength = _dpList[sList[i]].length;
-      double contentSize = controller[i].position.viewportDimension +
-          controller[i].position.maxScrollExtent;
-      final target = contentSize * selectedIndex[i] / itemLength;
-      controller[i].position.animateTo(
-            target,
-            duration: const Duration(milliseconds: 1),
-            curve: Curves.easeInOut,
-          );
-    }
-  }*/
-
-  getDetailBottom(param, context) {
-    //add  bottomImages
-    List<Widget> bottom = [];
-    if (param[gBottomImgs] != null) {
-      List bottomImages = param[gBottomImgs];
-
-      for (int i = 0; i < bottomImages.length; i++) {
-        Widget wi = MyPic(bottomImages[i]);
-
-        bottom.add(wi);
+      if (nums.length == 5) {
+        String lastChar = nums.characters.last;
+        result = nums.substring(0, 4) + sSeg;
+        if (int.parse(lastChar) > 1) {
+          result = result + '0';
+        }
+        result = result + lastChar;
+        return result;
       }
-    }
-
-    return Row(children: bottom);
-  }
-
-  /*getDetailWidget(param, context, backcolor) {
-    List<Widget> result = [];
-
-    if (param == null) {
-      return result;
-    }
-    result.add(SizedBox(height: gDefaultPaddin));
-    //title
-    //double otherHeights = 0;
-    //Widget title = getWidgetTitle(param);
-    if (param[gTitle] != null) {
-      if (param[gTitle][gHeight] != null) {
-        //otherHeights += param[gTitle][gHeight];
+      if (nums.length == 6) {
+        result = nums.substring(0, 4) + sSeg;
+        int iValue = int.parse(nums.substring(4, 6));
+        if (iValue > 12 || iValue < 1) {
+          return nums.substring(0, 4);
+        }
+        result = result + nums.substring(4, 6);
+        return result;
       }
-
-      result.add(Center(child: getWidgetTitle(param, backcolor)));
+      if (nums.length == 7) {
+        String lastChar = nums.characters.last;
+        result = nums.substring(0, 4) + sSeg + nums.substring(4, 6) + sSeg;
+        if (int.parse(lastChar) > 3) {
+          result = result + '0';
+        }
+        result = result + lastChar;
+        return result;
+      }
+      if (nums.length > 7) {
+        result = nums.substring(0, 4) + sSeg + nums.substring(4, 6);
+        int iValue = int.parse(nums.substring(6, 8));
+        if (iValue > 31 || iValue < 1) {
+          return result;
+        }
+        if (iValue > 28) {
+          int month = int.parse(nums.substring(4, 6));
+          if (month == 2) {
+            int year = int.parse(nums.substring(0, 4));
+            if (year % 4 > 0) {
+              return result;
+            }
+          }
+          if (iValue == 31 &&
+              (month == 4 || month == 6 || month == 9 || month == 11)) {
+            return result;
+          }
+        }
+        result = result + sSeg + nums.substring(6, 8);
+        return result;
+      }
+      return nums;
+    } else if (type == gPhone) {
+      String nums = value.replaceAll(RegExp(r'[\D]'), '');
+      String internationalPhoneFormatted = nums.length >= 1
+          ? (nums.length > 0 ? ' (' : '') +
+              nums.substring(0, nums.length >= 3 ? 3 : null) +
+              (nums.length > 3 ? ') ' : '') +
+              (nums.length > 3
+                  ? nums.substring(3, nums.length >= 6 ? 6 : null) +
+                      (nums.length > 6
+                          ? '-' +
+                              nums.substring(6, nums.length >= 10 ? 10 : null)
+                          : '')
+                  : '')
+          : nums;
+      return internationalPhoneFormatted;
     }
-    
-    //add body
-    Widget body = getWidgetBody(param, context, backcolor);
-    if (body != null) {
-      result.add(SizedBox(height: gDefaultPaddin));
-      result.add(Container(
-        //height: bodyheight,
-        child: Padding(
-          padding: const EdgeInsets.all(gDefaultPaddin),
-          child: body,
-        ),
-      ));
-    }
-
-    
-    return Column(children: result);
-  }*/
-
-  /*getDropdownMenuItem(dpid, filterStr, context, backcolor) {
-    if (_dpList[dpid] != null) {
-      return;
-      // dplist exists
-    }
-
-    getTableByTableID(gZzydictionary, gLabel + "='" + dpid + "'", context);
-  }*/
-  getDpListByKey(key, context, value) {
-    //print('========  getDpListByKey 0: key is ' + key.toString());
-    List result = [];
-    if (_dpList.containsKey(key)) {
-      //print('========  getDpListByKey 0 1: ');
-      result = _dpList[key] ?? [];
-    }
-
-    //print('========  getDpListByKey 1: ' + result.toString());
-
-    if (result.length < 1) {
-      result.add(value);
-    }
-    //print('========  getDpListByKey 2');
-
-    return result;
+    return value;
   }
 
   getFormDefineImage(formValue) {
@@ -1623,25 +1490,13 @@ class DataModel extends ChangeNotifier {
     return TextInputType.text;
   }
 
-  setItemI(item, value, formname, tablename, id) {
-    bool isForm = !isNull(formname);
-    dynamic name = formname;
-    if (!isForm) {
-      name = tablename;
+  getItemFormatters(item) {
+    if ((item.value[gType] ?? "") == gPhone) {
+      return [InternationalPhoneFormatter()];
+    } else if ((item.value[gType] ?? "") == gDate) {
+      return [DateFormatter()];
     }
-    if (isForm) {
-      setFormValue(name, item.value[gId], value);
-      //datamodel.setFormValueShow(formname, item.value[gId]);
-      setFormNextFocus(name, item.value[gId]);
-    } else {
-      setTableValue(name, item.value[gId], id, value);
-      //datamodel.setFormValueShow(formname, item.value[gId]);
-      setTableNextFocus(name, item.value[gId], id);
-    }
-
-    dpList[gAddress + '_' + name + '_' + item.value[gId]] = null;
-
-    myNotifyListeners();
+    return null;
   }
 
   getItemSubWidget(
@@ -1651,42 +1506,7 @@ class DataModel extends ChangeNotifier {
     var name = formname ?? tablename;
 
     Map data = item.value;
-    if (data[gType] == gAddress) {
-      var searchTxt = data[gSearch] ?? data[gValue];
-      if ((searchTxt).length < 3) {
-        return;
-      }
-      var dpid = gAddress + '_' + name + '_' + data[gId];
-      _dpList[dpid] = [];
-      //
-      List result = await downloadAddress(searchTxt, context, false);
-      List resultSort = getArrayMatch(result, searchTxt);
-      _dpList[dpid] = resultSort;
-      item.value[gDroplist] = dpid;
-    }
-    /*if (data[gType] == gAddress &&
-        dpList[gAddress + '_' + name + '_' + data[gId]] != null &&
-        dpList[gAddress + '_' + name + '_' + data[gId]].length > 0) {
-      return SizedBox(
-        height: gSizedboxHeight,
-        child: ListView.builder(
-            itemCount: dpList[gAddress + '_' + name + '_' + data[gId]].length,
-            itemBuilder: (context, index) {
-              final anItem =
-                  dpList[gAddress + '_' + name + '_' + data[gId]][index];
-              return InkWell(
-                child: MyLabel({
-                  gLabel: anItem,
-                }, backcolor),
-                onTap: () {
-                  setItemI(item, anItem, formname, tablename, id);
-                  //setItemI(item, anItem, datamodel);
-                },
-              );
-            }),
-      );
-    } else */
-    //print('===========  getItemSubWidget 1:');
+
     if (data[gType] == gDate && (data[gShowDetail] ?? false)) {
       data[gFocus] = true;
       return getDatePicker(
@@ -1707,7 +1527,7 @@ class DataModel extends ChangeNotifier {
 
   getLocalComponentsList(context, valueColor) {
     return [
-      Icon(Icons.public_outlined),
+      isProcessing ? CircularProgressIndicator() : Icon(Icons.public_outlined),
       //(_locale.languageCode == 'en')
       (_locale == 'en')
           ? TextButton(
@@ -1736,6 +1556,23 @@ class DataModel extends ChangeNotifier {
               gAction: gLocalAction,
             })
     ];
+  }
+
+  getMapSortByKey(Map map, bool isAsc) {
+    final sortedKeys = SplayTreeMap.from(
+        map,
+        (keys1, keys2) =>
+            isAsc ? keys1.compareTo(keys2) : keys2.compareTo(keys1));
+    return sortedKeys;
+  }
+
+  getMapSortByValue(Map map, bool isAsc) {
+    final sortedKeys = SplayTreeMap.from(
+        map,
+        (keys1, keys2) => isAsc
+            ? map[keys1].compareTo(map[keys2])
+            : map[keys2].compareTo(map[keys1]));
+    return sortedKeys;
   }
 
   getMenuItems(dynamic menuName, context, backcolor) {
@@ -1787,6 +1624,22 @@ class DataModel extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  getMyItem(valueMap, context, backcolor) {
+    if (valueMap[gType] == gImg) {
+      dynamic imageValue = _imgList[valueMap[gValue]];
+      if (imageValue == null) {
+        setImage(valueMap[gValue], context);
+      }
+    } else if (valueMap[gType] == gForm) {
+      dynamic form = _formLists[valueMap[gValue]];
+      if (form == null) {
+        setForm(valueMap[gValue], context);
+      }
+    }
+    Widget result = MyItem(valueMap, backcolor);
+    return result;
   }
 
   getParamTypeValue(param) {
@@ -1855,11 +1708,6 @@ class DataModel extends ChangeNotifier {
     return tableInfo[gRowsPerPage];
   }
 
-  setRowsPerPage(tableInfo, cnt) {
-    tableInfo[gRowsPerPage] = cnt;
-    myNotifyListeners();
-  }
-
   getScreenItem(Map mItemDetail, context, int backcolor) {
     Widget result;
 
@@ -1918,22 +1766,6 @@ class DataModel extends ChangeNotifier {
       Widget wi = getMyItem(pi, context, backcolor);
       result.add(wi);
     }
-    return result;
-  }
-
-  getMyItem(valueMap, context, backcolor) {
-    if (valueMap[gType] == gImg) {
-      dynamic imageValue = _imgList[valueMap[gValue]];
-      if (imageValue == null) {
-        setImage(valueMap[gValue], context);
-      }
-    } else if (valueMap[gType] == gForm) {
-      dynamic form = _formLists[valueMap[gValue]];
-      if (form == null) {
-        setForm(valueMap[gValue], context);
-      }
-    }
-    Widget result = MyItem(valueMap, backcolor);
     return result;
   }
 
@@ -2097,15 +1929,6 @@ class DataModel extends ChangeNotifier {
         {gLabel: data[gType] + ' will be available soon'}, backcolor);
   }
 
-  getTabIndex(label, context, tabName) {
-    for (int i = 0; i < _tabList[tabName][gData].length; i++) {
-      if (_tabList[tabName][gData][i][gLabel] == label) {
-        return i;
-      }
-    }
-    return -1;
-  }
-
   getTabByIndex(int index, tabName) {
     List<Widget> titleWidgets = [];
     var dataThis = _tabList[tabName][gData][index];
@@ -2169,6 +1992,19 @@ class DataModel extends ChangeNotifier {
     );
   }
 
+  getTabIndex(label, context, tabName) {
+    for (int i = 0; i < _tabList[tabName][gData].length; i++) {
+      if (_tabList[tabName][gData][i][gLabel] == label) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  getTableBody(data, context, backcolor) {
+    return MyScreen(getTableBodyParam(data, context), backcolor);
+  }
+
   getTableByIndex(int index, tableid) {
     dynamic tableData = _tableList[tableid][gData][index];
     return tableData;
@@ -2185,19 +2021,6 @@ class DataModel extends ChangeNotifier {
     }
 
     return getTableDataFromWhere(tableData, where);
-  }
-
-  getTableRowByID(tableName, id) {
-    Map tableInfo = _tableList[tableName];
-    if (tableInfo[gData] == null) {
-      return null;
-    }
-
-    List result = getTableDataFromWhere(tableInfo, "id=" + id);
-    if (result.length > 0) {
-      return result.elementAt(0);
-    }
-    return null;
   }
 
   getTableDataFromWhere(tableData, where) {
@@ -2258,91 +2081,56 @@ class DataModel extends ChangeNotifier {
     return item;
   }
 
-  getTableShowData(tableInfo, context) {
-    List tableData = tableInfo[gData];
-    List columns = tableInfo[gColumns];
-    List result = [];
-    tableData.forEach((dataRow) {
-      Map map = {};
-      for (int i = 0; i < columns.length; i++) {
-        Map col = columns[i];
-        map[col[gId]] =
-            getTableCellValueFromDataRowIsRawCol(dataRow, col, context, false);
+  getTableModifiedValue(tableid, colId, id) {
+    if (isNull(_tableList[tableid][gDataModified])) {
+      return null;
+    }
+    Map dataModified = _tableList[tableid][gDataModified];
+    if (!dataModified.containsKey(id)) {
+      return null;
+    }
+    Map value = dataModified[id];
+    if (isNull(value[colId])) {
+      return null;
+    }
+    return value[colId];
+  }
+
+  getTableOriginalValue(tableid, id, colId) {
+    List newData =
+        _tableList[tableid][gDataSearch] ?? _tableList[tableid][gData];
+    List colList = _tableList[tableid][gColumns];
+    Map col;
+    if (colList != null && colList.length > 0) {
+      for (int i = 0; i < colList.length; i++) {
+        if (colList[i][gId] == colId) {
+          col = colList[i];
+          break;
+        }
       }
-      result.add(map);
-    });
-    return result;
-  }
-
-  getTitle(param, context, backcolor) {
-    dynamic aLabel = param[gLabel];
-    if (aLabel == null) {
-      if (param[gData] != null) {
-        aLabel = param[gData][gLabel] ?? param[gData][gName];
+    }
+    for (int i = 0; i < newData.length; i++) {
+      Map dataRow = newData[i];
+      if (dataRow[gId] == id) {
+        var dataI = dataRow[colId];
+        var value = getValueByType(dataI, col);
+        return value;
       }
     }
-    if (aLabel == null) {
-      aLabel = "";
-    }
-
-    return MyLabel({
-      gLabel: aLabel,
-    }, backcolor);
+    return null;
   }
 
-  getTreeNodesFromTable(tableName, context, level) {
-    /*List<Node> nodes = [];
-    if (tableName == null || _tableList[tableName] == null) {
-      return nodes;
-    }
-    Map table = _tableList[tableName];
-    if (table[gData] == null) {
-      return nodes;
+  getTableRowByID(tableName, id) {
+    Map tableInfo = _tableList[tableName];
+    if (tableInfo[gData] == null) {
+      return null;
     }
 
-    List tableData = table[gData];
-    dynamic icon = Icons.folder;
-    dynamic color = Colors.black;
-    if (level == 1) {
-      icon = Icons.input;
-      color = Colors.red;
-    } else if (level == 2) {
-      icon = Icons.insert_drive_file;
+    List result = getTableDataFromWhere(tableInfo, "id=" + id);
+    if (result.length > 0) {
+      return result.elementAt(0);
     }
-
-    tableData.forEach((element) {
-      Node aNode = Node(
-        label: getSCurrent(element[gLabel]),
-        key: element[gDbname],
-        icon: icon,
-        iconColor: color,
-        children:
-            getTreeNodesFromTable(element[gDetail] ?? null, context, level + 1),
-      );
-      nodes.add(aNode);
-    });
-    return nodes;
-
-    */
-  }
-
-  getTreeBody(data, context, backcolor) {
-    return Column(
-      children: [
-        Expanded(child: MyLabel({gLabel: gWelcome, gFontSize: 20.0}, backcolor)
-
-            //MyTree({gData: data, gAction: gLocalAction, gContext: context}),
-            ),
-      ],
-    );
-  }
-
-  getTableBody(data, context, backcolor) {
-    return MyScreen(getTableBodyParam(data, context), backcolor);
-  }
-
-  notAvailable(backcolor) {
-    return MyLabel({gLabel: gNotavailable}, backcolor);
+    return null;
   }
 
   getTableBodyParam(data, context) {
@@ -2420,55 +2208,6 @@ class DataModel extends ChangeNotifier {
     return param;
   }
 
-  getTableValue(row, colid) {
-    var result = row[colid];
-
-    return result;
-  }
-
-  getTableValueAttr(tableId, attrName) {
-    var table = _tableList[tableId];
-
-    var result = table[gAttr][attrName];
-
-    return result;
-  }
-
-  getTableKeyword(tableId, dataid, context) {
-    var table = _tableList[tableId] ?? null;
-    if (table == null) {
-      retrieveTableFromDB(tableId, context);
-
-      return dataid;
-    }
-    var dataRow = getTableIDMap(table)[dataid];
-    if (dataRow == null) {
-      return dataid;
-    }
-    return getTableValueKeyFromTable(table, dataRow);
-  }
-
-  getTableIDMap(table) {
-    if (table != null && table[gDataIDMap] != null) {
-      return table[gDataIDMap];
-    }
-    Map dataIDMap = {};
-    for (int i = 0; i < table[gData].length; i++) {
-      var dataRow = table[gData][i];
-      dataIDMap[dataRow[gId]] = dataRow;
-    }
-    table[gDataIDMap] = dataIDMap;
-
-    return dataIDMap;
-  }
-
-  getTableCellValueFromTable(tableName, colIndex, rowIndex, context) {
-    List data = tableList[tableName][gData];
-    List columns = tableList[tableName][gColumns];
-    return getTableCellValueFromData(
-        data, columns, colIndex, rowIndex, context);
-  }
-
   getTableCellValueFromData(data, columns, colIndex, rowIndex, context) {
     var dataRow = data[rowIndex];
     return getTableCellValueFromDataRow(dataRow, columns, colIndex, context);
@@ -2507,19 +2246,49 @@ class DataModel extends ChangeNotifier {
     //return result;
   }
 
-  getValueByType(result, col) {
-    dynamic inputType = col[gInputType];
-    if (inputType == gDatetime) {
-      return toLocalTime(result);
+  getTableCellValueFromTable(tableName, colIndex, rowIndex, context) {
+    List data = tableList[tableName][gData];
+    List columns = tableList[tableName][gColumns];
+    return getTableCellValueFromData(
+        data, columns, colIndex, rowIndex, context);
+  }
+
+  getTableIDMap(table) {
+    if (table != null && table[gDataIDMap] != null) {
+      return table[gDataIDMap];
     }
-    if (!isNull(col[gDroplist])) {
-      return getSCurrent(result);
+    Map dataIDMap = {};
+    for (int i = 0; i < table[gData].length; i++) {
+      var dataRow = table[gData][i];
+      dataIDMap[dataRow[gId]] = dataRow;
     }
-    return result;
+    table[gDataIDMap] = dataIDMap;
+
+    return dataIDMap;
+  }
+
+  getTableKeyword(tableId, dataid, context) {
+    var table = _tableList[tableId] ?? null;
+    if (table == null) {
+      retrieveTableFromDB(tableId, context);
+
+      return dataid;
+    }
+    var dataRow = getTableIDMap(table)[dataid];
+    if (dataRow == null) {
+      return dataid;
+    }
+    return getTableValueKeyFromTable(table, dataRow);
   }
 
   getTableRowShowValue(item, colList, context) {
     return getTableRowShowValueFilter(item, colList, context, null);
+  }
+
+  getTableRowShowValueByTablename(item, tablename, context) {
+    Map tableInfo = _tableList[tablename];
+    List colList = tableInfo[gColumns];
+    return getTableRowShowValue(item, colList, context);
   }
 
   getTableRowShowValueFilter(item, colList, context, filterValue) {
@@ -2572,21 +2341,39 @@ class DataModel extends ChangeNotifier {
     return resultList;
   }
 
-  getTableRowShowValueByTablename(item, tablename, context) {
-    Map tableInfo = _tableList[tablename];
-    List colList = tableInfo[gColumns];
-    return getTableRowShowValue(item, colList, context);
+  getTableShowData(tableInfo, context) {
+    List tableData = tableInfo[gData];
+    List columns = tableInfo[gColumns];
+    List result = [];
+    tableData.forEach((dataRow) {
+      Map map = {};
+      for (int i = 0; i < columns.length; i++) {
+        Map col = columns[i];
+        map[col[gId]] =
+            getTableCellValueFromDataRowIsRawCol(dataRow, col, context, false);
+      }
+      result.add(map);
+    });
+    return result;
+  }
+
+  getTableValue(row, colid) {
+    var result = row[colid];
+
+    return result;
+  }
+
+  getTableValueAttr(tableId, attrName) {
+    var table = _tableList[tableId];
+
+    var result = table[gAttr][attrName];
+
+    return result;
   }
 
   getTableValueKey(tableid, dataRow) {
     var table = _tableList[tableid];
     return getTableValueKeyFromTable(table, dataRow);
-  }
-
-  getTableValueKeyFromTable(table, dataRow) {
-    //var data = table[gData][row];
-    List columns = table[gColumns];
-    return getTableValueKeyFromColumns(columns, dataRow);
   }
 
   getTableValueKeyFromColumns(columns, dataRow) {
@@ -2609,6 +2396,12 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
+  getTableValueKeyFromTable(table, dataRow) {
+    //var data = table[gData][row];
+    List columns = table[gColumns];
+    return getTableValueKeyFromColumns(columns, dataRow);
+  }
+
   getTableValuePrimary(tableId, data) {
     var table = _tableList[tableId];
 
@@ -2625,6 +2418,68 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
+  getTitle(param, context, backcolor) {
+    dynamic aLabel = param[gLabel];
+    if (aLabel == null) {
+      if (param[gData] != null) {
+        aLabel = param[gData][gLabel] ?? param[gData][gName];
+      }
+    }
+    if (aLabel == null) {
+      aLabel = "";
+    }
+
+    return MyLabel({
+      gLabel: aLabel,
+    }, backcolor);
+  }
+
+  getTreeBody(data, context, backcolor) {
+    return Column(
+      children: [
+        Expanded(child: MyLabel({gLabel: gWelcome, gFontSize: 20.0}, backcolor)
+
+            //MyTree({gData: data, gAction: gLocalAction, gContext: context}),
+            ),
+      ],
+    );
+  }
+
+  getTreeNodesFromTable(tableName, context, level) {
+    /*List<Node> nodes = [];
+    if (tableName == null || _tableList[tableName] == null) {
+      return nodes;
+    }
+    Map table = _tableList[tableName];
+    if (table[gData] == null) {
+      return nodes;
+    }
+
+    List tableData = table[gData];
+    dynamic icon = Icons.folder;
+    dynamic color = Colors.black;
+    if (level == 1) {
+      icon = Icons.input;
+      color = Colors.red;
+    } else if (level == 2) {
+      icon = Icons.insert_drive_file;
+    }
+
+    tableData.forEach((element) {
+      Node aNode = Node(
+        label: getSCurrent(element[gLabel]),
+        key: element[gDbname],
+        icon: icon,
+        iconColor: color,
+        children:
+            getTreeNodesFromTable(element[gDetail] ?? null, context, level + 1),
+      );
+      nodes.add(aNode);
+    });
+    return nodes;
+
+    */
+  }
   getTxtImage(label, color, fontSize, height, letterSpacing) {
     return Text(
       getSCurrent(label),
@@ -2647,27 +2502,16 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  /*getWidgetBody(param, context, backcolor) {
-    if (param[gType] == gForm) {
-      return getWidgetForm(param, backcolor);
-    } else if (param[gType].toString().endsWith(gTable)) {
-      return getTableBody(param, context, backcolor);
-    } else if (param[gType] == gScreen) {
-      return MyScreen(param, backcolor);
+  getValueByType(result, col) {
+    dynamic inputType = col[gInputType];
+    if (inputType == gDatetime) {
+      return toLocalTime(result);
     }
-    return Column(
-      children: [
-        MyLabel({gLabel: gWelcome, gFontSize: 20.0}, backcolor)
-      ],
-    );
-  }*/
-
-  /*getWidgetForm(param, backcolor) {
-    dynamic formID = param[gFormdetail][gFormName];
-
-    setFormListOne(formID, param);
-    return MyForm(formID, backcolor);
-  }*/
+    if (!isNull(col[gDroplist])) {
+      return getSCurrent(result);
+    }
+    return result;
+  }
 
   getWidgetTitle(param, backcolor) {
     Widget title;
@@ -2697,29 +2541,6 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
-  /*initPaginateDataTable(tableName, actionBtnCnts, tabledata, columns){
-
-    
-    Map tableInfo = _tableList[tableName];
-     PaginatedDataTable pageBody = PaginatedDataTable(
-        //header: MyLabel(data),
-        initialFirstRowIndex: 0,
-        rowsPerPage: 5,
-        availableRowsPerPage: [5, 10, 20, 50],
-        onPageChanged: (e) {},
-        onRowsPerPageChanged: (int v) {
-          //widget.onRowsPerPageChanged?.call(v ?? 10);
-        },
-        columns: columns,
-        columnSpacing: 30,
-        horizontalMargin: 5,
-        source: tabledata,
-        showCheckboxColumn: true,
-        sortAscending: tableInfo[gAscending],
-        sortColumnIndex: tableInfo[gSortColumnIndex] + actionBtnCnts,
-      );
-  
-  }*/
   isItemValueValid(item, value) {
     var result = isItemValueValidStr(item, value);
     return result == '';
@@ -2768,32 +2589,40 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
-  toLocalTime(atime) {
-    try {
-      //return DateTime.fromMillisecondsSinceEpoch(int.parse('1639181163816'))
-      //  .toLocal();
-      DateTime dt = DateTime.fromMillisecondsSinceEpoch(atime).toLocal();
-      dynamic formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
-      return formattedDate;
-      //return DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
-      /*DateTime _nowDate = DateTime.now();
-      return DateTime.fromMillisecondsSinceEpoch(
-              _nowDate.millisecondsSinceEpoch)
-          .toLocal();*/
+  isPopOpen() {
+    return overlayEntry != null;
+  }
 
-    } catch (e) {
-      return "";
+  loadFile(formname, item) async {
+    if (isNull(formname)) {
+      return;
+    }
+    PlatformFile file = await pickFiles();
+    var filename = file.name;
+    dynamic myUrl = 'http://' + MyConfig.URL.name + '/' + MyConfig.UPLOAD.name;
+    var request = http.MultipartRequest('POST', Uri.parse(myUrl));
+    request.fields['param0'] = filename;
+    request.fields['param1'] = _globalCompanyid;
+    /*http.MultipartFile multipartFile =
+        await http.MultipartFile.fromPath("image", file.name);*/
+    request.files.add(http.MultipartFile.fromBytes(_globalCompanyid, file.bytes,
+        filename: filename));
+    //upload file
+    var res = await request.send();
+    if (res.statusCode == 200) {
+      setFormValue(formname, item.value[gId], filename);
+      myNotifyListeners();
     }
   }
 
-  toUTCTime(adate) {
-    try {
-      return DateTime.parse(adate).millisecondsSinceEpoch;
-      //return DateTime.parse('2021-12-10 16:06:03').millisecondsSinceEpoch;
+  loadUrl(url) {
+    final anUri = Uri.parse(url);
+    _launch(anUri);
+  }
 
-    } catch (e) {
-      DateTime _nowDate = DateTime.now();
-      return _nowDate.millisecondsSinceEpoch;
+  void _launch(url) async {
+    if (url != null) {
+      await launchUrl(url);
     }
   }
 
@@ -2974,17 +2803,72 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  businessFunc(funcName, context, data) {
-    if (funcName == "forgetpassword") {
-      forgetpassword(context);
-    }
-  }
-
   logOff(context) {
     finishme(context);
     clear(context);
 
     //myNotifyListeners();
+  }
+
+  myNotifyListeners() {
+    _debouncer.run(() => notifyListeners());
+  }
+
+  navigatorPush(context, Widget aScreen, msg) {
+    Route lastRoute = MaterialPageRoute(builder: (context) => aScreen);
+    Navigator.push(context, lastRoute);
+  }
+
+  newForm(data, context) {
+    var tableName = data[gActionid] ?? data[gTableID];
+    Map<dynamic, dynamic> formDefine = _formLists[tableName];
+    Map<dynamic, dynamic> items = formDefine[gItems];
+    Map mapWhereList = {};
+    if (data[gData] != null) {
+      Map mapData = Map.of(data[gData]);
+      if (!isNull(mapData[gWhere])) {
+        List whereList = mapData[gWhere].split(" and ");
+        whereList.forEach((element) {
+          if (element.toString().indexOf("=") > 0) {
+            String aKey = element
+                .toString()
+                .substring(0, element.toString().indexOf("="));
+            String aValue = element
+                .toString()
+                .substring(element.toString().indexOf("=") + 1);
+            if (aValue.indexOf("'") == 0) {
+              aValue = aValue.substring(1, aValue.length - 1);
+            }
+            mapWhereList[aKey] = aValue;
+          }
+        });
+      }
+    }
+    items.entries.forEach((item) {
+      item.value[gOldvalue] = null;
+      if (mapWhereList.containsKey(item.value[gId])) {
+        if (isNull(item.value[gDefaultValue]))
+          item.value[gDefaultValue] = mapWhereList[item.value[gId]];
+      }
+      item.value[gValue] = item.value[gDefaultValue];
+      item.value[gTxtEditingController]..text = item.value[gDefaultValue];
+    });
+  }
+
+  notAvailable(backcolor) {
+    return MyLabel({gLabel: gNotavailable}, backcolor);
+  }
+
+  openDetailForm(formname, context, backcolor) {
+    Map param = {
+      gsBackgroundColor: _formLists[formname][gsBackgroundColor],
+      gColor: _formLists[formname][gColor],
+      gName: formname,
+      gType: gForm
+    };
+    navigatorPush(context, MyDetailNew(param, backcolor), 'openDetailForm');
+    /*Navigator.push(context,
+        MaterialPageRoute(builder: (context) => MyDetailNew(param, backcolor)));*/
   }
 
   onTap(context, Map map, backcolor) {
@@ -3011,38 +2895,9 @@ class DataModel extends ChangeNotifier {
     //print('=====typed ' + map[gLabel]);
   }
 
-  openDetailForm(formname, context, backcolor) {
-    Map param = {
-      gsBackgroundColor: _formLists[formname][gsBackgroundColor],
-      gColor: _formLists[formname][gColor],
-      gName: formname,
-      gType: gForm
-    };
-    navigatorPush(context, MyDetailNew(param, backcolor), 'openDetailForm');
-    /*Navigator.push(context,
-        MaterialPageRoute(builder: (context) => MyDetailNew(param, backcolor)));*/
-  }
-
   phonecall(sNum) {
     String nums = sNum.replaceAll(RegExp(r'[\D]'), '');
     final anUri = Uri.parse('tel:' + nums);
-    _launch(anUri);
-  }
-
-  sendEmail(email) {
-    sendEmailBody(email, '', '');
-  }
-
-  sendEmailBody(email, subject, body) {
-    final anUri = Uri(
-        scheme: 'mailto',
-        path: email,
-        query: 'subject=' + subject.toString() + '&body=' + body.toString());
-    _launch(anUri);
-  }
-
-  sms(sNum) {
-    final anUri = Uri.parse('sms:' + sNum);
     _launch(anUri);
   }
 
@@ -3053,39 +2908,6 @@ class DataModel extends ChangeNotifier {
     }
     PlatformFile file = result.files.first;
     return file;
-  }
-
-  loadFile(formname, item) async {
-    if (isNull(formname)) {
-      return;
-    }
-    PlatformFile file = await pickFiles();
-    var filename = file.name;
-    dynamic myUrl = 'http://' + MyConfig.URL.name + '/' + MyConfig.UPLOAD.name;
-    var request = http.MultipartRequest('POST', Uri.parse(myUrl));
-    request.fields['param0'] = filename;
-    request.fields['param1'] = _globalCompanyid;
-    /*http.MultipartFile multipartFile =
-        await http.MultipartFile.fromPath("image", file.name);*/
-    request.files.add(http.MultipartFile.fromBytes(_globalCompanyid, file.bytes,
-        filename: filename));
-    //upload file
-    var res = await request.send();
-    if (res.statusCode == 200) {
-      setFormValue(formname, item.value[gId], filename);
-      myNotifyListeners();
-    }
-  }
-
-  loadUrl(url) {
-    final anUri = Uri.parse(url);
-    _launch(anUri);
-  }
-
-  void _launch(url) async {
-    if (url != null) {
-      await launchUrl(url);
-    }
   }
 
   processRequest(requestFirst, context) async {
@@ -3107,10 +2929,10 @@ class DataModel extends ChangeNotifier {
               .post(uri, headers: headers, body: dataRequest)
               .catchError((error) {
         //ShowToast.warning(error.toString());
-        waitDialogClose(context);
+
         throw (error);
       });
-      waitDialogClose(context);
+
       if (response.statusCode != 200) {
         throw Exception(getSCurrent(
             "serverwrongcode(${response.statusCode}, ${response.body.toString()})"));
@@ -3183,10 +3005,14 @@ class DataModel extends ChangeNotifier {
               actionData[0][gLabel] ?? "", "", "", null, null);
         } else if (action == gSetDroplist) {
           await setDroplist();
+        } else if (action == gSetAddressList) {
+          await setAddressList(actionData, context);
         }
       });
     } catch (e) {
       throw e;
+    } finally {
+      waitDialogClose(context);
     }
   }
 
@@ -3216,34 +3042,13 @@ class DataModel extends ChangeNotifier {
       data0 = Map.of(data0);
       saveTableOne(data0, context);
     });
+    showMsg(context, "Save successful", null);
 
     //myNotifyListeners();
   }
 
   processTap(context, element, tabName) {
     processTapBasic(context, element, tabName, false);
-  }
-
-  changeTabPos(tabName, tabLabel) {
-    List tabData = _tabList[tabName][gData];
-    int iLoc = 0;
-    Map mLoc;
-    for (int i = 0; i < tabData.length; i++) {
-      Map el = tabData[i];
-      if (el[gLabel] == tabLabel) {
-        iLoc = i;
-        mLoc = el;
-      }
-    }
-    if (iLoc > 1) {
-      while (iLoc > 1) {
-        tabData[iLoc] = tabData[iLoc - 1];
-        iLoc--;
-      }
-      tabData[iLoc] = mLoc;
-    }
-
-    _tabList[tabName][gTabIndex] = iLoc;
   }
 
   processTapBasic(context, element, tabName, needPosChange) {
@@ -3294,14 +3099,24 @@ class DataModel extends ChangeNotifier {
   }
 
   removeOverlay() {
+    if (overlayEntry == null) {
+      return;
+    }
     try {
       overlayEntry?.remove();
       overlayEntry = null;
     } catch (e) {}
   }
 
-  isPopOpen() {
-    return overlayEntry != null;
+  removeTableModified(tablename, id) {
+    if (isNull(_tableList[tablename][gDataModified])) {
+      return;
+    }
+    if (isNull(_tableList[tablename][gDataModified][id])) {
+      return;
+    }
+    Map modifiedRow = _tableList[tablename][gDataModified];
+    modifiedRow.remove(id);
   }
 
   requestListadd(data) {
@@ -3313,15 +3128,6 @@ class DataModel extends ChangeNotifier {
       return;
     }
 
-    /*bool dataExists = requestListExists(data);
-    print('--------- requestList dataExists: ' +
-        dataExists.toString() +
-        ': ' +
-        data.toString());
-    if (dataExists) {
-      return;
-    }*/
-    //print('--------- requestList add ' + data.toString());
     if (isFirst) {
       _requestList.addFirst(data);
     } else {
@@ -3343,38 +3149,7 @@ class DataModel extends ChangeNotifier {
         .length;
     bool exists = length > 0;
 
-    /*print('------- request exists: ' +
-        exists.toString() +
-        ' [' +
-        length.toString() +
-        '] ' +
-        item.toString());*/
     return exists;
-    /*String sItem = item.toString();
-    //print('--------------- requestListExists sItem' + sItem);
-    if (_requestList != null) {
-      _requestList.forEach((value) {
-        String sValue = value.toString();
-        //print('--------------- requestListExists sValue: ' + sValue);
-        if (sItem == sValue) {
-          //print('--------------- requestListExists is true:' + sValue);
-          return true;
-        }
-        /*var objIaction = value[gAction];
-        if (objIaction == item[gAction]) {
-          var objIDataStr = value[gData].toString();
-          var dataStr = item[gData].toString();
-          if (objIDataStr == dataStr) {
-            //duplicated, return
-            // ignore: void_checks
-
-            return true;
-          }
-        }*/
-      });
-    }
-
-    return false;*/
   }
 
   requestListRemove(requestFirst) {
@@ -3431,6 +3206,57 @@ class DataModel extends ChangeNotifier {
     } catch (e) {
       throw e;
     }
+  }
+
+  setDplistYear() {
+    if ((_dpList[gYear] ?? []).length < 1) {
+      int iYear = new DateTime.now().year;
+      //int iYearMiddle = iYear - 49;
+      List result = [];
+      for (int i = 100; i >= -5; i--) {
+        result.add((iYear - i).toString());
+      }
+      /*result.add((iYear - 100).toString() + '~' + (iYearMiddle - 1).toString());
+      result.add(iYearMiddle.toString());
+      result.add((iYearMiddle + 1).toString() + '~' + (iYear + 2).toString());*/
+
+      _dpList[gYear] = result;
+      List resultMonth = [];
+      List resultDay31 = [];
+      for (int i = 1; i < 10; i++) {
+        resultMonth.add('0' + i.toString());
+        resultDay31.add('0' + i.toString());
+      }
+      for (int i = 10; i < 13; i++) {
+        resultMonth.add(i.toString());
+      }
+      _dpList[gMonth] = resultMonth;
+
+      for (int i = 10; i < 32; i++) {
+        resultDay31.add(i.toString());
+      }
+
+      _dpList[gDay] = resultDay31;
+    }
+  }
+
+  setDroplist() {
+    Map tabledata = _tableList[gZzydictionary];
+    List tabledataList = tabledata[gData];
+    Map tabledataItem = _tableList[gZzydictionaryitem];
+    List tabledataListItem = tabledataItem[gData];
+    tabledataList.forEach((element) {
+      var parentid = element[gId];
+      var label = element[gLabel];
+      List result = [''];
+      tabledataListItem.forEach((elementItem) {
+        if (elementItem[gParentid] == parentid) {
+          dynamic value = elementItem[gLabel];
+          result.add(value);
+        }
+      });
+      _dpList[label] = result;
+    });
   }
 
   saveTableOne(data0, context) {
@@ -3502,6 +3328,23 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
+  sendEmail(email) {
+    sendEmailBody(email, '', '');
+  }
+
+  sendEmailBody(email, subject, body) {
+    final anUri = Uri(
+        scheme: 'mailto',
+        path: email,
+        query: 'subject=' + subject.toString() + '&body=' + body.toString());
+    _launch(anUri);
+  }
+
+  sms(sNum) {
+    final anUri = Uri.parse('sms:' + sNum);
+    _launch(anUri);
+  }
+
   sendRequestFormChange(data, context) {
     try {
       if (data[gFormid] == gVerifycode || data[gFormid] == gChangepassword) {
@@ -3569,7 +3412,6 @@ class DataModel extends ChangeNotifier {
           requestFirst[gToken] = _token;
           requestFirst[gCompanyid] = _globalCompanyid;
           //if is company detail, zzyuser, company, change the companyid to parentid in the where condition.
-
         }
         //#add timestamp for process table
 
@@ -3631,6 +3473,45 @@ class DataModel extends ChangeNotifier {
     } catch (e) {
       throw e;
     } finally {}
+  }
+
+  setAddressList(actionData, context) async {
+    Map data = Map.of(actionData[0]);
+    List result = data[gBody];
+    Map attr = Map.of(data[gAttr]);
+    dynamic searchTxt = attr[gValue];
+    dynamic dpid = attr[gActionid];
+
+    dynamic formname = attr[gForm];
+    dynamic tablename = attr[gTable];
+    dynamic id = attr[gId];
+    List resultSort = getArrayMatch(result, searchTxt);
+    _dpList[dpid] = resultSort;
+    List actions = [];
+    Map<dynamic, dynamic> formDefine = formLists[formname ?? tablename];
+    Map<dynamic, dynamic> items = formDefine[gItems];
+    MapEntry item;
+    items.entries.forEach((itemOne) {
+      if (itemOne.value[gId] == id) {
+        item = itemOne;
+      }
+    });
+    //if (item.value[gType] == gDate) {
+    actions.add({
+      gType: gIcon,
+      gValue: 0xef49,
+      gLabel: gConfirm,
+      gAction: gLocalAction,
+      gItem: item,
+      gFormid: formname,
+      gTableID: tablename,
+      gId: id,
+    });
+    Widget w = await getItemSubWidget(
+        item, formname, context, tablename, id, Colors.black.value, actions);
+
+    //}
+    showPopup(context, w, null, actions);
   }
 
   setDropdownMenuItem(_param, newValue, context, _formName) {
@@ -3776,6 +3657,27 @@ class DataModel extends ChangeNotifier {
     return true;
   }
 
+  setItemI(item, value, formname, tablename, id) {
+    bool isForm = !isNull(formname);
+    dynamic name = formname;
+    if (!isForm) {
+      name = tablename;
+    }
+    if (isForm) {
+      setFormValue(name, item.value[gId], value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      setFormNextFocus(name, item.value[gId]);
+    } else {
+      setTableValue(name, item.value[gId], id, value);
+      //datamodel.setFormValueShow(formname, item.value[gId]);
+      setTableNextFocus(name, item.value[gId], id);
+    }
+
+    dpList[gAddress + '_' + name + '_' + item.value[gId]] = null;
+
+    myNotifyListeners();
+  }
+
   showAlertDialog(BuildContext context, title, msg, requestFirst) {
     int backcolor = Colors.white.value;
     int frontcolor = Colors.black.value;
@@ -3808,50 +3710,6 @@ class DataModel extends ChangeNotifier {
       builder: (BuildContext context) {
         return alert;
       },
-    );
-  }
-
-  createDragTarget({Offset offset, BuildContext context, view}) {
-    removeOverlay();
-
-    overlayEntry = new OverlayEntry(builder: (context) {
-      bool isLeft = true;
-      if (offset.dx + 100 > MediaQuery.of(context).size.width / 2) {
-        isLeft = false;
-      }
-      double maxY = MediaQuery.of(context).size.height - 100;
-
-      return new Positioned(
-          top: offset.dy < 50
-              ? 50
-              : offset.dy < maxY
-                  ? offset.dy
-                  : maxY,
-          left: isLeft ? 0 : null,
-          right: isLeft ? null : 0,
-          child: DragTarget(
-              onWillAccept: (data) {
-                return true;
-              },
-              onAccept: (data) {},
-              onLeave: (data) {},
-              builder: (BuildContext context, List incoming, List rejected) {
-                return buildDraggable(context, view);
-              }));
-    });
-    Overlay.of(context).insert(overlayEntry);
-  }
-
-  buildDraggable(context, view) {
-    return new Draggable(
-      child: view,
-      feedback: view,
-      onDragStarted: () {},
-      onDragEnd: (detail) {
-        createDragTarget(offset: detail.offset, context: context, view: view);
-      },
-      childWhenDragging: Container(),
-      ignoringFeedbackSemantics: false,
     );
   }
 
@@ -3898,26 +3756,10 @@ class DataModel extends ChangeNotifier {
     setFormValueItem(item, address);
   }
 
-  /*setFormDefaultValue(actionData) {
-    for (int i = 0; i < actionData.length; i++) {
-      Map<dynamic, dynamic> ai = actionData[i];
-      dynamic formname = '';
-      dynamic itemname = '';
-      dynamic value = '';
-      ai.entries.forEach((element) {
-        if (element.key == gForm) {
-          formname = element.value;
-        } else if (element.key == gItem) {
-          itemname = element.value;
-        } else if (element.key == gValue) {
-          value = element.value;
-        }
-      });
-      if (_formLists[formname] != null) {
-        _formLists[formname][gItems][itemname][gDefaultValue] = value;
-      }
-    }
-  }*/
+  setRowsPerPage(tableInfo, cnt) {
+    tableInfo[gRowsPerPage] = cnt;
+    myNotifyListeners();
+  }
 
   showDropList(dpid, item, context) {}
 
@@ -3966,11 +3808,6 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  navigatorPush(context, Widget aScreen, msg) {
-    Route lastRoute = MaterialPageRoute(builder: (context) => aScreen);
-    Navigator.push(context, lastRoute);
-  }
-
   showScreenPageOne(name, context, backcolor) {
     MyScreen aScreen = MyScreen(_screenLists[name], backcolor);
     Map param = {gLabel: name, gScreen: aScreen};
@@ -3979,50 +3816,6 @@ class DataModel extends ChangeNotifier {
         MaterialPageRoute(builder: (context) => MyDetailNew(param, backcolor)));*/
 
     navigatorPush(context, MyDetailNew(param, backcolor), 'showScreenPageOne');
-  }
-
-  newForm(data, context) {
-    var tableName = data[gActionid] ?? data[gTableID];
-    Map<dynamic, dynamic> formDefine = _formLists[tableName];
-    Map<dynamic, dynamic> items = formDefine[gItems];
-    Map mapWhereList = {};
-    if (data[gData] != null) {
-      Map mapData = Map.of(data[gData]);
-      if (!isNull(mapData[gWhere])) {
-        List whereList = mapData[gWhere].split(" and ");
-        whereList.forEach((element) {
-          if (element.toString().indexOf("=") > 0) {
-            String aKey = element
-                .toString()
-                .substring(0, element.toString().indexOf("="));
-            String aValue = element
-                .toString()
-                .substring(element.toString().indexOf("=") + 1);
-            if (aValue.indexOf("'") == 0) {
-              aValue = aValue.substring(1, aValue.length - 1);
-            }
-            mapWhereList[aKey] = aValue;
-          }
-        });
-      }
-    }
-    items.entries.forEach((item) {
-      item.value[gOldvalue] = null;
-      if (mapWhereList.containsKey(item.value[gId])) {
-        if (isNull(item.value[gDefaultValue]))
-          item.value[gDefaultValue] = mapWhereList[item.value[gId]];
-      }
-      item.value[gValue] = item.value[gDefaultValue];
-      item.value[gTxtEditingController]..text = item.value[gDefaultValue];
-    });
-  }
-
-  cancelTableModify(data, context) async {
-    var tableName = data[gActionid] ?? data[gTableID];
-    var id = data[gRow][gId];
-    Map dataModified = _tableList[tableName][gDataModified];
-    dataModified.remove(id);
-    myNotifyListeners();
   }
 
   saveTableModify(data, context) async {
@@ -4134,6 +3927,11 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
+  setForFocueItemOne(formid, item) {
+    setFormNextFocusFalse(formid);
+    setFormFocusItem(item);
+  }
+
   setFormDefaultValue(formid, colId, value) {
     _formLists[formid][gItems][colId][gDefaultValue] = value;
   }
@@ -4188,42 +3986,6 @@ class DataModel extends ChangeNotifier {
       return true;
     }
     return false;
-  }
-
-  setTableFocusItem(tableid, item, id) {
-    if ((item.value[gIsHidden] ?? "false") != gTrue &&
-        (item.value[gType] ?? "") != gHidden) {
-      bool isValueNull = isNull(item.value[gValue]);
-      var txtValue = item.value[gTxtEditingController].value.text;
-      bool isTxtNull = isNull(txtValue);
-      if (isValueNull && isTxtNull) {
-        item.value[gFocus] = true;
-        _tableList[tableid][gTableItemRow] = id;
-        _tableList[tableid][gTableItemColName] = item.value[gId];
-
-        return true;
-      }
-    }
-    return false;
-  }
-
-  setForFocueItemOne(formid, item) {
-    setFormNextFocusFalse(formid);
-    setFormFocusItem(item);
-  }
-
-  setFormNextFocusFalse(formid) {
-    if (isNull(formid)) {
-      return;
-    }
-    Map<dynamic, dynamic> items = _formLists[formid][gItems];
-    items.entries.forEach((item) {
-      if (item.value[gFocus] ?? false == true) {
-        item.value[gFocus] = false;
-        return;
-      }
-    });
-    return;
   }
 
   setFormNextFocus(formid, colId) {
@@ -4317,24 +4079,18 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  setTableNextFocus(tableId, colId, id) {
-    if (isNull(tableId) || isNull(colId) || isNull(id)) {
+  setFormNextFocusFalse(formid) {
+    if (isNull(formid)) {
       return;
     }
-    setFormNextFocusFalse(tableId);
-    Map<dynamic, dynamic> items = _formLists[tableId][gItems];
-    bool beginFocus = false;
+    Map<dynamic, dynamic> items = _formLists[formid][gItems];
     items.entries.forEach((item) {
-      if (beginFocus) {
-        if (setTableFocusItem(tableId, item, id)) {
-          return;
-        }
-      }
-
-      if (item.value[gId] == colId) {
-        beginFocus = true;
+      if (item.value[gFocus] ?? false == true) {
+        item.value[gFocus] = false;
+        return;
       }
     });
+    return;
   }
 
   setFormValue(formid, colId, value) {
@@ -4343,109 +4099,6 @@ class DataModel extends ChangeNotifier {
     }
 
     setFormValueItem(_formLists[formid][gItems][colId], value);
-  }
-
-  setTableValue(tableid, colId, id, value) {
-    /*print('============= setTableValue 0: ' +
-        tableid +
-        ',' +
-        colId +
-        ',' +
-        id +
-        ',' +
-        value);*/
-    if (isNull(tableid)) {
-      return;
-    }
-    //print('============= setTableValue 1');
-    setTableValueItem(tableid, colId, id, value);
-    //print('============= setTableValue 2');
-  }
-
-  getTableModifiedValue(tableid, colId, id) {
-    if (isNull(_tableList[tableid][gDataModified])) {
-      return null;
-    }
-    Map dataModified = _tableList[tableid][gDataModified];
-    if (!dataModified.containsKey(id)) {
-      return null;
-    }
-    Map value = dataModified[id];
-    if (isNull(value[colId])) {
-      return null;
-    }
-    return value[colId];
-  }
-
-  setTableValueItem(tableid, colId, id, value) {
-    /*
-    找到修改值，
-      如果找到，比较是否相同，
-        如果相同，退出
-        否则找原值
-          如果找到原值，并相同，删除修改值，退出
-          否则，更新修改值，退出
-          {
-             如果未找到原值（新增），更新修改值， 退出
-             如果与原值不同，更新修改值， 退出
-            }
-
-    未找到修改值
-        找原值如果相等， 退出
-        添加修改值
-    */
-    if (isNull(_tableList[tableid][gDataModified])) {
-      _tableList[tableid][gDataModified] = {};
-    }
-    Map dataModified = _tableList[tableid][gDataModified];
-    if (dataModified.containsKey(id)) {
-      Map mValue = dataModified[id];
-      if (!isNull(mValue[colId]) && mValue[colId] == value) {
-        return;
-      }
-      dynamic originalValue = getTableOriginalValue(tableid, id, colId);
-      if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
-        mValue.remove(colId);
-        if (mValue.length < 1) {
-          dataModified.remove(id);
-        }
-        return;
-      }
-      mValue[colId] = value;
-      return;
-    }
-    dynamic originalValue = getTableOriginalValue(tableid, id, colId);
-    if (!isNull(originalValue) && originalValue == value) {
-      return;
-    }
-    if (isNull(dataModified[id])) {
-      dataModified[id] = {};
-    }
-    dataModified[id][colId] = value;
-  }
-
-  getTableOriginalValue(tableid, id, colId) {
-    List newData =
-        _tableList[tableid][gDataSearch] ?? _tableList[tableid][gData];
-    List colList = _tableList[tableid][gColumns];
-    Map col;
-    if (colList != null && colList.length > 0) {
-      for (int i = 0; i < colList.length; i++) {
-        if (colList[i][gId] == colId) {
-          col = colList[i];
-          break;
-        }
-      }
-    }
-    for (int i = 0; i < newData.length; i++) {
-      Map dataRow = newData[i];
-      if (dataRow[gId] == id) {
-        var dataI = dataRow[colId];
-        var value = getValueByType(dataI, col);
-        return value;
-      }
-    }
-    return null;
   }
 
   setFormValueItem(item, value) {
@@ -4465,14 +4118,6 @@ class DataModel extends ChangeNotifier {
     item[gShowDetail] = value;
   }
 
-  setLocale(value) async {
-    _locale = value;
-    //S.load(_locale);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('locallan', value);
-    myNotifyListeners();
-  }
-
   setImgList(data) {
     for (int i = 0; i < data.length; i++) {
       Map dataMap = Map.of(data[i]);
@@ -4483,20 +4128,12 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  /*debounce(fn, [int t = 30]) {
-    Timer _debounce;
-    return () {
-      if (_debounce?.isActive ?? false) {
-        _debounce.cancel();
-      }
-      _debounce = Timer(Duration(milliseconds: t), () {
-        fn();
-      });
-    };
-  }*/
-  final _debouncer = Debouncer(milliseconds: 300);
-  myNotifyListeners() {
-    _debouncer.run(() => notifyListeners());
+  setLocale(value) async {
+    _locale = value;
+    //S.load(_locale);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('locallan', value);
+    myNotifyListeners();
   }
 
   setMyAction(data) {
@@ -4625,6 +4262,23 @@ class DataModel extends ChangeNotifier {
     _tabList[tabname][gFontSize] = 20.0;
   }
 
+  setTableFocusItem(tableid, item, id) {
+    if ((item.value[gIsHidden] ?? "false") != gTrue &&
+        (item.value[gType] ?? "") != gHidden) {
+      bool isValueNull = isNull(item.value[gValue]);
+      var txtValue = item.value[gTxtEditingController].value.text;
+      bool isTxtNull = isNull(txtValue);
+      if (isValueNull && isTxtNull) {
+        item.value[gFocus] = true;
+        _tableList[tableid][gTableItemRow] = id;
+        _tableList[tableid][gTableItemColName] = item.value[gId];
+
+        return true;
+      }
+    }
+    return false;
+  }
+
   setTableList(List<dynamic> data, context) {
     data.forEach((element) {
       element = Map.of(element);
@@ -4634,6 +4288,90 @@ class DataModel extends ChangeNotifier {
       });*/
     });
     //myNotifyListeners();
+  }
+
+  setTableNextFocus(tableId, colId, id) {
+    if (isNull(tableId) || isNull(colId) || isNull(id)) {
+      return;
+    }
+    setFormNextFocusFalse(tableId);
+    Map<dynamic, dynamic> items = _formLists[tableId][gItems];
+    bool beginFocus = false;
+    items.entries.forEach((item) {
+      if (beginFocus) {
+        if (setTableFocusItem(tableId, item, id)) {
+          return;
+        }
+      }
+
+      if (item.value[gId] == colId) {
+        beginFocus = true;
+      }
+    });
+  }
+
+  setTableValue(tableid, colId, id, value) {
+    /*print('============= setTableValue 0: ' +
+        tableid +
+        ',' +
+        colId +
+        ',' +
+        id +
+        ',' +
+        value);*/
+    if (isNull(tableid)) {
+      return;
+    }
+    //print('============= setTableValue 1');
+    setTableValueItem(tableid, colId, id, value);
+    //print('============= setTableValue 2');
+  }
+
+  setTableValueItem(tableid, colId, id, value) {
+    /*
+    找到修改值，
+      如果找到，比较是否相同，
+        如果相同，退出
+        否则找原值
+          如果找到原值，并相同，删除修改值，退出
+          否则，更新修改值，退出
+          {
+             如果未找到原值（新增），更新修改值， 退出
+             如果与原值不同，更新修改值， 退出
+            }
+
+    未找到修改值
+        找原值如果相等， 退出
+        添加修改值
+    */
+    if (isNull(_tableList[tableid][gDataModified])) {
+      _tableList[tableid][gDataModified] = {};
+    }
+    Map dataModified = _tableList[tableid][gDataModified];
+    if (dataModified.containsKey(id)) {
+      Map mValue = dataModified[id];
+      if (!isNull(mValue[colId]) && mValue[colId] == value) {
+        return;
+      }
+      dynamic originalValue = getTableOriginalValue(tableid, id, colId);
+      if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
+        mValue.remove(colId);
+        if (mValue.length < 1) {
+          dataModified.remove(id);
+        }
+        return;
+      }
+      mValue[colId] = value;
+      return;
+    }
+    dynamic originalValue = getTableOriginalValue(tableid, id, colId);
+    if (!isNull(originalValue) && originalValue == value) {
+      return;
+    }
+    if (isNull(dataModified[id])) {
+      dataModified[id] = {};
+    }
+    dataModified[id][colId] = value;
   }
 
   setTreeNode(data, context) {
@@ -4758,63 +4496,32 @@ class DataModel extends ChangeNotifier {
     showTableForm(data, context, null);
   }
 
+  tableInsert(tablename, rowData, context) {
+    var tableInfo = _tableList[tablename];
+    List tableData = tableInfo[gData];
+    Map row = Map.of(rowData);
+    tableData.insert(0, row);
+    removeTableModified(tablename, row[gId]);
+    if (_dpList.containsKey(tablename)) {
+      dpListInsert(tablename, row, context);
+    }
+    afterTableInsert(tablename, row, context);
+  }
+
+  tableRemove(tablename, rowData, context) {
+    var tableInfo = _tableList[tablename];
+    List tableData = tableInfo[gData];
+    Map row = Map.of(rowData);
+    removeTableModified(tablename, row[gId]);
+    tableData.removeWhere((element1) => element1[gId] == row[gId]);
+
+    if (_dpList.containsKey(tablename)) {
+      dpListRemove(tablename, row, context);
+    }
+  }
+
   toExcel(data, context) {
     toFile(data, context, 'excel');
-  }
-
-  toPdf(data, context) {
-    toFile(data, context, 'pdf');
-  }
-
-  toFile(data, context, label) {
-    dynamic tableName = data[gTableID];
-    List header = [];
-    List body = [];
-
-    Map tableInfo = _tableList[tableName];
-
-    //tableInfo.[gData].length;
-    //List tableData = tableInfo[gData];
-    List columns = tableInfo[gColumns];
-    dynamic subject = tableInfo[gAttr][gLabel] ?? '';
-
-    for (int i = 0; i < columns.length; i++) {
-      if (isHiddenColumn(columns, i)) {
-        continue;
-      }
-
-      header.add(getSCurrentLan(columns[i][gLabel], 'en'));
-    }
-
-    List newData = tableInfo[gDataSearch] ?? tableInfo[gData];
-
-    for (int i = 0; i < newData.length; i++) {
-      Map dataRow = newData[i];
-      //get updated value
-      List ti = getTableRowShowValueFilterMapOrList(
-          dataRow, columns, context, '', false);
-      if (ti != null) {
-        body.add(ti);
-      }
-    }
-
-    tableInfo[gDataSearch] = newData;
-    //header
-    //body
-    //request
-    var filename = _token ?? "atmpfile";
-    if (filename.indexOf("-") > 0) {
-      filename = filename.substring(0, filename.indexOf("-"));
-    }
-    sendRequestOne(
-        label,
-        {
-          gHeader: header,
-          gBody: body,
-          gFilename: label + filename,
-          gSubject: subject
-        },
-        context);
   }
 
   tableSort(tableName, columnIndex, ascending, context) {
@@ -4870,15 +4577,100 @@ class DataModel extends ChangeNotifier {
     }
   }
 
+  toFile(data, context, label) {
+    dynamic tableName = data[gTableID];
+    List header = [];
+    List body = [];
+
+    Map tableInfo = _tableList[tableName];
+
+    //tableInfo.[gData].length;
+    //List tableData = tableInfo[gData];
+    List columns = tableInfo[gColumns];
+    dynamic subject = tableInfo[gAttr][gLabel] ?? '';
+
+    for (int i = 0; i < columns.length; i++) {
+      if (isHiddenColumn(columns, i)) {
+        continue;
+      }
+
+      header.add(getSCurrentLan(columns[i][gLabel], 'en'));
+    }
+
+    List newData = tableInfo[gDataSearch] ?? tableInfo[gData];
+
+    for (int i = 0; i < newData.length; i++) {
+      Map dataRow = newData[i];
+      //get updated value
+      List ti = getTableRowShowValueFilterMapOrList(
+          dataRow, columns, context, '', false);
+      if (ti != null) {
+        body.add(ti);
+      }
+    }
+
+    tableInfo[gDataSearch] = newData;
+    //header
+    //body
+    //request
+    var filename = _token ?? "atmpfile";
+    if (filename.indexOf("-") > 0) {
+      filename = filename.substring(0, filename.indexOf("-"));
+    }
+    sendRequestOne(
+        label,
+        {
+          gHeader: header,
+          gBody: body,
+          gFilename: label + filename,
+          gSubject: subject
+        },
+        context);
+  }
+
+  toPdf(data, context) {
+    toFile(data, context, 'pdf');
+  }
+
+  toUTCTime(adate) {
+    try {
+      return DateTime.parse(adate).millisecondsSinceEpoch;
+      //return DateTime.parse('2021-12-10 16:06:03').millisecondsSinceEpoch;
+    } catch (e) {
+      DateTime _nowDate = DateTime.now();
+      return _nowDate.millisecondsSinceEpoch;
+    }
+  }
+
+  toLocalTime(atime) {
+    try {
+      //return DateTime.fromMillisecondsSinceEpoch(int.parse('1639181163816'))
+      //  .toLocal();
+      DateTime dt = DateTime.fromMillisecondsSinceEpoch(atime).toLocal();
+      dynamic formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+      return formattedDate;
+      //return DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
+      /*DateTime _nowDate = DateTime.now();
+      return DateTime.fromMillisecondsSinceEpoch(
+              _nowDate.millisecondsSinceEpoch)
+          .toLocal();*/
+    } catch (e) {
+      return "";
+    }
+  }
+
   wait(waitSeconds) async {
     await Future.delayed(Duration(seconds: waitSeconds));
   }
 
   waitDialog(context) {
-    //showMsg(context, "Loading", Colors.white.value);
+    isProcessing = true;
+
+    //showMsg(context, "Loading...", Colors.white.value);
   }
 
   waitDialogClose(context) {
+    isProcessing = false;
     //removeOverlay();
   }
 

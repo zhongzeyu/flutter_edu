@@ -227,6 +227,7 @@ const gServerdown = 'serverdown';
 const gServerwrongcode = 'serverwrongcode';
 const gSessionidend = 'sessionidend';
 
+const gSetAddressList = "setAddressList";
 const gSetDroplist = 'setDroplist';
 //const gSetFormDefaultValue = 'setFormDefaultValue';
 const gSetFormList = 'setFormList';

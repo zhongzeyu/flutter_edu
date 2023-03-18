@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 final appTheme = ThemeData(
   primarySwatch: Colors.amber,
   textTheme: TextTheme(
-    headline1: TextStyle(
+    displayLarge: TextStyle(
       fontFamily: 'Corben',
       fontWeight: FontWeight.w700,
       fontSize: 24.0,
@@ -29,7 +29,7 @@ const MaterialColor white = const MaterialColor(
 final tableTheme = ThemeData(
   primarySwatch: white,
   textTheme: TextTheme(
-    headline1: TextStyle(
+    displayLarge: TextStyle(
       fontFamily: 'Corben',
       fontWeight: FontWeight.w700,
       fontSize: 24.0,

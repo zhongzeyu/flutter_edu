@@ -14,7 +14,7 @@ class TextFieldWidget extends StatelessWidget {
   final dynamic formname;
   final dynamic tablename;
   final dynamic id;
-  //final _debouncer = Debouncer(milliseconds: 1000);
+  final _debouncer = Debouncer(milliseconds: 2000);
   TextFieldWidget(
       {this.item, this.backcolor, this.formname, this.tablename, this.id});
   _getWidth() {
@@ -122,7 +122,8 @@ class TextFieldWidget extends StatelessWidget {
               }
 
               if (item.value[gType] == gAddress) {
-                var searchTxt = item.value[gSearch] ?? item.value[gValue];
+                var searchTxt =
+                    thistext ?? item.value[gSearch] ?? item.value[gValue];
                 if (datamodel.isNull(searchTxt)) {
                   return;
                 }
@@ -130,6 +131,28 @@ class TextFieldWidget extends StatelessWidget {
                   return;
                 }
                 item.value[gFormName] = formname ?? tablename;
+                var name = formname ?? tablename;
+                var dpid = gAddress + '_' + name + '_' + item.value[gId];
+                datamodel.dpList[dpid] = [];
+                //
+                datamodel.sendRequestOne(
+                    gDroplist,
+                    {
+                      gName: gAddress,
+                      //gType: gDroplist,
+                      gValue: searchTxt,
+                      gActionid: dpid,
+                      gForm: formname,
+                      gTable: tablename,
+                      gId: item.value[gId]
+                    },
+                    context);
+
+                /*List result = await downloadAddress(searchTxt, context, false);
+      List resultSort = getArrayMatch(result, searchTxt);
+      _dpList[dpid] = resultSort;*/
+                item.value[gDroplist] = dpid;
+                return;
               }
               List actions = [];
               //if (item.value[gType] == gDate) {
@@ -291,8 +314,8 @@ class TextFieldWidget extends StatelessWidget {
                 },
                 onChanged: (text) {
                   thistext = text;
-                  /*_debouncer.run(
-                      () => textChange(text, item, datamodel, context, isForm));*/
+                  _debouncer.run(
+                      () => textChange(text, item, datamodel, context, isForm));
                 },
                 onTap: () {
                   if (!isForm) {
