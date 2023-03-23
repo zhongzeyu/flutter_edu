@@ -34,13 +34,13 @@ class MyPic extends StatelessWidget {
 
         return datamodel.imgCache[imgName];
       }
-
+      print('=================img height is ' + _param[gHeight] ?? null);
       return Image.memory(
         base64.decode(_param[gImg]),
         fit: BoxFit.fill,
         gaplessPlayback: true,
-        height: (_param[gHeight] != null) ? _param[gHeight] : null,
-        width: (_param[gWidth] != null) ? _param[gWidth] : null,
+        height: _param[gHeight] ?? null,
+        width: _param[gWidth] ?? null,
       );
     });
 

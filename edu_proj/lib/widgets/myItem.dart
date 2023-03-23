@@ -54,8 +54,8 @@ class MyItem extends StatelessWidget {
             datamodel.imgList[gNotavailable];
         result.add(MyPic({
           gImg: imgOriginal,
-          gHeight: (_param[gHeight] != null) ? _param[gHeight] : null,
-          gWidth: (_param[gWidth] != null) ? _param[gWidth] : null,
+          gHeight: _param[gHeight] ?? null,
+          gWidth: _param[gWidth] ?? null,
         }));
         /*result.add(Image.memory(
           base64.decode(imgOriginal),
@@ -79,15 +79,16 @@ class MyItem extends StatelessWidget {
         dynamic tableName = _param[gTableID];
         Map tableInfo = datamodel.tableList[tableName];
 
-        MapEntry searchItem = datamodel.getTableItemByName(
+        Map searchItem = datamodel.getTableItemByName(
             tableInfo, gSearch, tableInfo[gSearch] ?? '');
-        Map searchItemValue = searchItem.value;
+        Map searchItemValue = searchItem;
         searchItemValue.putIfAbsent(gAction, () => gLocalAction);
         searchItemValue.putIfAbsent(gWidth, () => 250.0);
         searchItemValue.putIfAbsent(gContext, () => thisContext);
         searchItemValue.putIfAbsent(gTableID, () => tableName);
         searchItemValue.putIfAbsent(gOldvalue, () => tableInfo[gSearch] ?? '');
-        result.add(TextFieldWidget(item: searchItem));
+        result.add(
+            TextFieldWidget(item: searchItem, isForm: false, name: tableName));
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
         //_param[gAction] = gTextLink;

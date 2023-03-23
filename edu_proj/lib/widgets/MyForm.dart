@@ -38,29 +38,21 @@ class MyForm extends StatelessWidget {
           //dynamic dataRow;
           //dataRow = _paramData[gData];
           datamodel.setFormFocus(_formName, null);
-          items.entries.forEach((item) {
-            /*item.value[gOldvalue] =
-                (dataRow == null) ? null : dataRow[item.value[gId]];
-
-            item.value[gValue] = item.value[gOldvalue];
-            item.value[gTxtEditingController]
-              ..text = (dataRow == null)
-                  ? null
-                  : dataRow[item.value[gId]].toString();*/
-
-            //datamodel.setFormValue(_formName, item.value[gId], itemValue);
-            if ((item.value[gIsHidden] ?? "false") != gTrue &&
-                (item.value[gType] ?? "") != gHidden) {
-              if ((item.value[gInputType] ?? "") == gCode) {
+          items.entries.forEach((itemOne) {
+            Map item = itemOne.value;
+            if ((item[gIsHidden] ?? "false") != gTrue &&
+                (item[gType] ?? "") != gHidden) {
+              if ((item[gInputType] ?? "") == gCode) {
                 result.add(
-                  MyPinCode(item.value, _formName),
+                  MyPinCode(item, _formName),
                 );
               } else {
                 result.add(
                   TextFieldWidget(
                       item: item,
                       backcolor: thisbackcolor,
-                      formname: _formName),
+                      isForm: true,
+                      name: _formName),
                 );
               }
             }

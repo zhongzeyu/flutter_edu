@@ -9,165 +9,109 @@ import 'package:provider/provider.dart';
 //import 'myLabel.dart';
 
 class TextFieldWidget extends StatelessWidget {
-  final MapEntry<dynamic, dynamic> item;
+  //final MapEntry<dynamic, dynamic> item;
+  final Map item;
   final int backcolor;
-  final dynamic formname;
-  final dynamic tablename;
+  final dynamic isForm;
+  final dynamic name;
   final dynamic id;
   final _debouncer = Debouncer(milliseconds: 2000);
-  TextFieldWidget(
-      {this.item, this.backcolor, this.formname, this.tablename, this.id});
-  _getWidth() {
+  TextFieldWidget({this.item, this.backcolor, this.isForm, this.name, this.id});
+  /*_getWidth() {
     return null;
-    //item.value[gWidth] ?? null;
-  }
+    //item[gWidth] ?? null;
+  }*/
 
-  textChange(dynamic text, MapEntry item, DataModel datamodel,
-      BuildContext context, bool isForm) {
-    //item.value[gValue] = text;
-    //print('--------------  textChange 0');
-    if (!isForm && item.value[gType] != gSearch) {
-      datamodel.setTableValueItem(tablename, item.value[gId], id, text);
+  textChange(
+      text, Map item, DataModel datamodel, BuildContext context, bool isForm) {
+    datamodel.textChange(text, item, context, isForm, name, id);
+    /*if (!isForm && item[gType] != gSearch) {
+      datamodel.setTableValueItem(name, item[gId], id, text);
       datamodel.myNotifyListeners();
 
       //print('--------------  textChange 0 1');
       return;
     }
     //print('--------------  textChange 1');
-    if (item.value[gDroplist] == '') {
-      item.value[gValue] = text;
+    if (item[gDroplist] == '') {
+      item[gValue] = text;
     }
-    item.value[gSearch] = text;
+    item[gSearch] = text;
     //print('--------------  textChange 2');
-    if (item.value[gType] == gAddress) {
+    if (item[gType] == gAddress) {
       return;
-      /*item.value[gAction] = gLocalAction;
-      item.value[gFormName] = formname;*/
     }
     //print('--------------  textChange 3');
-    if ((item.value[gAction] ?? '') == '') {
+    if ((item[gAction] ?? '') == '') {
       //print('--------------  textChange 3 0');
       return;
     }
     //print('--------------  textChange 4');
     //print('--------------  textChange 2');
 
-    datamodel.sendRequestOne(
-        item.value[gAction], item, item.value[gContext] ?? context);
-  }
-
-  setItemI(item, value, DataModel datamodel) {
-    bool isForm = !datamodel.isNull(formname);
-    dynamic name = formname;
-    if (!isForm) {
-      name = tablename;
-    }
-    if (isForm) {
-      datamodel.setFormValue(name, item.value[gId], value);
-      //datamodel.setFormValueShow(formname, item.value[gId]);
-      datamodel.setFormNextFocus(name, item.value[gId]);
-    } else {
-      datamodel.setTableValue(name, item.value[gId], id, value);
-      //datamodel.setFormValueShow(formname, item.value[gId]);
-      datamodel.setTableNextFocus(name, item.value[gId], id);
-    }
-
-    datamodel.dpList[gAddress + '_' + name + '_' + item.value[gId]] = null;
-
-    datamodel.myNotifyListeners();
+    datamodel.sendRequestOne(item[gAction], item, item[gContext] ?? context);*/
   }
 
   Widget build(BuildContext context) {
     dynamic thistext;
-    return Consumer<DataModel>(builder: (context, datamodel, child) {
-      bool isPassword = (item.value[gType] == gPassword);
-      bool isForm = !datamodel.isNull(formname);
-      if (isPassword) {
-        item.value[gPasswordShow] = item.value[gPasswordShow] ?? true;
 
-        item.value[gSuffixIcon] = IconButton(
+    return Consumer<DataModel>(builder: (context, datamodel, child) {
+      bool isPassword = (item[gType] == gPassword);
+      if (isPassword) {
+        item[gPasswordShow] = item[gPasswordShow] ?? true;
+
+        item[gSuffixIcon] = IconButton(
             icon: Icon(
-              item.value[gPasswordShow]
+              item[gPasswordShow]
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
               color: Theme.of(context).disabledColor,
             ),
             onPressed: () {
-              item.value[gPasswordShow] = !item.value[gPasswordShow];
+              item[gPasswordShow] = !item[gPasswordShow];
               datamodel.myNotifyListeners();
             });
       }
-      if ((item.value[gType] == gDate ||
-              item.value[gType] == gAddress ||
-              item.value[gDroplist] != '') &&
-          (item.value[gType] ?? "") != gLabel) {
-        item.value[gSuffixIcon] = IconButton(
-            icon: Icon((item.value[gType] == gDate)
-                    ? Icons.date_range_outlined
-                    : ((item.value[gType] == gSearch)
-                        ? Icons.content_paste_search_outlined
-                        : Icons.arrow_drop_down_circle_sharp)
+      if (item[gType] == gAddress || item[gType] == gSearch) {
+        item[gSuffixIcon] = IconButton(
+            icon: Icon(((item[gType] == gSearch)
+                    ? Icons.content_paste_search_outlined
+                    : Icons.expand_more)
 
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () async {
-              item.value[gShowDetail] = true;
+              FocusScope.of(context).requestFocus(FocusNode());
+              item[gShowDetail] = true;
               if (isForm) {
-                datamodel.setFormFocus(formname, item.value[gId]);
-              } else if (item.value[gType] == gSearch) {
+                datamodel.setFormFocus(name, item[gId]);
+              } else if (item[gType] == gSearch) {
                 textChange(thistext, item, datamodel, context, false);
                 return;
               } else {
-                datamodel.setTableFocusItem(tablename, item, item.value[gId]);
+                datamodel.setTableFocusItem(name, item, item[gId]);
               }
 
-              if (item.value[gType] == gAddress) {
-                var searchTxt =
-                    thistext ?? item.value[gSearch] ?? item.value[gValue];
-                if (datamodel.isNull(searchTxt)) {
-                  return;
-                }
-                if ((searchTxt.toString()).length < 3) {
-                  return;
-                }
-                item.value[gFormName] = formname ?? tablename;
-                var name = formname ?? tablename;
-                var dpid = gAddress + '_' + name + '_' + item.value[gId];
-                datamodel.dpList[dpid] = [];
-                //
-                datamodel.sendRequestOne(
-                    gDroplist,
-                    {
-                      gName: gAddress,
-                      //gType: gDroplist,
-                      gValue: searchTxt,
-                      gActionid: dpid,
-                      gForm: formname,
-                      gTable: tablename,
-                      gId: item.value[gId]
-                    },
-                    context);
+              if (item[gType] == gAddress) {
+                var searchTxt = thistext ?? item[gSearch] ?? item[gValue];
+                datamodel.showPopupItem(
+                    item, isForm, name, searchTxt, id, backcolor, context);
 
-                /*List result = await downloadAddress(searchTxt, context, false);
-      List resultSort = getArrayMatch(result, searchTxt);
-      _dpList[dpid] = resultSort;*/
-                item.value[gDroplist] = dpid;
                 return;
               }
               List actions = [];
-              //if (item.value[gType] == gDate) {
               actions.add({
                 gType: gIcon,
                 gValue: 0xef49,
                 gLabel: gConfirm,
                 gAction: gLocalAction,
                 gItem: item,
-                gFormid: formname,
-                gTableID: tablename,
+                gIsForm: isForm,
+                gName: name,
                 gId: id,
               });
               Widget w = await datamodel.getItemSubWidget(
-                  item, formname, context, tablename, id, backcolor, actions);
+                  item, isForm, name, context, id, backcolor, actions, null);
 
               //}
               datamodel.showPopup(context, w, null, actions);
@@ -176,168 +120,131 @@ class TextFieldWidget extends StatelessWidget {
               //datamodel.myNotifyListeners();
             });
       }
-      if (item.value[gType] == gEmail) {
-        item.value[gSuffixIcon] = IconButton(
-            icon: Icon(Icons.email_outlined
-                //color: Theme.of(context).disabledColor,
-                ),
-            onPressed: () {
-              //datamodel.setFormFocus(formname, item.value[gId]);
-              datamodel.sendEmail(item.value[gValue]);
-            });
-      }
-      if (item.value[gType] == gPhone) {
-        item.value[gSuffixIcon] = IconButton(
-            icon: Icon(Icons.phone_outlined
-                //color: Theme.of(context).disabledColor,
-                ),
-            onPressed: () {
-              //datamodel.setFormFocus(formname, item.value[gId]);
-              datamodel.phonecall(item.value[gValue]);
-            });
-      }
-      if (item.value[gType] == gUrl) {
-        item.value[gSuffixIcon] = IconButton(
-            icon: Icon(Icons.web_outlined
-                //color: Theme.of(context).disabledColor,
-                ),
-            onPressed: () {
-              //datamodel.setFormFocus(formname, item.value[gId]);
-              datamodel.loadUrl(item.value[gValue]);
-            });
-      }
-      if (item.value[gIsFile] == true) {
-        item.value[gSuffixIcon] = IconButton(
+      datamodel.getItemIcon(item, context);
+      if (item[gIsFile] == true) {
+        item[gSuffixIcon] = IconButton(
             icon: Icon(Icons.file_upload_outlined
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () {
-              datamodel.loadFile(formname, item);
+              datamodel.loadFile(name, item);
             });
       }
 
-      item.value[gTxtEditingController].selection = TextSelection.fromPosition(
-          TextPosition(offset: item.value[gTxtEditingController].text.length));
+      item[gTxtEditingController].selection = TextSelection.fromPosition(
+          TextPosition(offset: item[gTxtEditingController].text.length));
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
-      TextEditingController txtController = item.value[gTxtEditingController];
+      TextEditingController txtController = item[gTxtEditingController];
       if (datamodel.isNull(txtController.text)) {
         txtController.text = "";
       } else {
-        dynamic aValue =
-            datamodel.getValueByType(item.value[gValue], item.value);
-        /*if (item.value[gDroplist] != '') {
-          aValue = datamodel.getSCurrent(aValue);
-        }*/
+        dynamic aValue = datamodel.getValueByType(item[gValue], item);
         txtController.text = aValue;
       }
-      bool autofocus = item.value[gFocus] ?? false;
+      bool autofocus = item[gFocus] ?? false;
 
-      if (autofocus && datamodel.isPopOpen()) {
+      /*if (autofocus && datamodel.isPopOpen()) {
         autofocus = false;
-      }
-
-      return Container(
-        width: _getWidth(),
-        child: Column(
-          children: [
-            Focus(
-              onKey: (node, event) {
-                String keyLabel = event.logicalKey.keyLabel;
-                if (keyLabel == 'Tab') {
-                  if (isForm) {
-                    datamodel.setFormNextFocus(formname, item.value[gId]);
-                  } else {
-                    datamodel.setTableNextFocus(tablename, item.value[gId], id);
-                  }
-
-                  datamodel.myNotifyListeners();
-                } else {}
-                return KeyEventResult.ignored;
-              },
-              child: TextFormField(
-                controller: txtController,
-                autofocus: autofocus,
-                //focusNode: item.value[gFocusNode],
-                keyboardType: datamodel.getInputType(item.value[gInputType]),
-                maxLength: isForm ? item.value[gLength] : null,
-                style: TextStyle(
-                  color: cBackColor,
-                  fontSize: item.value[gFontSize],
-                  fontStyle: item.value[gFontStyle],
-                  fontWeight: item.value[gFontWeight],
-                  letterSpacing: item.value[gLetterSpacing],
-                ),
-                decoration: isForm
-                    ? InputDecoration(
-                        labelText: datamodel.getSCurrent(item.value[gLabel]),
-                        labelStyle: TextStyle(
-                          color: cBackColor,
-                          fontSize: item.value[gFontSize],
-                          fontStyle: item.value[gFontStyle],
-                          fontWeight: item.value[gFontWeight],
-                          letterSpacing: item.value[gLetterSpacing],
-                        ),
-                        hintText: item.value[gPlaceHolder],
-                        hintStyle: TextStyle(
-                          color: cBackColor,
-                          fontSize: item.value[gFontSize],
-                          fontStyle: item.value[gFontStyle],
-                          fontWeight: item.value[gFontWeight],
-                          letterSpacing: item.value[gLetterSpacing],
-                        ),
-                        suffixIcon: item.value[gSuffixIcon],
-                        //prefixIcon: item.value['prefixIcon'],
-                        enabled: ((item.value[gType] ?? "") != gLabel))
-                    : InputDecoration(
-                        border: new OutlineInputBorder(
-                          //添加边框
-                          gapPadding: 0.0,
-                          borderRadius: BorderRadius.circular(2.0),
-                        ),
-                        isDense: true, // Added this
-                        //contentPadding: EdgeInsets.all(2.0),
-                        suffixIcon: item.value[gSuffixIcon],
-                        enabled: ((item.value[gType] ?? "") != gLabel)),
-                obscureText: isPassword && item.value[gPasswordShow],
-                inputFormatters: datamodel.getItemFormatters(item),
-                validator: (dynamic value) {
-                  var validResult = datamodel.isItemValueValidStr(item, value);
-                  if (validResult != '') {
-                    return validResult;
-                  }
-
-                  return null;
-                },
-                onSaved: (dynamic value) {
-                  textChange(value, item, datamodel, context, isForm);
-                  //item.value[gValue] = value;
-                },
-                onChanged: (text) {
-                  thistext = text;
-                  _debouncer.run(
-                      () => textChange(text, item, datamodel, context, isForm));
-                },
-                onTap: () {
-                  if (!isForm) {
-                    return;
-                  }
-                  //set focus
-                  datamodel.setFormFocus(formname, item.value[gId]);
-                },
-                onEditingComplete: () {
-                  textChange(thistext, item, datamodel, context, isForm);
-                  if (isForm) {
-                    datamodel.setFormNextFocus(formname, item.value[gId]);
-                  } else {
-                    datamodel.setTableNextFocus(tablename, item.value[gId], id);
-                  }
-                  datamodel.myNotifyListeners();
-                },
-              ),
-            ),
-          ],
+      }*/
+      print('======= txtFieldwidget autofocus is ' + autofocus.toString());
+      var labeltext = item[gLabel];
+      Widget w = TextFormField(
+        controller: txtController,
+        autofocus: autofocus,
+        keyboardType: datamodel.getInputType(item[gInputType]),
+        maxLength: isForm ? item[gLength] : null,
+        style: TextStyle(
+          color: cBackColor,
+          fontSize: item[gFontSize],
+          fontStyle: item[gFontStyle],
+          fontWeight: item[gFontWeight],
+          letterSpacing: item[gLetterSpacing],
         ),
+        decoration: isForm
+            ? InputDecoration(
+                labelText: labeltext,
+                labelStyle: TextStyle(
+                  color: cBackColor,
+                  fontSize: item[gFontSize],
+                  fontStyle: item[gFontStyle],
+                  fontWeight: item[gFontWeight],
+                  letterSpacing: item[gLetterSpacing],
+                ),
+                hintText: item[gPlaceHolder],
+                hintStyle: TextStyle(
+                  color: cBackColor,
+                  fontSize: item[gFontSize],
+                  fontStyle: item[gFontStyle],
+                  fontWeight: item[gFontWeight],
+                  letterSpacing: item[gLetterSpacing],
+                ),
+                enabled: ((item[gType] ?? "") != gLabel))
+            : InputDecoration(
+                border: new OutlineInputBorder(
+                  //添加边框
+                  gapPadding: 0.0,
+                  borderRadius: BorderRadius.circular(2.0),
+                ),
+                isDense: true, // Added this
+                enabled: ((item[gType] ?? "") != gLabel)),
+        obscureText: isPassword && item[gPasswordShow],
+        inputFormatters: datamodel.getItemFormatters(item),
+        validator: (dynamic value) {
+          var validResult = datamodel.isItemValueValidStr(item, value);
+          if (validResult != '') {
+            return validResult;
+          }
+
+          return null;
+        },
+        onSaved: (dynamic value) {
+          textChange(value, item, datamodel, context, isForm);
+        },
+        onChanged: (text) {
+          thistext = text;
+          _debouncer
+              .run(() => textChange(text, item, datamodel, context, isForm));
+        },
+        onTap: () {
+          if (!isForm) {
+            return;
+          }
+          //set focus
+          datamodel.setFormFocus(name, item[gId]);
+        },
+        onEditingComplete: () {
+          textChange(thistext, item, datamodel, context, isForm);
+          if (isForm) {
+            datamodel.setFormNextFocus(name, item[gId]);
+          } else {
+            datamodel.setTableNextFocus(name, item[gId], id);
+          }
+          datamodel.myNotifyListeners();
+        },
       );
+      w = Expanded(
+        child: Focus(
+            onKey: (node, event) {
+              String keyLabel = event.logicalKey.keyLabel;
+              if (keyLabel == 'Tab') {
+                if (isForm) {
+                  datamodel.setFormNextFocus(name, item[gId]);
+                } else {
+                  datamodel.setTableNextFocus(name, item[gId], id);
+                }
+
+                datamodel.myNotifyListeners();
+              } else {}
+              return KeyEventResult.ignored;
+            },
+            child: w),
+      );
+      if (item[gSuffixIcon] != null) {
+        w = Row(
+          children: [w, item[gSuffixIcon]],
+        );
+      }
+      return w;
     });
   }
 }

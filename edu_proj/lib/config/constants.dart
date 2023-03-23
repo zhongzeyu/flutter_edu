@@ -42,6 +42,7 @@ const gCheckverifycode = 'checkverifycode';
 const gChild = 'child';
 const gClose = 'Close';
 const gCode = 'code';
+const gCol = 'col';
 const gCollapsed = 'Collapsed';
 const gColor = 'color';
 const gColorIndex = 'colorIndex';
@@ -128,8 +129,11 @@ const gImg = 'img';
 const gImgID = 'imgID';
 const gImgTitle = 'imgTitle';
 const gInvalidname = 'invalidname';
+const gInvalidEmail = 'Invalid email';
 const gIsBold = 'isBold';
 const gIsFile = 'isFile';
+const gIsForm = 'isForm';
+
 const gIsHidden = 'isHidden';
 const gIsKeyword = 'isKeyword';
 const gIsLabel = 'isLabel';
@@ -168,6 +172,7 @@ const gMsg = 'msg';
 const gMultiline = 'multiline';
 
 const gName = 'name';
+const gNeedi10n = 'needi10n';
 const gNew = 'new';
 const gNochange = 'nochange';
 const gNode = 'node';

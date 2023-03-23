@@ -21,23 +21,31 @@ class MyLabel extends StatelessWidget {
           labelColor = Colors.black;
         }*/
         Text text;
-        if (datamodel.isNull(_param[gOriginalValue])) {
+        var value = _param[gLabel] ?? _param[gValue] ?? "";
+
+        var showValue =
+            (_param[gNeedi10n] ?? true) ? datamodel.getSCurrent(value) : value;
+        if (_param[gOriginalValue] == null ||
+            (_param[gOriginalValue] ?? "") == value) {
           text = Text(
-            datamodel.getSCurrent(_param[gLabel] ?? _param[gValue] ?? ""),
+            showValue,
             //textAlign: TextAlign.left,
+            maxLines: 10,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontWeight: (datamodel.isNull(_param[gIsBold]))
                   ? _param[gFontWeight]
                   : FontWeight.bold, //FontWeight.bold,
               fontSize: _param[gFontSize],
-              color: labelColor,
+              color: _param[gColor] ?? labelColor,
               //backgroundColor: Colors.transparent
             ),
           );
         } else {
           text = Text.rich(TextSpan(
-              text: datamodel.getSCurrent(_param[gOriginalValue]),
+              text: (_param[gNeedi10n] ?? true)
+                  ? datamodel.getSCurrent(_param[gOriginalValue])
+                  : _param[gOriginalValue],
               style: TextStyle(
                 color: labelColor,
               ),
@@ -49,8 +57,7 @@ class MyLabel extends StatelessWidget {
                       color: labelColor,
                     )),
                 TextSpan(
-                    text: datamodel
-                        .getSCurrent(_param[gLabel] ?? _param[gValue] ?? ""),
+                    text: showValue,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: labelColor,
