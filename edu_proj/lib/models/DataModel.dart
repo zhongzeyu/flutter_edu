@@ -366,8 +366,8 @@ class DataModel extends ChangeNotifier {
     return Column(
       children: [
         w,
-        MyLabel(
-            {gLabel: validResult, gFontSize: 10.0, gColor: Colors.red}, null)
+        MyLabel({gLabel: validResult, gFontSize: 10.0, gColorLabel: Colors.red},
+            null)
       ],
     );
   }
@@ -538,9 +538,16 @@ class DataModel extends ChangeNotifier {
   cancelTableModify(data, context) async {
     var tableName = data[gActionid] ?? data[gTableID];
     var id = data[gRow][gId];
-    Map dataModified = _tableList[tableName][gDataModified];
-    dataModified.remove(id);
+    cancelTableModifyByType(tableName, id, context, gDataModified);
+    cancelTableModifyByType(tableName, id, context, gDataModifiedInvalid);
     myNotifyListeners();
+  }
+
+  cancelTableModifyByType(tableName, id, context, type) async {
+    Map dataModified = _tableList[tableName][type];
+    if (!isNull(dataModified)) {
+      dataModified.remove(id);
+    }
   }
 
   changePassword(context, data, backcolor) async {
@@ -1411,9 +1418,9 @@ class DataModel extends ChangeNotifier {
     } else if (type == gPhone) {
       String nums = value.replaceAll(RegExp(r'[\D]'), '');
       String internationalPhoneFormatted = nums.length >= 1
-          ? (nums.length > 0 ? ' (' : '') +
+          ? (nums.length > 0 ? '(' : '') +
               nums.substring(0, nums.length >= 3 ? 3 : null) +
-              (nums.length > 3 ? ') ' : '') +
+              (nums.length > 3 ? ')' : '') +
               (nums.length > 3
                   ? nums.substring(3, nums.length >= 6 ? 6 : null) +
                       (nums.length > 6
@@ -2263,6 +2270,19 @@ class DataModel extends ChangeNotifier {
     return getTableDataFromWhere(tableData, where);
   }
 
+  getTableCol(tableid, colId) {
+    List colList = _tableList[tableid][gColumns];
+
+    if (colList != null && colList.length > 0) {
+      for (int i = 0; i < colList.length; i++) {
+        if (colList[i][gId] == colId) {
+          return colList[i];
+        }
+      }
+    }
+    return null;
+  }
+
   getTableDataFromWhere(tableData, where) {
     //filter the table data by where condition
     Map mapWhere = {};
@@ -2300,14 +2320,13 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableItemByName(tableInfo, itemName, value) {
-    value = '';
-    TextEditingController searchController = TextEditingController(text: value);
+    TextEditingController searchController = getTextController(value);
 
     Map item = {
       gWidth: 150.0,
       gType: itemName,
       gLabel: itemName,
-      //gFocus: true,
+      gFocus: false,
       gValue: value,
       gInputType: itemName,
       gTxtEditingController: searchController
@@ -2317,14 +2336,26 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableModifiedValue(tableid, colId, id) {
-    if (isNull(_tableList[tableid][gDataModified])) {
+    var value = getTableModifiedValueByType(tableid, colId, id, gDataModified);
+    if (isNull(value)) {
+      value =
+          getTableModifiedValueByType(tableid, colId, id, gDataModifiedInvalid);
+    }
+    return value;
+  }
+
+  getTableModifiedValueByType(tableid, colId, id, type) {
+    Map dataModified = _tableList[tableid][type];
+    if (isNull(dataModified)) {
       return null;
     }
-    Map dataModified = _tableList[tableid][gDataModified];
-    if (!dataModified.containsKey(id)) {
+    Map value;
+    if (!isNull(dataModified) && dataModified.containsKey(id)) {
+      value = dataModified[id];
+    }
+    if (isNull(value)) {
       return null;
     }
-    Map value = dataModified[id];
     if (isNull(value[colId])) {
       return null;
     }
@@ -2334,16 +2365,7 @@ class DataModel extends ChangeNotifier {
   getTableOriginalValue(tableid, id, colId) {
     List newData =
         _tableList[tableid][gDataSearch] ?? _tableList[tableid][gData];
-    List colList = _tableList[tableid][gColumns];
-    Map col;
-    if (colList != null && colList.length > 0) {
-      for (int i = 0; i < colList.length; i++) {
-        if (colList[i][gId] == colId) {
-          col = colList[i];
-          break;
-        }
-      }
-    }
+    Map col = getTableCol(tableid, colId);
     for (int i = 0; i < newData.length; i++) {
       Map dataRow = newData[i];
       if (dataRow[gId] == id) {
@@ -2418,17 +2440,14 @@ class DataModel extends ChangeNotifier {
     });
 
     if (tableInfo[gAttr][gCanEdit]) {
-      if (!isNull(_tableList[tableName][gDataModified])) {
-        Map dataModified = _tableList[tableName][gDataModified];
-        if (dataModified != null && dataModified.length > 0) {
-          detail.add({
-            gLabel: gSaveall,
-            gTableID: tableName,
-            gIconSize: iconSize,
-            gData: data,
-            gIcon: 62260
-          });
-        }
+      if (isModifiedValidAll(tableInfo)) {
+        detail.add({
+          gLabel: gSaveall,
+          gTableID: tableName,
+          gIconSize: iconSize,
+          gData: data,
+          gIcon: 62260
+        });
       }
     }
 
@@ -2653,6 +2672,18 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
+  getTextController(value) {
+    //var txtValue = value ?? "";
+    TextEditingController controller = TextEditingController(text: value);
+    /*TextEditingController controller = TextEditingController.fromValue(
+        TextEditingValue(
+            text: txtValue,
+            // 保持光标在最后
+            selection: TextSelection.fromPosition(TextPosition(
+                affinity: TextAffinity.downstream, offset: txtValue.length))));*/
+    return controller;
+  }
+
   getTitle(param, context, backcolor) {
     dynamic aLabel = param[gLabel];
     if (aLabel == null) {
@@ -2680,41 +2711,7 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  getTreeNodesFromTable(tableName, context, level) {
-    /*List<Node> nodes = [];
-    if (tableName == null || _tableList[tableName] == null) {
-      return nodes;
-    }
-    Map table = _tableList[tableName];
-    if (table[gData] == null) {
-      return nodes;
-    }
-
-    List tableData = table[gData];
-    dynamic icon = Icons.folder;
-    dynamic color = Colors.black;
-    if (level == 1) {
-      icon = Icons.input;
-      color = Colors.red;
-    } else if (level == 2) {
-      icon = Icons.insert_drive_file;
-    }
-
-    tableData.forEach((element) {
-      Node aNode = Node(
-        label: getSCurrent(element[gLabel]),
-        key: element[gDbname],
-        icon: icon,
-        iconColor: color,
-        children:
-            getTreeNodesFromTable(element[gDetail] ?? null, context, level + 1),
-      );
-      nodes.add(aNode);
-    });
-    return nodes;
-
-    */
-  }
+  getTreeNodesFromTable(tableName, context, level) {}
   getTxtImage(label, color, fontSize, height, letterSpacing) {
     return Text(
       getSCurrent(label),
@@ -2794,11 +2791,10 @@ class DataModel extends ChangeNotifier {
     //us phone: ^(?:\([2-9]\d{2}\)\ ?|[2-9]\d{2}(?:\-?|\ ?))[2-9]\d{2}[- ]?\d{4}$
     //       or: ^[\(\)\.\- ]{0,}[0-9]{3}[\(\)\.\- ]{0,}[0-9]{3}[\(\)\.\- ]{0,}[0-9]{4}[\(\)\.\- ]{0,}$
 
-    //ca:
+    //ca:^\([1-9]\d\d\)\d\d\d-\d\d\d\d$ 或  ^\([1-9][0-9][0-9]\)[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]$ 或^\([1-9]\d{2}\)\d{3}-\d{4}$
     if (item[gType] == gPhone &&
         !value.isEmpty &&
-        !RegExp(r"^[\(.]?[2-9]\d\d[\).]?[ -]?[2-9]\d\d[-.]\d{4}")
-            .hasMatch(value)) {
+        !RegExp(r"^\([1-9]\d{2}\)\d{3}-\d{4}$").hasMatch(value)) {
       return getSCurrent('Invalid phone');
     }
     //post code canada: ^[a-zA-Z]\d{1}[a-zA-Z](\-| |)\d{1}[a-zA-Z]\d{1}$
@@ -2814,18 +2810,46 @@ class DataModel extends ChangeNotifier {
 
     if (item[gMinLength] != null &&
         item[gMinLength] != '0' &&
-        value.length < item[gMinLength]) {
+        !value.isEmpty &&
+        value.toString().length < item[gMinLength]) {
       return getSCurrent(
           gMininput + "{" + item[gMinLength] + "}{" + item[gUnit] + "}");
     }
     if (item[gLength] != null &&
         item[gLength] != '0' &&
-        value.length > item[gLength]) {
+        !value.isEmpty &&
+        value.toString().length > item[gLength]) {
       return getSCurrent(
           gMaxinput + "{" + item[gLength] + "}{" + item[gUnit] + "}");
     }
 
     return '';
+  }
+
+  isModifiedValid(_param, dataRow) {
+    return isModifiedValidByType(_param, dataRow, gDataModified);
+  }
+
+  isModifiedValidAll(tableInfo) {
+    if (!isNull(tableInfo[gDataModified])) {
+      Map dataModified = tableInfo[gDataModified];
+      if (dataModified != null && dataModified.length > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  isModifiedValidByType(_param, dataRow, type) {
+    if (!isNull(_param[type]) && !isNull(_param[type][dataRow[gId]])) {
+      return true;
+    }
+    return false;
+  }
+
+  isModifiedValidOrInvalid(_param, dataRow) {
+    return isModifiedValidByType(_param, dataRow, gDataModified) ||
+        isModifiedValidByType(_param, dataRow, gDataModifiedInvalid);
   }
 
   isNull(aValue) {
@@ -3056,6 +3080,12 @@ class DataModel extends ChangeNotifier {
     clear(context);
 
     //myNotifyListeners();
+  }
+
+  moveItemBetweenMaps(id, Map originMap, Map destineMap) {
+    Map mValue = originMap[id];
+    destineMap[id] = mValue;
+    originMap.remove(id);
   }
 
   myNotifyListeners() {
@@ -3358,13 +3388,18 @@ class DataModel extends ChangeNotifier {
   }
 
   removeTableModified(tablename, id) {
-    if (isNull(_tableList[tablename][gDataModified])) {
+    removeTableModifiedByType(tablename, id, gDataModified);
+    removeTableModifiedByType(tablename, id, gDataModifiedInvalid);
+  }
+
+  removeTableModifiedByType(tablename, id, type) {
+    if (isNull(_tableList[tablename][type])) {
       return;
     }
-    if (isNull(_tableList[tablename][gDataModified][id])) {
+    if (isNull(_tableList[tablename][type][id])) {
       return;
     }
-    Map modifiedRow = _tableList[tablename][gDataModified];
+    Map modifiedRow = _tableList[tablename][type];
     modifiedRow.remove(id);
   }
 
@@ -3840,7 +3875,7 @@ class DataModel extends ChangeNotifier {
 
       //valueItemList[gInputType] = valueItemList[gInputType];
       valueItemList[gTxtEditingController] =
-          TextEditingController(text: valueItemList[gDefaultValue]);
+          getTextController(valueItemList[gDefaultValue]);
       valueItemList[gValue] = '';
 
       valueItemList[gOldvalue] = '';
@@ -4625,25 +4660,38 @@ class DataModel extends ChangeNotifier {
         否则找原值
           如果找到原值，并相同，删除修改值，退出
           否则，更新修改值，退出
-          {
-             如果未找到原值（新增），更新修改值， 退出
-             如果与原值不同，更新修改值， 退出
-            }
 
     未找到修改值
         找原值如果相等， 退出
         添加修改值
     */
+    Map item = getTableCol(tableid, colId);
+    bool isItemValid = isItemValueValid(item, value);
     if (isNull(_tableList[tableid][gDataModified])) {
       _tableList[tableid][gDataModified] = {};
     }
+    if (isNull(_tableList[tableid][gDataModifiedInvalid])) {
+      _tableList[tableid][gDataModifiedInvalid] = {};
+    }
     Map dataModified = _tableList[tableid][gDataModified];
+    Map dataModifiedInvalid = _tableList[tableid][gDataModifiedInvalid];
+    Map mValue;
+    bool isValidZone = true;
     if (dataModified.containsKey(id)) {
-      Map mValue = dataModified[id];
-      if (!isNull(mValue[colId]) && mValue[colId] == value) {
+      mValue = dataModified[id];
+    } else if (dataModifiedInvalid.containsKey(id)) {
+      mValue = dataModifiedInvalid[id];
+      isValidZone = false;
+    }
+    dynamic originalValue = getTableOriginalValue(tableid, id, colId);
+
+    //找到修改值
+    if (!isNull(mValue) && !isNull(mValue[colId])) {
+      //修改值未改变，退出
+      if (mValue[colId] == value) {
         return;
       }
-      dynamic originalValue = getTableOriginalValue(tableid, id, colId);
+      //新值与原值相同，删除修改值，退出
       if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
         mValue.remove(colId);
         if (mValue.length < 1) {
@@ -4651,17 +4699,37 @@ class DataModel extends ChangeNotifier {
         }
         return;
       }
+      //更新
       mValue[colId] = value;
-      return;
+      if (isItemValid) {
+        //如值值合法，却在非法区，移到合法区
+        if (!isValidZone) {
+          moveItemBetweenMaps(id, dataModifiedInvalid, dataModified);
+        }
+      } else {
+        //如值值非法，却在合法区，移到非法区
+        if (isValidZone) {
+          moveItemBetweenMaps(id, dataModified, dataModifiedInvalid);
+        }
+      }
+    } else {
+      //修改值与源值同，退出
+      if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
+        return;
+      }
+      //添加修改值
+      if (isItemValid) {
+        if (isNull(dataModified[id])) {
+          dataModified[id] = {};
+        }
+        dataModified[id][colId] = value;
+      } else {
+        if (isNull(dataModifiedInvalid[id])) {
+          dataModifiedInvalid[id] = {};
+        }
+        dataModifiedInvalid[id][colId] = value;
+      }
     }
-    dynamic originalValue = getTableOriginalValue(tableid, id, colId);
-    if (!isNull(originalValue) && originalValue == value) {
-      return;
-    }
-    if (isNull(dataModified[id])) {
-      dataModified[id] = {};
-    }
-    dataModified[id][colId] = value;
   }
 
   setTreeNode(data, context) {
@@ -4870,7 +4938,7 @@ class DataModel extends ChangeNotifier {
   textChange(text, Map item, BuildContext context, bool isForm, name, id) {
     if (!isForm && item[gType] != gSearch) {
       setTableValueItem(name, item[gId], id, text);
-      myNotifyListeners();
+      //myNotifyListeners();
 
       //print('--------------  textChange 0 1');
       return;
