@@ -23,14 +23,6 @@ class AppTheme {
     } catch (e) {}
     return ThemeData(
       splashFactory: isIOS ? NoSplash.splashFactory : null,
-      // splashFactory: InkRipple.splashFactory,
-      // splashColor: Colors.red,
-      // highlightColor: Colors.transparent,
-      // hoverColor: Colors.transparent,
-      // iconTheme: IconThemeData(),
-      // buttonTheme: const ButtonThemeData(),
-      // cupertinoOverrideTheme: CupertinoThemeData(
-      //     textTheme: CupertinoTextThemeData(primaryColor: Colors.red)),
 
       colorScheme: ColorScheme.fromSwatch(
         primarySwatch: AppColors.palette,
@@ -75,22 +67,7 @@ class AppTheme {
         ),
         // isCollapsed: true,
       ),
-      // textButtonTheme: TextButtonThemeData(
-      //   style: ButtonStyle(
-      //     splashFactory: NoSplash.splashFactory,
-      //     overlayColor: MaterialStateProperty.resolveWith<Color?>(
-      //       (Set<MaterialState> states) {
-      //         print(states);
-      //         if (states.contains(MaterialState.hovered))
-      //           return Colors.green.withOpacity(0.04);
-      //         if (states.contains(MaterialState.focused)) return Colors.purple;
-      //         if (states.contains(MaterialState.pressed))
-      //           return Colors.red.withOpacity(0.1);
-      //         return null; // Defer to the widget's default.
-      //       },
-      //     ),
-      //   ),
-      // ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
           splashFactory: InkSplash.splashFactory,

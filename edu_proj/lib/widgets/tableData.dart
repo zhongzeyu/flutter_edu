@@ -18,24 +18,6 @@ class TableData extends DataTableSource {
 
   int get rowCount => (_param[gDataSearch] ?? _param[gData]).length;
   int get selectedRowCount => _selectRowCount;
-  getOneItem(
-      items, colname, dataRow, tableName, value, isModified, originalValue) {
-    Map item;
-    items.entries.forEach((itemOne) {
-      item = itemOne.value;
-      if (item[gId] == colname) {
-        item[gOldvalue] = (dataRow == null) ? null : dataRow[item[gId]];
-        item[gShowDetail] = false;
-
-        item[gValue] = value;
-        item[gTxtEditingController]..text = (dataRow == null) ? null : value;
-        item[gPlaceHolder] =
-            isModified ? originalValue.toString() : value.toString();
-        return item;
-      }
-    });
-    return item;
-  }
 
   DataRow getRow(int index) {
     List<DataCell> dataCellList = [];
@@ -47,11 +29,19 @@ class TableData extends DataTableSource {
     if (_param[gAttr][gCanEdit]) {
       var labelValue = gEdit;
       var icon = 61453;
-
-      if (!_dataModel.isNull(_param[gDataModified]) &&
-          !_dataModel.isNull(_param[gDataModified][dataRow[gId]])) {
-        labelValue = gSave;
-        icon = 62260;
+      if (_dataModel.isModifiedValid(_param, dataRow)) {
+        actionList.add(MyButton({
+          gLabel: gSave,
+          gAction: gLocalAction,
+          gTableID: _param[gTableID],
+          gRow: dataRow,
+          gContext: _context,
+          gIconSize: size,
+          gIcon: 62260,
+          gBackgroundColor: backgroundcolor
+        }));
+      }
+      if (_dataModel.isModifiedValidOrInvalid(_param, dataRow)) {
         actionList.add(MyButton({
           gLabel: gCancel,
           gAction: gLocalAction,
@@ -63,6 +53,7 @@ class TableData extends DataTableSource {
           gBackgroundColor: backgroundcolor
         }));
       }
+
       actionList.add(MyButton({
         gLabel: labelValue,
         gAction: gLocalAction,
@@ -111,8 +102,8 @@ class TableData extends DataTableSource {
       var colname = _param[gColumns][i][gId];
 
       int backColorValue = Colors.white.value;
-      Widget w = _dataModel.getRowItemOne(
-          false, _param[gTableID], index, i, _context, backColorValue);
+      Widget w = _dataModel.getRowItemOne(false, _param[gTableID], index,
+          _param[gColumns][i], _context, backColorValue);
 
       dataCellList.add(DataCell(w, onTap: () {
         _param[gLabel] = gTableItem;

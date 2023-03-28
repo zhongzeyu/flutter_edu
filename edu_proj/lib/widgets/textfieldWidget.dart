@@ -15,7 +15,8 @@ class TextFieldWidget extends StatelessWidget {
   final dynamic isForm;
   final dynamic name;
   final dynamic id;
-  final _debouncer = Debouncer(milliseconds: 2000);
+  //final _debouncer = Debouncer(milliseconds: 300);
+
   TextFieldWidget({this.item, this.backcolor, this.isForm, this.name, this.id});
   /*_getWidth() {
     return null;
@@ -25,37 +26,19 @@ class TextFieldWidget extends StatelessWidget {
   textChange(
       text, Map item, DataModel datamodel, BuildContext context, bool isForm) {
     datamodel.textChange(text, item, context, isForm, name, id);
-    /*if (!isForm && item[gType] != gSearch) {
-      datamodel.setTableValueItem(name, item[gId], id, text);
-      datamodel.myNotifyListeners();
-
-      //print('--------------  textChange 0 1');
-      return;
-    }
-    //print('--------------  textChange 1');
-    if (item[gDroplist] == '') {
-      item[gValue] = text;
-    }
-    item[gSearch] = text;
-    //print('--------------  textChange 2');
-    if (item[gType] == gAddress) {
-      return;
-    }
-    //print('--------------  textChange 3');
-    if ((item[gAction] ?? '') == '') {
-      //print('--------------  textChange 3 0');
-      return;
-    }
-    //print('--------------  textChange 4');
-    //print('--------------  textChange 2');
-
-    datamodel.sendRequestOne(item[gAction], item, item[gContext] ?? context);*/
   }
 
   Widget build(BuildContext context) {
     dynamic thistext;
-
+    FocusNode _focusNode = FocusNode();
+    //FocusNode _commentFocus = FocusNode();
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      _focusNode.addListener(() {
+        if (!_focusNode.hasFocus) {
+          // TextField has lost focus
+          textChange(thistext, item, datamodel, context, isForm);
+        }
+      });
       bool isPassword = (item[gType] == gPassword);
       if (isPassword) {
         item[gPasswordShow] = item[gPasswordShow] ?? true;
@@ -63,8 +46,8 @@ class TextFieldWidget extends StatelessWidget {
         item[gSuffixIcon] = IconButton(
             icon: Icon(
               item[gPasswordShow]
-                  ? Icons.visibility_outlined
-                  : Icons.visibility_off_outlined,
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               color: Theme.of(context).disabledColor,
             ),
             onPressed: () {
@@ -120,7 +103,7 @@ class TextFieldWidget extends StatelessWidget {
               //datamodel.myNotifyListeners();
             });
       }
-      datamodel.getItemIcon(item, context);
+      //datamodel.getItemIcon(item, context);
       if (item[gIsFile] == true) {
         item[gSuffixIcon] = IconButton(
             icon: Icon(Icons.file_upload_outlined
@@ -131,11 +114,19 @@ class TextFieldWidget extends StatelessWidget {
             });
       }
 
-      item[gTxtEditingController].selection = TextSelection.fromPosition(
-          TextPosition(offset: item[gTxtEditingController].text.length));
+      /*item[gTxtEditingController].selection = TextSelection.fromPosition(
+          TextPosition(offset: showValue.length));*/
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
       TextEditingController txtController = item[gTxtEditingController];
-      if (datamodel.isNull(txtController.text)) {
+      var showValue = txtController.text ?? "";
+
+      /*txtController.value = TextEditingValue(
+          text: showValue,
+          selection: TextSelection.fromPosition(TextPosition(
+              affinity: TextAffinity.downstream, offset: showValue.length)));*/
+      /*txtController.selection = TextSelection.fromPosition(
+          TextPosition(offset: txtController.text.length));*/
+      if (datamodel.isNull(showValue)) {
         txtController.text = "";
       } else {
         dynamic aValue = datamodel.getValueByType(item[gValue], item);
@@ -146,11 +137,15 @@ class TextFieldWidget extends StatelessWidget {
       /*if (autofocus && datamodel.isPopOpen()) {
         autofocus = false;
       }*/
-      print('======= txtFieldwidget autofocus is ' + autofocus.toString());
       var labeltext = item[gLabel];
+      print('======= txtFieldwidget ' +
+          labeltext +
+          ' autofocus is ' +
+          autofocus.toString());
       Widget w = TextFormField(
         controller: txtController,
         autofocus: autofocus,
+        //focusNode: _commentFocus,
         keyboardType: datamodel.getInputType(item[gInputType]),
         maxLength: isForm ? item[gLength] : null,
         style: TextStyle(
@@ -160,9 +155,9 @@ class TextFieldWidget extends StatelessWidget {
           fontWeight: item[gFontWeight],
           letterSpacing: item[gLetterSpacing],
         ),
-        decoration: isForm
+        decoration: /*isForm
             ? InputDecoration(
-                labelText: labeltext,
+                labelText: datamodel.getSCurrent(labeltext),
                 labelStyle: TextStyle(
                   color: cBackColor,
                   fontSize: item[gFontSize],
@@ -170,7 +165,8 @@ class TextFieldWidget extends StatelessWidget {
                   fontWeight: item[gFontWeight],
                   letterSpacing: item[gLetterSpacing],
                 ),
-                hintText: item[gPlaceHolder],
+                hintText: datamodel.getSCurrent(
+                    'Please enter ' + labeltext), //item[gPlaceHolder],
                 hintStyle: TextStyle(
                   color: cBackColor,
                   fontSize: item[gFontSize],
@@ -179,11 +175,21 @@ class TextFieldWidget extends StatelessWidget {
                   letterSpacing: item[gLetterSpacing],
                 ),
                 enabled: ((item[gType] ?? "") != gLabel))
-            : InputDecoration(
+            :*/
+            InputDecoration(
                 border: new OutlineInputBorder(
                   //添加边框
                   gapPadding: 0.0,
                   borderRadius: BorderRadius.circular(2.0),
+                ),
+                hintText: datamodel.getSCurrent(
+                    'Please enter ' + labeltext), //item[gPlaceHolder],
+                hintStyle: TextStyle(
+                  color: cBackColor,
+                  fontSize: item[gFontSize],
+                  fontStyle: item[gFontStyle],
+                  fontWeight: item[gFontWeight],
+                  letterSpacing: item[gLetterSpacing],
                 ),
                 isDense: true, // Added this
                 enabled: ((item[gType] ?? "") != gLabel)),
@@ -202,10 +208,12 @@ class TextFieldWidget extends StatelessWidget {
         },
         onChanged: (text) {
           thistext = text;
-          _debouncer
-              .run(() => textChange(text, item, datamodel, context, isForm));
+
+          /*_debouncer.run(
+              () => textChange(thistext, item, datamodel, context, isForm));*/
         },
         onTap: () {
+          //FocusScope.of(context).requestFocus(_commentFocus);
           if (!isForm) {
             return;
           }
@@ -239,11 +247,13 @@ class TextFieldWidget extends StatelessWidget {
             },
             child: w),
       );
-      if (item[gSuffixIcon] != null) {
+      /*if (item[gSuffixIcon] != null) {
         w = Row(
           children: [w, item[gSuffixIcon]],
         );
-      }
+      }*/
+      txtController.selection = TextSelection.fromPosition(
+          TextPosition(offset: txtController.text.length));
       return w;
     });
   }

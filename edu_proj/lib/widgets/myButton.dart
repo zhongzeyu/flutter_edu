@@ -80,53 +80,6 @@ class MyButton extends StatelessWidget {
           }
         },
       );
-      /*Map param = {
-        gWidth: this._param[gWidth] ?? 200,
-        gHeight: this._param[gHeight] ?? 30,
-        gBorderRadius: _param[gBorderRadius] ?? 10.0,
-        gMargin: _param[gMargin] ?? const EdgeInsets.all(1.5),
-        gPadding: _param[gPadding] ?? const EdgeInsets.all(1.5),
-        gBlur: _param[gBlur] ?? 10.0,
-        gAlignment: _param[gAlignment] ?? Alignment.center,
-        gBorder: _param[gBorder] ?? 2.0,
-        gColor: Colors.blue,
-        gBackgroundColor: _param[gBackgroundColor] ??
-            Colors.white.value, //Color.fromARGB(255, 218, 165, 32),
-        gChild: Text("test"), //MyLabel(_param)
-      };
-      return MyGlass(param);*/
-
-      /*return Padding(
-        padding: EdgeInsets.all(this._param[gPadding] ?? 18.0),
-        child: SizedBox(
-          child: /*OutlinedButton(
-            onPressed: () {
-              datamodel.sendRequestOne(
-                  _param[gAction], _param, this._param[gContext] ?? context);
-            },
-            child: MyLabel(_param),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50)),
-              minimumSize:
-                  Size(this._param[gWidth] ?? 200, this._param[gHeight] ?? 40),
-            ),
-          ),*/
-              ElevatedButton(
-            onPressed: () {
-              /*datamodel.sendRequestOne(
-                  _param[gAction], _param, this._param[gContext] ?? context);*/
-            },
-            child: MyLabel(_param),
-            style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50)),
-              minimumSize:
-                  Size(this._param[gWidth] ?? 200, this._param[gHeight] ?? 40),
-            ),
-          ),
-        ),
-      );*/
     });
   }
 }

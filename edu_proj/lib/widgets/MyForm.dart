@@ -4,7 +4,7 @@ import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/myPinCode.dart';
-import 'package:edu_proj/widgets/textfieldWidget.dart';
+//import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 //import 'myDropdown.dart';
@@ -27,8 +27,10 @@ class MyForm extends StatelessWidget {
           return MyLabel(
               {gLabel: gNotavailable, gFontSize: 20.0}, thisbackcolor);
         }
+
         //datamodel.dpList[gYear] = [];
         Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
+        formDefine[gKey] = _formKey;
         Map<dynamic, dynamic> items = formDefine[gItems];
         //Color cBackColor = datamodel.fromBdckcolor(backcolor);
         //Size size = MediaQuery.of(context).size;
@@ -47,16 +49,22 @@ class MyForm extends StatelessWidget {
                   MyPinCode(item, _formName),
                 );
               } else {
-                result.add(
-                  TextFieldWidget(
-                      item: item,
-                      backcolor: thisbackcolor,
-                      isForm: true,
-                      name: _formName),
-                );
+                Widget w = datamodel.getRowItemOne(
+                    true, _formName, -1, item, context, thisbackcolor);
+                w = InkWell(
+                    onTap: () {
+                      datamodel.setFormFocus(_formName, item[gId]);
+                      datamodel.myNotifyListeners();
+                    },
+                    child: w);
+                result.add(w);
+                result.add(SizedBox(
+                  height: 10.0,
+                ));
               }
             }
           });
+
           //_top += 30;
 
           result.add(
@@ -81,7 +89,6 @@ class MyForm extends StatelessWidget {
             gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
             gChild: MyLabel({gLabel: formDefine[gSubmit]}, Colors.blue.value)
           };
-
           result.add(InkWell(
             child: MyGlass(paramSubmit),
             onTap: () {
@@ -97,13 +104,15 @@ class MyForm extends StatelessWidget {
           return result;
         }
 
-        return Form(
+        Form form = Form(
           key: _formKey,
           child: Column(
             //mainAxisAlignment: MainAxisAlignment.center,
             children: _showItems(),
           ),
         );
+        //_formKey.currentState.validate();
+        return form;
       },
     );
   }

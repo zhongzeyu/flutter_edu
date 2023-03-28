@@ -37,7 +37,7 @@ class MyLabel extends StatelessWidget {
                   ? _param[gFontWeight]
                   : FontWeight.bold, //FontWeight.bold,
               fontSize: _param[gFontSize],
-              color: _param[gColor] ?? labelColor,
+              color: _param[gColorLabel] ?? labelColor,
               //backgroundColor: Colors.transparent
             ),
           );
@@ -51,7 +51,7 @@ class MyLabel extends StatelessWidget {
               ),
               children: <TextSpan>[
                 TextSpan(
-                    text: ' -> ',
+                    text: ' -> \r\n',
                     style: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: labelColor,
