@@ -18,6 +18,7 @@ class MyForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int thisbackcolor = backcolor ?? Colors.black.value;
+    bool _submitstatus = true;
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
         final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -40,6 +41,7 @@ class MyForm extends StatelessWidget {
           //dynamic dataRow;
           //dataRow = _paramData[gData];
           datamodel.setFormFocus(_formName, null);
+          datamodel.formLists[_formName][gStatus] = true;
           items.entries.forEach((itemOne) {
             Map item = itemOne.value;
             if ((item[gIsHidden] ?? "false") != gTrue &&
@@ -89,16 +91,19 @@ class MyForm extends StatelessWidget {
             gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
             gChild: MyLabel({gLabel: formDefine[gSubmit]}, Colors.blue.value)
           };
-          result.add(InkWell(
-            child: MyGlass(paramSubmit),
-            onTap: () {
-              if (!_formKey.currentState.validate()) {
-                return;
-              }
-              _formKey.currentState.save();
-              datamodel.formSubmit(context, _formName);
-            },
-          ));
+          if (datamodel.formLists[_formName][gStatus] ?? false) {
+            result.add(InkWell(
+              child:
+                  _submitstatus ? MyGlass(paramSubmit) : SizedBox(height: 12.0),
+              onTap: () {
+                /* if (!_formKey.currentState.validate()) {
+                  return;
+                }*/
+                _formKey.currentState.save();
+                datamodel.formSubmit(context, _formName);
+              },
+            ));
+          }
 
           datamodel.afterSubmit(context, _formName, result);
           return result;
@@ -111,7 +116,7 @@ class MyForm extends StatelessWidget {
             children: _showItems(),
           ),
         );
-        //_formKey.currentState.validate();
+        //_submitstatus = _formKey.currentState.validate();
         return form;
       },
     );

@@ -15,7 +15,7 @@ class TextFieldWidget extends StatelessWidget {
   final dynamic isForm;
   final dynamic name;
   final dynamic id;
-  //final _debouncer = Debouncer(milliseconds: 300);
+  //final _debouncer = Debouncer(milliseconds: 2000);
 
   TextFieldWidget({this.item, this.backcolor, this.isForm, this.name, this.id});
   /*_getWidth() {
@@ -30,17 +30,19 @@ class TextFieldWidget extends StatelessWidget {
 
   Widget build(BuildContext context) {
     dynamic thistext;
-    FocusNode _focusNode = FocusNode();
-    //FocusNode _commentFocus = FocusNode();
+    //FocusNode _focusNode = FocusNode();
+
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      _focusNode.addListener(() {
+      /*_focusNode.addListener(() {
+        //print('===========  textfiel focus 0 :' + item[gId]);
         if (!_focusNode.hasFocus) {
           // TextField has lost focus
+          print('===========  textfiel lost focus' + item[gId]);
           textChange(thistext, item, datamodel, context, isForm);
         }
-      });
+      });*/
       bool isPassword = (item[gType] == gPassword);
-      if (isPassword) {
+      /*if (isPassword) {
         item[gPasswordShow] = item[gPasswordShow] ?? true;
 
         item[gSuffixIcon] = IconButton(
@@ -54,7 +56,7 @@ class TextFieldWidget extends StatelessWidget {
               item[gPasswordShow] = !item[gPasswordShow];
               datamodel.myNotifyListeners();
             });
-      }
+      }*/
       if (item[gType] == gAddress || item[gType] == gSearch) {
         item[gSuffixIcon] = IconButton(
             icon: Icon(((item[gType] == gSearch)
@@ -64,7 +66,7 @@ class TextFieldWidget extends StatelessWidget {
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () async {
-              FocusScope.of(context).requestFocus(FocusNode());
+              //FocusScope.of(context).requestFocus(FocusNode());
               item[gShowDetail] = true;
               if (isForm) {
                 datamodel.setFormFocus(name, item[gId]);
@@ -138,14 +140,14 @@ class TextFieldWidget extends StatelessWidget {
         autofocus = false;
       }*/
       var labeltext = item[gLabel];
-      print('======= txtFieldwidget ' +
+      /*print('======= txtFieldwidget ' +
           labeltext +
           ' autofocus is ' +
-          autofocus.toString());
+          autofocus.toString());*/
       Widget w = TextFormField(
         controller: txtController,
         autofocus: autofocus,
-        //focusNode: _commentFocus,
+        //focusNode: _focusNode,
         keyboardType: datamodel.getInputType(item[gInputType]),
         maxLength: isForm ? item[gLength] : null,
         style: TextStyle(
@@ -207,6 +209,12 @@ class TextFieldWidget extends StatelessWidget {
           textChange(value, item, datamodel, context, isForm);
         },
         onChanged: (text) {
+          //如果是表字段，检查状态是否改变
+          //  如果状态变true,检查form的状态
+
+          if (isForm) {
+            datamodel.checkFormStatus(name);
+          }
           thistext = text;
 
           /*_debouncer.run(

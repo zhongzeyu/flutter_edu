@@ -25,7 +25,7 @@ class MyLabel extends StatelessWidget {
 
         var showValue =
             (_param[gNeedi10n] ?? true) ? datamodel.getSCurrent(value) : value;
-        if (_param[gOriginalValue] == null ||
+        if (datamodel.isNull(_param[gOriginalValue]) ||
             (_param[gOriginalValue] ?? "") == value) {
           text = Text(
             showValue,
