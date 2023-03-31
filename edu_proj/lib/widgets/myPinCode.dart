@@ -32,17 +32,9 @@ class MyPinCode extends StatelessWidget {
               inactiveColor: Theme.of(context).colorScheme.primary,
             ),
             animationType: AnimationType.scale,
-            /*dialogConfig: DialogConfig(
-              dialogTitle: 'Past Code',
-              dialogContent: 'Do you want to paste ',
-              affirmativeText: 'Paste',
-              negativeText: 'Cancel',
-            ),*/
-            //onCompleted: (pin) => datamodel.setDropdownMenuItem(
-            //  _param, pin, context, _formName),
-            //onCompleted: (pin) => datamodel.formSubmit(context, _formName),
+
             onCompleted: (pin) {
-              datamodel.setFormValue(_formName, _param[gId], pin);
+              datamodel.setValueModified(_formName, _param[gId], null, pin);
             },
             onChanged: (dynamic value) {},
             /*onChanged: (dynamic value) {

@@ -107,6 +107,7 @@ const gForgetpassword = 'forgetpassword';
 const gForm = 'form';
 const gFormid = 'formid';
 const gFormdetail = 'formdetail';
+const gFormFakeId = 'formFakeId';
 const gFormName = 'formName';
 
 const gGetForm = 'getForm';

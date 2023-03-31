@@ -50,6 +50,7 @@ class MyDetailNew extends StatelessWidget {
       });
     });
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      datamodel.backupContext();
       Map param0 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: 45,
@@ -69,7 +70,9 @@ class MyDetailNew extends StatelessWidget {
                   : IconButton(
                       icon: Icon(Icons.arrow_back),
                       onPressed: () {
+                        datamodel.backContext();
                         datamodel.finishme(context);
+
                         //Navigator.pop(context);
                         //Navigator.removeRoute(context, datamodel.lastRoute);
                       },

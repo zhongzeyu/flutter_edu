@@ -30,17 +30,8 @@ class TextFieldWidget extends StatelessWidget {
 
   Widget build(BuildContext context) {
     dynamic thistext;
-    //FocusNode _focusNode = FocusNode();
 
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      /*_focusNode.addListener(() {
-        //print('===========  textfiel focus 0 :' + item[gId]);
-        if (!_focusNode.hasFocus) {
-          // TextField has lost focus
-          print('===========  textfiel lost focus' + item[gId]);
-          textChange(thistext, item, datamodel, context, isForm);
-        }
-      });*/
       bool isPassword = (item[gType] == gPassword);
       /*if (isPassword) {
         item[gPasswordShow] = item[gPasswordShow] ?? true;
@@ -66,7 +57,6 @@ class TextFieldWidget extends StatelessWidget {
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () async {
-              //FocusScope.of(context).requestFocus(FocusNode());
               item[gShowDetail] = true;
               if (isForm) {
                 datamodel.setFormFocus(name, item[gId]);
@@ -74,7 +64,7 @@ class TextFieldWidget extends StatelessWidget {
                 textChange(thistext, item, datamodel, context, false);
                 return;
               } else {
-                datamodel.setTableFocusItem(name, item, item[gId]);
+                datamodel.setFocusItem(name, item, item[gId]);
               }
 
               if (item[gType] == gAddress) {
@@ -96,7 +86,7 @@ class TextFieldWidget extends StatelessWidget {
                 gId: id,
               });
               Widget w = await datamodel.getItemSubWidget(
-                  item, isForm, name, context, id, backcolor, actions, null);
+                  item, isForm, name, context, id, backcolor, actions);
 
               //}
               datamodel.showPopup(context, w, null, actions);
@@ -134,7 +124,11 @@ class TextFieldWidget extends StatelessWidget {
         dynamic aValue = datamodel.getValueByType(item[gValue], item);
         txtController.text = aValue;
       }
-      bool autofocus = item[gFocus] ?? false;
+      bool autofocus = datamodel.getFocus(
+        isForm,
+        name,
+        item,
+      );
 
       /*if (autofocus && datamodel.isPopOpen()) {
         autofocus = false;
@@ -213,9 +207,11 @@ class TextFieldWidget extends StatelessWidget {
           //  如果状态变true,检查form的状态
 
           if (isForm) {
-            datamodel.checkFormStatus(name);
+            datamodel.checkFormStatus(name, item, text);
           }
           thistext = text;
+          textChange(thistext, item, datamodel, context, isForm);
+          //setTableValueItem(name, item[gId], id, text);
 
           /*_debouncer.run(
               () => textChange(thistext, item, datamodel, context, isForm));*/
@@ -230,11 +226,7 @@ class TextFieldWidget extends StatelessWidget {
         },
         onEditingComplete: () {
           textChange(thistext, item, datamodel, context, isForm);
-          if (isForm) {
-            datamodel.setFormNextFocus(name, item[gId]);
-          } else {
-            datamodel.setTableNextFocus(name, item[gId], id);
-          }
+          datamodel.setNextFocus(name, item[gId]);
           datamodel.myNotifyListeners();
         },
       );
@@ -243,11 +235,7 @@ class TextFieldWidget extends StatelessWidget {
             onKey: (node, event) {
               String keyLabel = event.logicalKey.keyLabel;
               if (keyLabel == 'Tab') {
-                if (isForm) {
-                  datamodel.setFormNextFocus(name, item[gId]);
-                } else {
-                  datamodel.setTableNextFocus(name, item[gId], id);
-                }
+                datamodel.setNextFocus(name, item[gId]);
 
                 datamodel.myNotifyListeners();
               } else {}
