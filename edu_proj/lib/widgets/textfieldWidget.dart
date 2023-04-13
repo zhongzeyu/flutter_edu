@@ -222,11 +222,11 @@ class TextFieldWidget extends StatelessWidget {
             return;
           }
           //set focus
-          datamodel.setFormFocus(name, item[gId]);
+          datamodel.setFocus(name, item[gId], null);
         },
         onEditingComplete: () {
           textChange(thistext, item, datamodel, context, isForm);
-          datamodel.setNextFocus(name, item[gId]);
+          datamodel.setNextFocus(name, item[gId], null);
           datamodel.myNotifyListeners();
         },
       );
@@ -235,7 +235,7 @@ class TextFieldWidget extends StatelessWidget {
             onKey: (node, event) {
               String keyLabel = event.logicalKey.keyLabel;
               if (keyLabel == 'Tab') {
-                datamodel.setNextFocus(name, item[gId]);
+                datamodel.setNextFocus(name, item[gId], null);
 
                 datamodel.myNotifyListeners();
               } else {}

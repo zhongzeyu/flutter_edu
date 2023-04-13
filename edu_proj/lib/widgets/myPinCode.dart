@@ -11,16 +11,15 @@ class MyPinCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController textEditingController = TextEditingController();
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       return Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: PinCodeTextField(
+        padding: const EdgeInsets.all(18.0),
+        child: /*PinCodeTextField(
             appContext: context,
-            autoFocus: _param[gFocus] ?? false,
-            autoDismissKeyboard: true,
+            autoFocus: true,
+            //autoDismissKeyboard: true,
             length: _param[gLength],
-            controller: textEditingController,
+            controller: _param['teController'],
 //onChanged: (pin) => _registerVerifyController.onChange(pin),
             keyboardType: TextInputType.number,
 //enabled: !_registerVerifyController.isLoading.value,
@@ -32,18 +31,78 @@ class MyPinCode extends StatelessWidget {
               inactiveColor: Theme.of(context).colorScheme.primary,
             ),
             animationType: AnimationType.scale,
+            enableActiveFill: true,
+            //autoDisposeControllers: false,
+            onCompleted: (code) {
+              _param['teController'].text = code;
+              datamodel.setValueModified(_formName, _param[gId], null, code);
+              //    textEditingController.text = pin;
+            },
+            onChanged: (dynamic value) {
+              //textEditingController.text = value;
+            },
+          )*/
+            PinCodeTextField(
+                appContext: context,
+                //autoDisposeControllers: false,
+                autoFocus: true,
+                length: _param[gLength],
+                animationType: AnimationType.fade,
+                pinTheme: PinTheme(
+                    borderRadius: BorderRadius.circular(10),
+                    shape: PinCodeFieldShape.box,
+                    activeColor: Colors.white,
+                    selectedColor: Colors.white,
+                    inactiveColor: Colors.white,
+                    fieldHeight: 40,
+                    fieldWidth: 40,
+                    activeFillColor: Colors.white,
+                    selectedFillColor: Colors.white,
+                    inactiveFillColor: Colors.white),
+                cursorColor: Colors.black,
+                autoDisposeControllers: false,
+                autoDismissKeyboard: true,
+                animationDuration: const Duration(milliseconds: 300),
+                enableActiveFill: true,
+                controller: _param[gTextController],
+                keyboardType: TextInputType.number,
+                onCompleted: (code) {
+                  _param[gTextController].text = code;
+                  datamodel.setValueModified(
+                      _formName, _param[gId], null, code);
+                },
+                onChanged: (code) {
+                  //_param['teController'].text = code;
+                }),
 
+        /*PinCodeTextField(
+            appContext: context,
+            autoFocus: true,
+            //autoDismissKeyboard: true,
+            length: _param[gLength],
+            controller: teController,
+//onChanged: (pin) => _registerVerifyController.onChange(pin),
+            keyboardType: TextInputType.number,
+//enabled: !_registerVerifyController.isLoading.value,
+            pinTheme: PinTheme(
+              fieldWidth: 40,
+              fieldHeight: 40,
+              shape: PinCodeFieldShape.box,
+              borderRadius: BorderRadius.circular(5),
+              inactiveColor: Theme.of(context).colorScheme.primary,
+            ),
+            animationType: AnimationType.scale,
+            enableActiveFill: true,
+            //autoDisposeControllers: false,
             onCompleted: (pin) {
               datamodel.setValueModified(_formName, _param[gId], null, pin);
+              //    textEditingController.text = pin;
             },
-            onChanged: (dynamic value) {},
-            /*onChanged: (dynamic value) {
-              var email =
-                  datamodel.getFormValue(gLogin, gEmail, gTxtEditingController);
-              datamodel.setFormValue(
-                  _formName, _param[gId], email + gDelimeterItem + value);
-            },*/
-          ));
+            onChanged: (dynamic value) {
+              //textEditingController.text = value;
+            },
+          )*/
+      );
     });
   }
 }

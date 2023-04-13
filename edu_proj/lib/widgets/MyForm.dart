@@ -28,6 +28,10 @@ class MyForm extends StatelessWidget {
           return MyLabel(
               {gLabel: gNotavailable, gFontSize: 20.0}, thisbackcolor);
         }
+        formSubmit(context, formKey) {
+          formKey.currentState.save();
+          datamodel.formSubmit(context, _formName);
+        }
 
         //datamodel.dpList[gYear] = [];
         Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
@@ -47,6 +51,11 @@ class MyForm extends StatelessWidget {
             if ((item[gIsHidden] ?? "false") != gTrue &&
                 (item[gType] ?? "") != gHidden) {
               if ((item[gInputType] ?? "") == gCode) {
+                datamodel.setFocusNode({gType: gForm, gName: _formName});
+                if (item[gTextController] == null) {
+                  item[gTextController] = TextEditingController();
+                }
+
                 result.add(
                   MyPinCode(item, _formName),
                 );
@@ -99,8 +108,7 @@ class MyForm extends StatelessWidget {
                 /* if (!_formKey.currentState.validate()) {
                   return;
                 }*/
-                _formKey.currentState.save();
-                datamodel.formSubmit(context, _formName);
+                formSubmit(context, _formKey);
               },
             ));
           }

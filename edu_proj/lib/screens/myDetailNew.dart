@@ -11,7 +11,8 @@ import '../widgets/myPic.dart';
 class MyDetailNew extends StatelessWidget {
   final Map _param;
   final int backcolor;
-  MyDetailNew(this._param, this.backcolor);
+  final Map<dynamic, dynamic> lastFocus;
+  MyDetailNew(this._param, this.backcolor, this.lastFocus);
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +51,6 @@ class MyDetailNew extends StatelessWidget {
       });
     });
     return Consumer<DataModel>(builder: (context, datamodel, child) {
-      datamodel.backupContext();
       Map param0 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: 45,
@@ -70,8 +70,7 @@ class MyDetailNew extends StatelessWidget {
                   : IconButton(
                       icon: Icon(Icons.arrow_back),
                       onPressed: () {
-                        datamodel.backContext();
-                        datamodel.finishme(context);
+                        datamodel.backContext(lastFocus, context);
 
                         //Navigator.pop(context);
                         //Navigator.removeRoute(context, datamodel.lastRoute);

@@ -85,7 +85,7 @@ class DataModel extends ChangeNotifier {
   http.Client httpClient = http.Client();
   //Locale _locale = const Locale('en', '');
   dynamic _locale = 'en';
-  final _debouncer = Debouncer(milliseconds: 300);
+  final _debouncer = Debouncer(milliseconds: 100);
 
   /*final List<int> _colorList = [
     4282679983,
@@ -158,8 +158,7 @@ class DataModel extends ChangeNotifier {
   Map _itemSubList = {};
   Map _dpListDefaultIndex = {};
   OverlayEntry overlayEntry;
-  Map<dynamic, dynamic> _mFocusNode;
-  Map<dynamic, dynamic> _focusNodeBackup;
+  Map<dynamic, dynamic> _mFocusNode = {gType: null};
 
   //dynamic get email => _email;
   dynamic get token => _token;
@@ -176,7 +175,7 @@ class DataModel extends ChangeNotifier {
   Map<dynamic, dynamic> get dpList => _dpList;
   Map<dynamic, dynamic> get whereList => _whereList;
   Map get dpListDefaultIndex => _dpListDefaultIndex;
-
+  Map<dynamic, dynamic> get mFocusNode => _mFocusNode;
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
   bool isProcessing = false;
@@ -199,6 +198,7 @@ class DataModel extends ChangeNotifier {
 
   DataModel() {
     init();
+    print('===== _mFocusNode:' + _mFocusNode.toString());
   }
   /*setTabParent(parent) {
     _tabParent = parent;
@@ -507,13 +507,9 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  backContext() {
-    _mFocusNode = _focusNodeBackup;
-  }
-
-  backupContext() {
-    _focusNodeBackup = new Map.from(_mFocusNode);
-    print('====== backupcontext');
+  backContext(lastFocus, context) {
+    _mFocusNode = lastFocus;
+    finishme(context);
   }
 
   Future<void> alert(BuildContext context, dynamic msg) async {
@@ -898,7 +894,7 @@ class DataModel extends ChangeNotifier {
   }
 
   forgetpassword(context) {
-    var email = getFormValue(gLogin, gEmail, gTxtEditingController);
+    var email = getFormValue(gLogin, gEmail);
     if (email != null && email.length > 0) {
       this.sendRequestOne(gForgetpassword, email, context);
     } else {
@@ -909,99 +905,97 @@ class DataModel extends ChangeNotifier {
   formSubmit(BuildContext context, formid) async {
     //unfocus all the item
     //setFormAllFocusFalse(formid);
-    try {
-      //print('        ------------------    formSubmit 0');
-      Map<dynamic, dynamic> obj = _formLists[formid][gItems];
-      var changed = false;
-      var data = {};
-      data[gFormid] = formid;
-      data[gId] = (obj[gId] != null) ? obj[gId][gValue] : '';
-      data[gOptLock] = (obj[gOptLock] != null) ? obj[gOptLock][gValue] : '';
-      //print('        ------------------    formSubmit 1');
+    //try {
+    //print('        ------------------    formSubmit 0');
+    Map<dynamic, dynamic> obj = _formLists[formid][gItems];
+    var changed = false;
+    var data = {};
+    data[gFormid] = formid;
+    data[gId] = (obj[gId] != null) ? obj[gId][gValue] : '';
+    data[gOptLock] = (obj[gOptLock] != null) ? obj[gOptLock][gValue] : '';
+    //print('        ------------------    formSubmit 1');
+    obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
+      //var key = element.entries.first.key;
+      var item = element.value;
+      var type = item[gType];
+      if (type == gId) {
+        data[gId] = item[gValue];
+      } else if (item[gType] == gLabel) {
+      } else if (item[gType] == gHidden) {
+      } else if (item[gDbid] != null && item[gDbid] != '') {
+        //var value = objI[gDataModified] ?? objI[gValue];
+        Map param = {gId: null, gItem: item, gName: formid, gRow: null};
+        var value = getRowItemOneValue(param);
+        //data[objI[gDbid]] = value;
+        if (item[gHash] != null && item[gHash]) {
+          value = hash(value);
+        }
+        if (type == gDate && !isNull(value)) {
+          //value = value.format(gDateformat);
+          //data[objI[gDbid]] =
+          //  DateFormat(gDateformat).format(value);
+        } else if (type == gDatetime) {
+          value = toUTCTime(value);
+        }
+        var oldValue = '';
+        if (item[gValue] != null) {
+          oldValue = item[gValue];
+        }
+        if (item[gId] != '' && item[gIsPrimary] != null && item[gIsPrimary]) {
+          data[item[gDbid]] = oldValue;
+        }
+        if (value == null) {
+          value = '';
+        }
+        if (value != oldValue) {
+          changed = true;
+          data[item[gDbid]] = value;
+        } else if (data[gId] == null || data[gId] == '') {
+          data[item[gDbid]] = value;
+        }
+      }
+    });
+    //print('        ------------------    formSubmit 2');
+    if (changed) {
+      //console.log(data);
+      if (formid == gChangepassword || formid == gResetpassword) {
+        var password = data[gPassword];
+        var password1 = data[gPassword1];
+
+        if (password1 != password) {
+          showMsg(context, getSCurrent(gPasswordnotmatch), null);
+          return;
+        }
+        _myId = getModifiedValue(formid, gEmail, null);
+        if (isNull(_myId)) {
+          return;
+        }
+      }
+
+      //set to default value if empty
       obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
         //var key = element.entries.first.key;
-        var item = element.value;
-        var type = item[gType];
-        if (type == gId) {
-          data[gId] = item[gValue];
-        } else if (item[gType] == gLabel) {
-        } else if (item[gType] == gHidden) {
-        } else if (item[gDbid] != null && item[gDbid] != '') {
-          //var value = objI[gDataModified] ?? objI[gValue];
-          Map param = {gId: item[gId], gItem: item, gName: formid, gRow: null};
-          var value = getRowItemOneValue(param);
-          //data[objI[gDbid]] = value;
-          if (item[gHash] != null && item[gHash]) {
-            value = hash(value);
-          }
-          if (type == gDate && !isNull(value)) {
-            //value = value.format(gDateformat);
-            //data[objI[gDbid]] =
-            //  DateFormat(gDateformat).format(value);
-          } else if (type == gDatetime) {
-            value = toUTCTime(value);
-          }
-          var oldValue = '';
-          if (item[gOldvalue] != null) {
-            oldValue = item[gOldvalue];
-          }
-          if (item[gId] != '' && item[gIsPrimary] != null && item[gIsPrimary]) {
-            data[item[gDbid]] = oldValue;
-          }
-          if (value == null) {
-            value = '';
-          }
-          if (value != oldValue) {
-            changed = true;
-            data[item[gDbid]] = value;
-          } else if (data[gId] == null || data[gId] == '') {
-            data[item[gDbid]] = value;
-          }
+        var objI = element.value;
+        if (objI[gId] != '' &&
+            //objI[gIsPrimary] != null &&
+            //objI[gIsPrimary] &&
+            (isNull(data[objI[gId]])) &&
+            isNull(objI[gValue]) &&
+            !isNull(objI[gDefaultValue])) {
+          data[objI[gId]] = objI[gDefaultValue];
         }
       });
-      //print('        ------------------    formSubmit 2');
-      if (changed) {
-        //console.log(data);
-        if (formid == gChangepassword || formid == gResetpassword) {
-          var password = getFormValue(formid, gPassword, gTxtEditingController);
-          var password1 =
-              getFormValue(formid, gPassword1, gTxtEditingController);
-
-          if (password1 != password) {
-            showMsg(context, getSCurrent(gPasswordnotmatch), null);
-            return;
-          }
-
-          _myId = (obj[gEmail] != null) ? obj[gEmail][gValue] : '';
-          if (isNull(_myId)) {
-            return;
-          }
-        }
-
-        //set to default value if empty
-        obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
-          //var key = element.entries.first.key;
-          var objI = element.value;
-          if (objI[gId] != '' &&
-              //objI[gIsPrimary] != null &&
-              //objI[gIsPrimary] &&
-              (isNull(data[objI[gId]])) &&
-              isNull(objI[gOldvalue]) &&
-              !isNull(objI[gDefaultValue])) {
-            data[objI[gId]] = objI[gDefaultValue];
-          }
-        });
-        //send request;
-        //print('        ------------------    formSubmit 3');
-        sendRequestFormChange(data, context); //refresh Form
-        return;
-      }
-      alert(context, gNochange);
-    } catch (e) {
+      //send request;
+      //print('        ------------------    formSubmit 3');
+      sendRequestFormChange(data, context); //refresh Form
+      return;
+    }
+    alert(context, gNochange);
+    /*} catch (e) {
       print('======exception is ' + e.toString());
       //throw e;
       showMsg(context, e, null);
-    }
+    }*/
   }
 
   fromBdckcolor(iColor) {
@@ -1262,7 +1256,7 @@ class DataModel extends ChangeNotifier {
 
                     return;
                   }
-                  var data = getFormValue(formname, id, gTxtEditingController);
+                  var data = getFormValue(formname, id);
                   List dateList = [];
                   if (data != null && data.length > 0) {
                     dateList = data.split('-');
@@ -1307,7 +1301,7 @@ class DataModel extends ChangeNotifier {
                   if (dateList[2] != '') {
                     //close the detail
                     setFormValueShow(formname, id);
-                    setNextFocus(formname, id);
+                    setNextFocus(formname, id, null);
 
                     myNotifyListeners();
                     return;
@@ -1540,12 +1534,14 @@ class DataModel extends ChangeNotifier {
     return item;
   }
 
-  getFormValue(formid, dbid, valueid) {
-    Map<dynamic, dynamic> formDetail = _formLists[formid];
-    if (valueid == gTxtEditingController) {
-      return formDetail[gItems][dbid][valueid].value.text;
+  getFormValue(formid, dbid) {
+    return getValue(formid, dbid, null);
+    /*var result = formLists[formid][gItems][dbid][gValue] ?? '';
+    return result;*/
+    /*if (valueid == gTxtEditingController) {
+      return formDetail[gItems][dbid].value.text;
     }
-    return formDetail[gItems][dbid][valueid];
+    return formDetail[gItems][dbid][valueid];*/
   }
 
   getFocus(isForm, name, item) {
@@ -1872,7 +1868,7 @@ class DataModel extends ChangeNotifier {
       return null;
     }
     Map value;
-    if (!isNull(dataModified) && dataModified.containsKey(id)) {
+    if (dataModified.containsKey(id)) {
       value = dataModified[id];
     }
     if (isNull(value)) {
@@ -1956,8 +1952,8 @@ class DataModel extends ChangeNotifier {
   }
 
   getOriginalValue(name, id, colId) {
-    if (isNull(id)) {
-      return _formLists[name][colId][gValue] ?? '';
+    if (isNull(id) || id == gFormFakeId) {
+      return _formLists[name][gItems][colId][gValue] ?? '';
     }
     List newData = _tableList[name][gDataSearch] ?? _tableList[name][gData];
     Map col = getTableCol(name, colId);
@@ -2303,22 +2299,31 @@ class DataModel extends ChangeNotifier {
     dynamic source = sourceLocase;*/
     dynamic splitS = source.split('}');
     dynamic result = '';
-    dynamic delimiter = ' ';
+    dynamic delimiter = '';
 
     for (int i = 0; i < splitS.length; i++) {
       dynamic splitSpace = splitS[i].split(' ');
       for (int k = 0; k < splitSpace.length; k++) {
         dynamic sourceChck = splitSpace[k].split('{');
-
+        dynamic sj = '';
         for (int j = 0; j < sourceChck.length; j++) {
-          dynamic tmp = sourceChck[j].toString().toLowerCase();
-          if (isNull(_i10nMap[tmp])) {
-            result += sourceChck[j];
+          String sourceStr = sourceChck[j].toString();
+          String tmp = sourceStr.toLowerCase();
+          if (isNull(_i10nMap[tmp]) || isNull(_i10nMap[tmp][lancode])) {
+            sj += sourceChck[j];
           } else {
-            result += _i10nMap[tmp][lancode];
+            String tmpI10n = _i10nMap[tmp][lancode].toString();
+
+            if (lancode != 'en' || sourceStr.length < 1 || sourceStr == tmp) {
+              sj += tmpI10n;
+            } else {
+              //首字母是否大写
+              sj +=
+                  tmpI10n.substring(0, 1).toUpperCase() + tmpI10n.substring(1);
+            }
           }
         }
-        result = delimiter + result;
+        result += delimiter + sj;
         if (lancode != 'zh') {
           delimiter = ' ';
         }
@@ -3556,7 +3561,9 @@ class DataModel extends ChangeNotifier {
             actionData = value;
           }
         });
-        if (action == gChangepassword) {
+        if (action == gBackContext) {
+          await setBackContext(context, actionData);
+        } else if (action == gChangepassword) {
           await changePassword(context, actionData, null);
         } else if (action == gFinishme) {
           await finishme(context);
@@ -3604,6 +3611,8 @@ class DataModel extends ChangeNotifier {
           await showScreenPage(actionData, context, Colors.black.value);
         } else if (action == gSetFormList) {
           await setFormList(actionData, context);
+        } else if (action == gSetTextController) {
+          await setTextController(actionData, context);
         } else if (action == gShowTable) {
           await showTable(actionData[0][gTableID], context,
               actionData[0][gLabel] ?? "", "", "", null, null);
@@ -4094,6 +4103,15 @@ class DataModel extends ChangeNotifier {
     showPopup(context, w, null, actions);
   }
 
+  setBackContext(context, actionData) {
+    dynamic lastFocus = {};
+    List<dynamic> thisList = actionData;
+    for (int i = 0; i < thisList.length; i++) {
+      lastFocus = Map.of(thisList[i]);
+    }
+    backContext(lastFocus, context);
+  }
+
   setDplistYear() {
     if ((_dpList[gYear] ?? []).length < 1) {
       int iYear = new DateTime.now().year;
@@ -4174,12 +4192,16 @@ class DataModel extends ChangeNotifier {
         setValueModified(gLogin, gPassword, null, 'smilesmart');
 
         //myNotifyListeners();
-        var email = getFormValue(gLogin, gEmail, gTxtEditingController);
+
+        var email = getValue(gLogin, gEmail, null);
+        //getFormValue(gLogin, gEmail);
         setValueModified(gVerifycode, gEmail, null, email);
         _myId = email;
+        //setFormFocus(formID, gCode);
       } else if (formID == gChangepassword) {
         //print('=========== setFormList 01 ');
-        var email = getFormValue(gLogin, gEmail, gTxtEditingController);
+        var email = getValue(gLogin, gEmail, null);
+        //getFormValue(gLogin, gEmail);
         //setFormAllFocusFalse(gLogin);
         setValueModified(gLogin, gPassword, null, 'smilesmart');
         //setFormNextFocusFalse(gVerifycode);
@@ -4214,12 +4236,9 @@ class DataModel extends ChangeNotifier {
     itemList.entries.forEach((elementItemList) {
       Map<dynamic, dynamic> valueItemList = elementItemList.value;
 
-      //valueItemList[gInputType] = valueItemList[gInputType];
-      valueItemList[gTxtEditingController] =
-          getTextController(valueItemList[gDefaultValue]);
-      //valueItemList[gValue] = '';
+      /*valueItemList[gTxtEditingController] =
+          getTextController(valueItemList[gDefaultValue]);*/
 
-      //valueItemList[gOldvalue] = '';
       valueItemList[gTextFontColor] = fromBdckcolor(_lastBackGroundColor);
 
       valueItemList = Map.from(valueItemList);
@@ -4263,218 +4282,113 @@ class DataModel extends ChangeNotifier {
     }
     value = getFormatter(value, item[gType]);
     setValueModified(name, item[gId], id, value);
-    setNextFocus(name, item[gId]);
-    /*if (isForm) {
-      setNextFocus(name, item[gId],null);
-    } else {
-      setNextFocus(name, item[gId], id);
-    }*/
+    setNextFocus(name, item[gId], null);
     myNotifyListeners();
     return true;
   }
 
-  /*setItemI(Map item, value, formname, tablename, id) {
-    bool isForm = !isNull(formname);
-    dynamic name = formname;
-    if (!isForm) {
-      name = tablename;
-    }
-    if (isForm) {
-      setFormValue(name, item[gId], value);
-      setFormNextFocus(name, item[gId]);
-    } else {
-      setTableValue(name, item[gId], id, value);
-      setTableNextFocus(name, item[gId], id);
-    }
-    myNotifyListeners();
-  }*/
-
-  showAlertDialog(BuildContext context, title, msg, requestFirst) {
-    int backcolor = Colors.white.value;
-    int frontcolor = Colors.black.value;
-    // set up the buttons
-    Widget cancelButton = ElevatedButton(
-      child: MyLabel({gLabel: gCancel}, frontcolor),
-      onPressed: () {
-        Navigator.of(context).pop();
-      },
-    );
-    Widget continueButton = ElevatedButton(
-      child: MyLabel({gLabel: gContinue}, frontcolor),
-      onPressed: () {
-        localAction(requestFirst, context);
-        Navigator.of(context).pop();
-      },
-    );
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: MyLabel({gLabel: title}, backcolor),
-      content: MyLabel({gLabel: msg}, backcolor),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
-  showPopup(context, w, h, actions) {
-    removeOverlay();
-    overlayEntry = OverlayEntry(builder: (BuildContext context) {
-      return MyPopup({gWidget: w, gHeight: h, gActions: actions});
-      /*return new Positioned(
-          top: MediaQuery.of(context).size.height * 0.7,
-          child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));*/
-    });
-    Overlay.of(context).insert(overlayEntry);
-    myNotifyListeners();
-  }
-
-  showPopupItem(item, isForm, name, value, id, backcolor, context) async {
-    if (overlayEntry != null) {
+  setFocus(name, colId, id) {
+    var type = isNull(id) ? gForm : gTable;
+    if (!isNull(colId)) {
+      _mFocusNode = {gType: type, gName: name, gCol: colId};
       return;
     }
-    item[gShowDetail] = true;
-
-    if (item[gType] == gAddress) {
-      if (isNull(value)) {
+    //如要已有焦点，退出
+    if (!isNull(_mFocusNode[gType] ?? '')) {
+      return;
+      /*if (_mFocusNode[gType] != gForm) {
         return;
       }
-      if ((value.toString()).length < 3) {
+      if (!isNull(_mFocusNode[gName] ?? '') && _mFocusNode[gName] != formid) {
         return;
-      }
-      item[gFormName] = name;
-      var dpid = gAddress + '_' + name + '_' + item[gId];
-      dpList[dpid] = [];
-      //
-      sendRequestOne(
-          gDroplist,
-          {
-            gType: gAddress,
-            //gType: gDroplist,
-            gValue: value,
-            gActionid: dpid,
-            gIsForm: isForm,
-            gName: name,
-            gId: id,
-            gCol: item[gId]
-          },
-          context);
-
-      item[gDroplist] = dpid;
-      return;
+      }else if()*/
     }
-    List actions = [];
-    actions.add({
-      gType: gIcon,
-      gValue: 0xef49,
-      gLabel: gConfirm,
-      gAction: gLocalAction,
-      gItem: item,
-      gIsForm: isForm,
-      gName: name,
-      gId: id,
-    });
-    Widget w = await getItemSubWidget(
-        item, isForm, name, context, id, backcolor, actions);
-
-    //}
-    showPopup(context, w, null, actions);
-    //}
-  }
-
-  showPDF(actionData, context) async {
-    dynamic filename = '';
-    dynamic subject = '';
-    for (int i = 0; i < actionData.length; i++) {
-      Map<dynamic, dynamic> ai = Map.of(actionData[i]);
-      filename = ai[gFilename];
-      subject = ai[gSubject];
-    }
-    if (filename == '') {
-      return;
-    }
-
-    //download file
-    try {
-      await downloadFile(filename, context, true, subject);
-    } catch (e) {
-      showMsg(context, e, null);
-      //throw e;
-      //print('=====exception is ' + e);
-    } finally {}
-
-    //sendRequestOne(gFiledownload, {gFilename: filename}, context);
-  }
-
-  setRowsPerPage(tableInfo, cnt) {
-    tableInfo[gRowsPerPage] = cnt;
-    myNotifyListeners();
-  }
-
-  setI10n(actionData) {
-    for (int i = 0; i < actionData.length; i++) {
-      Map<dynamic, dynamic> ai = Map.of(actionData[i]);
-      ai.entries.forEach((element) {
-        Map mValue = Map.of(element.value);
-        _i10nMap[element.key] = mValue;
+    if (type == gForm) {
+      Map<dynamic, dynamic> items = _formLists[name][gItems];
+      items.entries.forEach((itemOne) {
+        Map item = itemOne.value;
+        if ((item[gIsHidden] ?? "false") != gTrue &&
+            (item[gType] ?? "") != gHidden) {
+          colId = item[gId];
+          var value = getModifiedValue(name, colId, id);
+          if (isNull(value)) {
+            _mFocusNode = {gType: type, gName: name, gCol: colId};
+            return;
+          }
+        }
       });
+    } else if (type == gTable) {
+      List columns = tableList[name][gColumns];
+      for (int i = 0; i < columns.length; i++) {
+        if (isHiddenColumn(columns, i)) {
+          continue;
+        }
+        if (columns[i][gType] == gLabel) {
+          continue;
+        }
+        colId = columns[i][gId];
+      }
+
+      colId = _mFocusNode = {gType: type, gName: name, gCol: colId};
     }
-    myNotifyListeners();
   }
 
-  setInitForm(actionData) {
-    //_firstFormName = actionData[0][gName];
-    myNotifyListeners();
+  setFocusItem(name, Map item, id) {
+    if ((item[gIsHidden] ?? "false") != gTrue &&
+        (item[gType] ?? "") != gHidden) {
+      Map param = {gId: id, gItem: item, gName: name, gRow: null};
+      var modifiedValue = getRowItemOneValue(param);
+      bool isValueNull = isNull(modifiedValue);
+      if (isValueNull) {
+        if (!isNull(id)) {
+          _tableList[name][gTableItemRow] = id;
+          _tableList[name][gTableItemColName] = item[gId];
+        }
+
+        return true;
+      }
+    }
+    return false;
   }
 
-  /*setForFocueItemOne(formid, item) {
-    setFormNextFocusFalse(formid);
-    setFormFocusItem(item);
-  }*/
+  setFocusNode(map) {
+    _mFocusNode = map;
+  }
 
   setFormDefaultValue(formid, colId, value) {
     _formLists[formid][gItems][colId][gDefaultValue] = value;
   }
 
   setFormFocus(formid, colId) {
-    print('================ setFormFocus begin: ' +
-        formid.toString() +
-        "," +
-        colId.toString());
-    print('================ setFormFocus 0: ' + _mFocusNode.toString());
-    if (colId == null) {
-      //如要已有焦点，退出
-      if (!isNull(_mFocusNode[gType] ?? '') &&
-          _mFocusNode[gType] == gForm &&
-          !isNull(_mFocusNode[gName] ?? '') &&
-          _mFocusNode[gName] == formid) {
+    if (!isNull(colId)) {
+      _mFocusNode = {gType: gForm, gName: formid, gCol: colId};
+      return;
+    }
+    //如要已有焦点，退出
+    if (!isNull(_mFocusNode[gType] ?? '')) {
+      return;
+      /*if (_mFocusNode[gType] != gForm) {
         return;
       }
-      Map<dynamic, dynamic> items = _formLists[formid][gItems];
-      items.entries.forEach((itemOne) {
-        Map item = itemOne.value;
-        if ((item[gIsHidden] ?? "false") != gTrue &&
-            (item[gType] ?? "") != gHidden) {
-          colId = item[gId];
-          var value = getModifiedValue(formid, colId, null);
-          if (isNull(value)) {
-            _mFocusNode = {gType: gForm, gName: formid, gCol: colId};
-            print('================ setFormFocus 1: ' + _mFocusNode.toString());
-            return;
-          }
-        }
-      });
+      if (!isNull(_mFocusNode[gName] ?? '') && _mFocusNode[gName] != formid) {
+        return;
+      }else if()*/
     }
-    _mFocusNode = {gType: gForm, gName: formid, gCol: colId};
 
-    print('================ setFormFocus 2: ' + _mFocusNode.toString());
+    Map<dynamic, dynamic> items = _formLists[formid][gItems];
+    items.entries.forEach((itemOne) {
+      Map item = itemOne.value;
+      if ((item[gIsHidden] ?? "false") != gTrue &&
+          (item[gType] ?? "") != gHidden) {
+        colId = item[gId];
+        var value = getModifiedValue(formid, colId, null);
+        if (isNull(value)) {
+          _mFocusNode = {gType: gForm, gName: formid, gCol: colId};
+          print('================ setFormFocus 1: ' + _mFocusNode.toString());
+          return;
+        }
+      }
+    });
   }
 
   setFormFocusItem(item) {
@@ -4501,27 +4415,132 @@ class DataModel extends ChangeNotifier {
     return false;
   }
 
-/*setNextFocus(name, colId, id) {
-    if (isNull(name) || isNull(colId)) {
+  setFormValue(formid, colId, value) {
+    if (isNull(formid)) {
       return;
     }
-    setFormAllFocusFalse(name);
-    Map<dynamic, dynamic> items = _formLists[name][gItems];
-    bool beginFocus = false;
-    items.entries.forEach((itemOne) {
-      Map item = itemOne.value;
-      if (beginFocus) {
-        if (setFocusItem(name, item, id)) {
-          return;
-        }
-      }
 
-      if (item[gId] == colId) {
-        beginFocus = true;
-      }
+    setFormValueItem(_formLists[formid][gItems][colId], value);
+  }
+
+  setFormValueItem(item, value) {
+    item[gValue] = value;
+    //item[gOldvalue] = value;
+    //item[gTxtEditingController]..text = value;
+
+    //
+  }
+
+  setFormValueItemModified(item, value) {
+    bool isItemVaid = isItemValueValid(item, value);
+    if (isItemVaid) {
+      item[gDataModified] = value;
+      item[gDataModifiedInvalid] = null;
+    } else {
+      item[gDataModified] = null;
+      item[gDataModifiedInvalid] = value;
+    }
+    //item[gTxtEditingController]..text = value;
+  }
+
+  setFormValueShow(formid, colId) {
+    var item = _formLists[formid][gItems][colId];
+    setFormValueShowValue(formid, colId, !(item[gShowDetail] ?? false));
+  }
+
+  setFormValueShowValue(formid, colId, value) {
+    var item = _formLists[formid][gItems][colId];
+    item[gShowDetail] = value;
+  }
+
+  setI10n(actionData) {
+    for (int i = 0; i < actionData.length; i++) {
+      Map<dynamic, dynamic> ai = Map.of(actionData[i]);
+      ai.entries.forEach((element) {
+        Map mValue = Map.of(element.value);
+        _i10nMap[element.key] = mValue;
+      });
+    }
+    myNotifyListeners();
+  }
+
+  setImgList(data) {
+    for (int i = 0; i < data.length; i++) {
+      Map dataMap = Map.of(data[i]);
+      dataMap.entries.forEach((element) {
+        _imgList[element.key] = element.value;
+      });
+    }
+    myNotifyListeners();
+  }
+
+  setInitForm(actionData) {
+    //_firstFormName = actionData[0][gName];
+    myNotifyListeners();
+  }
+
+  setLocale(value) async {
+    _locale = value;
+    //S.load(_locale);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('locallan', value);
+    myNotifyListeners();
+  }
+
+  setMyAction(data) {
+    _actionLists[gMain] = data;
+  }
+
+  setMyInfo(data, context) async {
+    //_myInfo = data;
+    setFormValue(gLogin, gEmail, data[gEmail]);
+    //_formLists[gLogin][gItems][gEmail][gDefaultValue] = data[gEmail];
+    _token = data[gToken];
+    _myId = data[gEmail];
+
+    _globalCompanyid = data[gParentid];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('myid', _myId);
+    //myNotifyListeners();
+  }
+
+  setMyMenu(List data) {
+    for (int i = 0; i < data.length; i++) {
+      data[i] = Map.of(data[i]);
+      //data[i]['widget'] = Text(getSCurrent('role'));
+    }
+    _menuLists[gMain] = data;
+  }
+
+  setMyTab(List data) {
+    int i = 0;
+
+    data.forEach((element) {
+      List databodyNew = [];
+      Map data0 = Map.of(element);
+      dynamic tabname = data0[gTabid];
+      _tabList[tabname] = {};
+      _tabList[tabname][gData] = [];
+      List<dynamic> data0body = data0[gBody];
+      data0body.forEach((element) {
+        element = Map.of(element);
+        if (i == _colorList.length) {
+          i = 0;
+        }
+        element[gColorIndex] = i;
+        databodyNew.add(element);
+        i++;
+      });
+      data0[gBody] = databodyNew;
+      data0[gIsselected] = true;
+      _tabList[tabname][gData].add(data0);
+      _tabList[tabname][gTabIndex] = 0;
     });
-  }*/
-  setNextFocus(name, colId) {
+
+    myNotifyListeners();
+  }
+
+  setNextFocus(name, colId, id) {
     //print('============    0');
     if (isNull(colId) || isNull(name)) {
       return;
@@ -4613,127 +4632,8 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  /*setFormAllFocusFalse(name) {
-    if (isNull(name)) {
-      return;
-    }
-    Map<dynamic, dynamic> items = _formLists[name][gItems];
-    items.entries.forEach((itemOne) {
-      Map item = itemOne.value;
-      if (item[gFocus] ?? false == true) {
-        item[gFocus] = false;
-        return;
-      }
-    });
-    return;
-  }*/
-
-  setFormValue(formid, colId, value) {
-    if (isNull(formid)) {
-      return;
-    }
-
-    setFormValueItem(_formLists[formid][gItems][colId], value);
-  }
-
-  setFormValueItem(item, value) {
-    item[gValue] = value;
-    //item[gOldvalue] = value;
-    //item[gTxtEditingController]..text = value;
-
-    //
-  }
-
-  setFormValueItemModified(item, value) {
-    bool isItemVaid = isItemValueValid(item, value);
-    if (isItemVaid) {
-      item[gDataModified] = value;
-      item[gDataModifiedInvalid] = null;
-    } else {
-      item[gDataModified] = null;
-      item[gDataModifiedInvalid] = value;
-    }
-    //item[gTxtEditingController]..text = value;
-  }
-
-  setFormValueShow(formid, colId) {
-    var item = _formLists[formid][gItems][colId];
-    setFormValueShowValue(formid, colId, !(item[gShowDetail] ?? false));
-  }
-
-  setFormValueShowValue(formid, colId, value) {
-    var item = _formLists[formid][gItems][colId];
-    item[gShowDetail] = value;
-  }
-
-  setImgList(data) {
-    for (int i = 0; i < data.length; i++) {
-      Map dataMap = Map.of(data[i]);
-      dataMap.entries.forEach((element) {
-        _imgList[element.key] = element.value;
-      });
-    }
-    myNotifyListeners();
-  }
-
-  setLocale(value) async {
-    _locale = value;
-    //S.load(_locale);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('locallan', value);
-    myNotifyListeners();
-  }
-
-  setMyAction(data) {
-    _actionLists[gMain] = data;
-  }
-
-  setMyInfo(data, context) async {
-    //_myInfo = data;
-    setFormValue(gLogin, gEmail, data[gEmail]);
-    //_formLists[gLogin][gItems][gEmail][gDefaultValue] = data[gEmail];
-    _token = data[gToken];
-    _myId = data[gEmail];
-
-    _globalCompanyid = data[gParentid];
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('myid', _myId);
-    //myNotifyListeners();
-  }
-
-  setMyMenu(List data) {
-    for (int i = 0; i < data.length; i++) {
-      data[i] = Map.of(data[i]);
-      //data[i]['widget'] = Text(getSCurrent('role'));
-    }
-    _menuLists[gMain] = data;
-  }
-
-  setMyTab(List data) {
-    int i = 0;
-
-    data.forEach((element) {
-      List databodyNew = [];
-      Map data0 = Map.of(element);
-      dynamic tabname = data0[gTabid];
-      _tabList[tabname] = {};
-      _tabList[tabname][gData] = [];
-      List<dynamic> data0body = data0[gBody];
-      data0body.forEach((element) {
-        element = Map.of(element);
-        if (i == _colorList.length) {
-          i = 0;
-        }
-        element[gColorIndex] = i;
-        databodyNew.add(element);
-        i++;
-      });
-      data0[gBody] = databodyNew;
-      data0[gIsselected] = true;
-      _tabList[tabname][gData].add(data0);
-      _tabList[tabname][gTabIndex] = 0;
-    });
-
+  setRowsPerPage(tableInfo, cnt) {
+    tableInfo[gRowsPerPage] = cnt;
     myNotifyListeners();
   }
 
@@ -4799,28 +4699,6 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  setFocusItem(name, Map item, id) {
-    if ((item[gIsHidden] ?? "false") != gTrue &&
-        (item[gType] ?? "") != gHidden) {
-      Map param = {gId: id, gItem: item, gName: name, gRow: null};
-      var modifiedValue = getRowItemOneValue(param);
-      bool isValueNull = isNull(modifiedValue);
-      //var txtValue = item[gTxtEditingController].value.text;
-      //bool isTxtNull = isNull(txtValue);
-      //if (isValueNull && isTxtNull) {
-      if (isValueNull) {
-        //item[gFocus] = true;
-        if (!isNull(id)) {
-          _tableList[name][gTableItemRow] = id;
-          _tableList[name][gTableItemColName] = item[gId];
-        }
-
-        return true;
-      }
-    }
-    return false;
-  }
-
   setTabBasic(List data, context, tabname) {
     tabList[tabname] = {};
     //data0[gIsselected] = true;
@@ -4860,6 +4738,18 @@ class DataModel extends ChangeNotifier {
     //print('============= setTableValue 2');
   }
 
+  setTextController(actionData, context) {
+    List<dynamic> thisList = actionData;
+    for (int i = 0; i < thisList.length; i++) {
+      Map<dynamic, dynamic> thisListI = thisList[i];
+      var formID = thisListI[gFormName];
+      var colId = thisListI[gCol];
+      var value = thisListI[gValue];
+      Map item = _formLists[formID][gItems][colId];
+      item[gTextController].text = value;
+    }
+  }
+
   setValueModified(name, colId, originalId, value) {
     /*
     找到修改值，
@@ -4879,8 +4769,8 @@ class DataModel extends ChangeNotifier {
       item = getTableCol(name, colId);
       owner = _tableList[name];
     } else {
-      item = _formLists[name];
-      owner = item;
+      item = _formLists[name][gItems][colId];
+      owner = _formLists[name];
     }
 
     bool isItemValid = isItemValueValid(item, value);
@@ -5005,7 +4895,33 @@ class DataModel extends ChangeNotifier {
   }
 
   showMyDetail(param, msg, context, backcolor) {
-    navigatorPush(context, MyDetailNew(param, backcolor), msg);
+    Map<dynamic, dynamic> focusNodeClone =
+        new Map<dynamic, dynamic>.of(_mFocusNode);
+    navigatorPush(context, MyDetailNew(param, backcolor, focusNodeClone), msg);
+  }
+
+  showPDF(actionData, context) async {
+    dynamic filename = '';
+    dynamic subject = '';
+    for (int i = 0; i < actionData.length; i++) {
+      Map<dynamic, dynamic> ai = Map.of(actionData[i]);
+      filename = ai[gFilename];
+      subject = ai[gSubject];
+    }
+    if (filename == '') {
+      return;
+    }
+
+    //download file
+    try {
+      await downloadFile(filename, context, true, subject);
+    } catch (e) {
+      showMsg(context, e, null);
+      //throw e;
+      //print('=====exception is ' + e);
+    } finally {}
+
+    //sendRequestOne(gFiledownload, {gFilename: filename}, context);
   }
 
   showPopupBasic(context, Widget w) {
@@ -5050,6 +4966,106 @@ class DataModel extends ChangeNotifier {
             ),
           );
         });
+  }
+
+  showAlertDialog(BuildContext context, title, msg, requestFirst) {
+    int backcolor = Colors.white.value;
+    int frontcolor = Colors.black.value;
+    // set up the buttons
+    Widget cancelButton = ElevatedButton(
+      child: MyLabel({gLabel: gCancel}, frontcolor),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+    Widget continueButton = ElevatedButton(
+      child: MyLabel({gLabel: gContinue}, frontcolor),
+      onPressed: () {
+        localAction(requestFirst, context);
+        Navigator.of(context).pop();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: MyLabel({gLabel: title}, backcolor),
+      content: MyLabel({gLabel: msg}, backcolor),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  showPopup(context, w, h, actions) {
+    removeOverlay();
+    overlayEntry = OverlayEntry(builder: (BuildContext context) {
+      return MyPopup({gWidget: w, gHeight: h, gActions: actions});
+      /*return new Positioned(
+          top: MediaQuery.of(context).size.height * 0.7,
+          child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));*/
+    });
+    Overlay.of(context).insert(overlayEntry);
+    myNotifyListeners();
+  }
+
+  showPopupItem(item, isForm, name, value, id, backcolor, context) async {
+    if (overlayEntry != null) {
+      return;
+    }
+    item[gShowDetail] = true;
+
+    if (item[gType] == gAddress) {
+      if (isNull(value)) {
+        return;
+      }
+      if ((value.toString()).length < 3) {
+        return;
+      }
+      item[gFormName] = name;
+      var dpid = gAddress + '_' + name + '_' + item[gId];
+      dpList[dpid] = [];
+      //
+      sendRequestOne(
+          gDroplist,
+          {
+            gType: gAddress,
+            //gType: gDroplist,
+            gValue: value,
+            gActionid: dpid,
+            gIsForm: isForm,
+            gName: name,
+            gId: id,
+            gCol: item[gId]
+          },
+          context);
+
+      item[gDroplist] = dpid;
+      return;
+    }
+    List actions = [];
+    actions.add({
+      gType: gIcon,
+      gValue: 0xef49,
+      gLabel: gConfirm,
+      gAction: gLocalAction,
+      gItem: item,
+      gIsForm: isForm,
+      gName: name,
+      gId: id,
+    });
+    Widget w = await getItemSubWidget(
+        item, isForm, name, context, id, backcolor, actions);
+
+    //}
+    showPopup(context, w, null, actions);
+    //}
   }
 
   showScreenPage(actionData, context, backcolor) {
@@ -5100,7 +5116,6 @@ class DataModel extends ChangeNotifier {
   showScreenPageOne(name, context, backcolor) {
     MyScreen aScreen = MyScreen(_screenLists[name], backcolor);
     Map param = {gLabel: name, gScreen: aScreen};
-    //print('======showScreenPageOne MyDetailNew');
 
     showMyDetail(param, 'showScreenPageOne', context, backcolor);
   }
@@ -5125,21 +5140,20 @@ class DataModel extends ChangeNotifier {
     if (_tableList[tableid] == null) {
       retrieveTableFromDB(tableid, context);
     } else {
-      navigatorPush(
+      showMyDetail(
+          getTableBodyParam(
+              {gTableID: tableid, gOther: other, gWhere: where}, context),
+          'showTable',
+          context,
+          backcolor);
+      /*navigatorPush(
           context,
           MyDetailNew(
               getTableBodyParam(
                   {gTableID: tableid, gOther: other, gWhere: where}, context),
               backcolor),
-          'showTable');
-      /*Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => MyDetailNew(
-                  getTableBodyParam(
-                      {gTableID: tableid, gOther: other, gWhere: where},
-                      context),
-                  backcolor)));*/
+          'showTable');*/
+
       if (strSubexists(transpass, gPopupnew)) {
         Map param = {
           gTableID: tableid,

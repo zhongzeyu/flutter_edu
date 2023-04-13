@@ -13,6 +13,7 @@ const gAsc = 'asc';
 const gAscending = 'ascending';
 const gAttr = 'attr';
 
+const gBackContext = 'backContext';
 const gBackgroundColor = Colors.white;
 const gBackbtn = 'backbtn';
 const gBlur = 'blur';
@@ -147,6 +148,7 @@ const gIsselected = 'isselected';
 const gIsUnique = 'isunique';
 const gItem = 'item';
 const gItems = 'items';
+const gLastFocus = "lastFocus";
 
 const gKey = 'key';
 
@@ -248,6 +250,7 @@ const gSetImgList = 'setImgList';
 const gSetSessionkey = 'setSessionkey';
 const gSetTab = 'setTab';
 const gSetTableList = 'setTableList';
+const gSetTextController = 'setTextController';
 const gShowDetail = 'showDetail';
 const gShowErr = 'showErr';
 const gShowExcel = "showExcel";
@@ -287,6 +290,7 @@ const gTabletree = "tabletree";
 const gTableUpdate = 'tableUpdate';
 const gTableID = 'tableid';
 const gTextColor = Color(0xFF535353);
+const gTextController = 'textController';
 const gTextFontColor = 'textFontColor';
 const gTextLightColor = Color(0xFFACACAC);
 const gText = 'text';
