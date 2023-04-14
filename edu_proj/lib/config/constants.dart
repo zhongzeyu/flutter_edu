@@ -94,6 +94,7 @@ const gEteremailtoresetpassword = 'eteremailtoresetpassword';
 const gExcel = 'Excel';
 const gExpanded = 'Expanded';
 
+const gFakeId = 'fakeId';
 const gFiledownload = 'filedownload';
 const gFilename = 'filename';
 const gFinishme = 'finishme';
@@ -108,7 +109,6 @@ const gForgetpassword = 'forgetpassword';
 const gForm = 'form';
 const gFormid = 'formid';
 const gFormdetail = 'formdetail';
-const gFormFakeId = 'formFakeId';
 const gFormName = 'formName';
 
 const gGetForm = 'getForm';
@@ -137,7 +137,6 @@ const gInvalidname = 'invalidname';
 const gInvalidEmail = 'Invalid email';
 const gIsBold = 'isBold';
 const gIsFile = 'isFile';
-const gIsForm = 'isForm';
 
 const gIsHidden = 'isHidden';
 const gIsKeyword = 'isKeyword';
@@ -188,7 +187,6 @@ const gNotavailable = 'not available';
 const gNumber = 'number';
 const gNull = 'null';
 
-const gOldvalue = 'oldvalue';
 const gOpacity = 'opacity';
 const gOptLock = "zzyoptlock";
 const gOrderby = "orderby";
@@ -308,6 +306,7 @@ const gTrue = 'true';
 const gTutor = 'tutor';
 const gTxtEditingController = 'txtEditingController';
 const gType = 'type';
+const gTypeOwner = 'typeOwner';
 
 const gUnit = 'unit';
 const gUpdate = 'update';

@@ -19,6 +19,7 @@ class MyForm extends StatelessWidget {
   Widget build(BuildContext context) {
     int thisbackcolor = backcolor ?? Colors.black.value;
     bool _submitstatus = true;
+    var typeOwner = gForm;
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
         final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -44,7 +45,7 @@ class MyForm extends StatelessWidget {
           List<Widget> result = [];
           //dynamic dataRow;
           //dataRow = _paramData[gData];
-          datamodel.setFormFocus(_formName, null);
+          datamodel.setFocus(_formName, null, null, typeOwner);
           datamodel.formLists[_formName][gStatus] = true;
           items.entries.forEach((itemOne) {
             Map item = itemOne.value;
@@ -61,10 +62,10 @@ class MyForm extends StatelessWidget {
                 );
               } else {
                 Widget w = datamodel.getRowItemOne(
-                    true, _formName, -1, item, context, thisbackcolor);
+                    gForm, _formName, -1, item, context, thisbackcolor);
                 w = InkWell(
                     onTap: () {
-                      datamodel.setFormFocus(_formName, item[gId]);
+                      datamodel.setFocus(_formName, item[gId], null, gForm);
                       datamodel.myNotifyListeners();
                     },
                     child: w);

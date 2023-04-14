@@ -12,20 +12,20 @@ class TextFieldWidget extends StatelessWidget {
   //final MapEntry<dynamic, dynamic> item;
   final Map item;
   final int backcolor;
-  final dynamic isForm;
+  final dynamic typeOwner;
   final dynamic name;
   final dynamic id;
   //final _debouncer = Debouncer(milliseconds: 2000);
 
-  TextFieldWidget({this.item, this.backcolor, this.isForm, this.name, this.id});
+  TextFieldWidget(
+      {this.item, this.backcolor, this.typeOwner, this.name, this.id});
   /*_getWidth() {
     return null;
     //item[gWidth] ?? null;
   }*/
 
-  textChange(
-      text, Map item, DataModel datamodel, BuildContext context, bool isForm) {
-    datamodel.textChange(text, item, context, isForm, name, id);
+  textChange(text, Map item, DataModel datamodel, BuildContext context, type) {
+    datamodel.textChange(text, item, context, type, name, id);
   }
 
   Widget build(BuildContext context) {
@@ -58,19 +58,19 @@ class TextFieldWidget extends StatelessWidget {
                 ),
             onPressed: () async {
               item[gShowDetail] = true;
-              if (isForm) {
-                datamodel.setFormFocus(name, item[gId]);
+              if (typeOwner == gForm) {
+                datamodel.setFocus(name, item[gId], null, typeOwner);
               } else if (item[gType] == gSearch) {
                 textChange(thistext, item, datamodel, context, false);
                 return;
               } else {
-                datamodel.setFocusItem(name, item, item[gId]);
+                datamodel.setFocusItem(name, item, item[gId], typeOwner);
               }
 
               if (item[gType] == gAddress) {
                 var searchTxt = thistext ?? item[gSearch] ?? item[gValue];
                 datamodel.showPopupItem(
-                    item, isForm, name, searchTxt, id, backcolor, context);
+                    item, typeOwner, name, searchTxt, id, backcolor, context);
 
                 return;
               }
@@ -81,12 +81,12 @@ class TextFieldWidget extends StatelessWidget {
                 gLabel: gConfirm,
                 gAction: gLocalAction,
                 gItem: item,
-                gIsForm: isForm,
+                gTypeOwner: typeOwner,
                 gName: name,
                 gId: id,
               });
               Widget w = await datamodel.getItemSubWidget(
-                  item, isForm, name, context, id, backcolor, actions);
+                  item, typeOwner, name, context, id, backcolor, actions);
 
               //}
               datamodel.showPopup(context, w, null, actions);
@@ -102,22 +102,19 @@ class TextFieldWidget extends StatelessWidget {
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () {
-              datamodel.loadFile(name, item);
+              datamodel.loadFile(name, item, typeOwner);
             });
       }
 
-      /*item[gTxtEditingController].selection = TextSelection.fromPosition(
-          TextPosition(offset: showValue.length));*/
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
+      if (item[gTxtEditingController] == null) {
+        item[gTxtEditingController] = new TextEditingController();
+        item[gTxtEditingController].text =
+            datamodel.getValue(name, item[gId], id, typeOwner);
+      }
       TextEditingController txtController = item[gTxtEditingController];
       var showValue = txtController.text ?? "";
 
-      /*txtController.value = TextEditingValue(
-          text: showValue,
-          selection: TextSelection.fromPosition(TextPosition(
-              affinity: TextAffinity.downstream, offset: showValue.length)));*/
-      /*txtController.selection = TextSelection.fromPosition(
-          TextPosition(offset: txtController.text.length));*/
       if (datamodel.isNull(showValue)) {
         txtController.text = "";
       } else {
@@ -125,7 +122,7 @@ class TextFieldWidget extends StatelessWidget {
         txtController.text = aValue;
       }
       bool autofocus = datamodel.getFocus(
-        isForm,
+        typeOwner,
         name,
         item,
       );
@@ -143,7 +140,7 @@ class TextFieldWidget extends StatelessWidget {
         autofocus: autofocus,
         //focusNode: _focusNode,
         keyboardType: datamodel.getInputType(item[gInputType]),
-        maxLength: isForm ? item[gLength] : null,
+        maxLength: (typeOwner == gForm) ? item[gLength] : null,
         style: TextStyle(
           color: cBackColor,
           fontSize: item[gFontSize],
@@ -200,33 +197,29 @@ class TextFieldWidget extends StatelessWidget {
           return null;
         },
         onSaved: (dynamic value) {
-          textChange(value, item, datamodel, context, isForm);
+          textChange(value, item, datamodel, context, typeOwner);
         },
         onChanged: (text) {
           //如果是表字段，检查状态是否改变
           //  如果状态变true,检查form的状态
 
-          if (isForm) {
+          if (typeOwner == gForm) {
             datamodel.checkFormStatus(name, item, text);
           }
           thistext = text;
-          textChange(thistext, item, datamodel, context, isForm);
-          //setTableValueItem(name, item[gId], id, text);
-
-          /*_debouncer.run(
-              () => textChange(thistext, item, datamodel, context, isForm));*/
+          textChange(thistext, item, datamodel, context, typeOwner);
         },
         onTap: () {
           //FocusScope.of(context).requestFocus(_commentFocus);
-          if (!isForm) {
+          if (typeOwner != gForm) {
             return;
           }
           //set focus
-          datamodel.setFocus(name, item[gId], null);
+          datamodel.setFocus(name, item[gId], null, typeOwner);
         },
         onEditingComplete: () {
-          textChange(thistext, item, datamodel, context, isForm);
-          datamodel.setNextFocus(name, item[gId], null);
+          textChange(thistext, item, datamodel, context, typeOwner);
+          datamodel.setFocusNext(name, item[gId], null);
           datamodel.myNotifyListeners();
         },
       );
@@ -235,7 +228,7 @@ class TextFieldWidget extends StatelessWidget {
             onKey: (node, event) {
               String keyLabel = event.logicalKey.keyLabel;
               if (keyLabel == 'Tab') {
-                datamodel.setNextFocus(name, item[gId], null);
+                datamodel.setFocusNext(name, item[gId], null);
 
                 datamodel.myNotifyListeners();
               } else {}

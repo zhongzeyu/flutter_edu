@@ -102,7 +102,7 @@ class TableData extends DataTableSource {
       var colname = _param[gColumns][i][gId];
 
       int backColorValue = Colors.white.value;
-      Widget w = _dataModel.getRowItemOne(false, _param[gTableID], index,
+      Widget w = _dataModel.getRowItemOne(gTable, _param[gTableID], index,
           _param[gColumns][i], _context, backColorValue);
 
       dataCellList.add(DataCell(w, onTap: () {

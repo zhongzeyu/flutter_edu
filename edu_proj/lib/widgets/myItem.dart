@@ -71,10 +71,8 @@ class MyItem extends StatelessWidget {
       } else if (_param[gType] == gLabel) {
         result.add(MyLabel(_param, backcolor));
       } else if (_param[gType] == gTableEditor) {
-        /*dynamic tableName = _param[gName];
-        dynamic data = datamodel.tableList[tableName][gData]
-            [datamodel.tableList[tableName][gTabIndex]];*/
-        result.add(MyPaginatedDataTable(_param));
+        //result.add(MyPaginatedDataTable(_param));
+        result.add(Text('no available'));
       } else if (_param[gType] == gSearch) {
         dynamic tableName = _param[gTableID];
         Map tableInfo = datamodel.tableList[tableName];
@@ -86,9 +84,9 @@ class MyItem extends StatelessWidget {
         searchItemValue.putIfAbsent(gWidth, () => 250.0);
         searchItemValue.putIfAbsent(gContext, () => thisContext);
         searchItemValue.putIfAbsent(gTableID, () => tableName);
-        searchItemValue.putIfAbsent(gOldvalue, () => tableInfo[gSearch] ?? '');
-        result.add(
-            TextFieldWidget(item: searchItem, isForm: false, name: tableName));
+        searchItemValue.putIfAbsent(gValue, () => tableInfo[gSearch] ?? '');
+        result.add(TextFieldWidget(
+            item: searchItem, typeOwner: gSearch, name: tableName));
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
         //_param[gAction] = gTextLink;
