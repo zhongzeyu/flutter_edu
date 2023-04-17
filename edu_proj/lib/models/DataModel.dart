@@ -888,6 +888,7 @@ class DataModel extends ChangeNotifier {
     //setFormAllFocusFalse(formid);
     //try {
     //print('        ------------------    formSubmit 0');
+    var typeOwner = gForm;
     Map<dynamic, dynamic> obj = _formLists[formid][gItems];
     var changed = false;
     var data = {};
@@ -905,14 +906,15 @@ class DataModel extends ChangeNotifier {
       } else if (item[gType] == gHidden) {
       } else if (item[gDbid] != null && item[gDbid] != '') {
         //var value = objI[gDataModified] ?? objI[gValue];
-        Map param = {
+        /*Map param = {
           gId: null,
           gItem: item,
           gName: formid,
           gRow: null,
           gTypeOwner: gForm
         };
-        var value = getRowItemOneValue(param);
+        var value = getRowItemOneValue(param);*/
+        var value = getValue(formid, item[gId], null, typeOwner);
         //data[objI[gDbid]] = value;
         if (item[gHash] != null && item[gHash]) {
           value = hash(value);
@@ -924,20 +926,21 @@ class DataModel extends ChangeNotifier {
         } else if (type == gDatetime) {
           value = toUTCTime(value);
         }
-        var oldValue = '';
-        if (item[gValue] != null) {
-          oldValue = item[gValue];
-        }
-        if (item[gId] != '' && item[gIsPrimary] != null && item[gIsPrimary]) {
-          data[item[gDbid]] = oldValue;
+        var oldValue = getValueOriginal(formid, item[gId], null, typeOwner);
+        if (isNull(oldValue)) {
+          oldValue = value;
         }
         if (value == null) {
           value = '';
         }
+
+        if (item[gId] != '' && item[gIsPrimary] != null && item[gIsPrimary]) {
+          data[item[gDbid]] = oldValue;
+        }
         if (value != oldValue) {
           changed = true;
           data[item[gDbid]] = value;
-        } else if (data[gId] == null || data[gId] == '') {
+        } else if (isNull(data[gId])) {
           data[item[gDbid]] = value;
         }
       }
@@ -1832,8 +1835,10 @@ class DataModel extends ChangeNotifier {
   }
 
   getValue(name, colId, id, typeOwner) {
-    if (typeOwner == gSearch) {
-      return "";
+    if (colId == gSearchZzy) {
+      if (typeOwner == gTable) {
+        return _tableList[name][gSearch] ?? '';
+      }
     }
     var value =
         getModifiedValueByType(name, colId, id, gDataModified, typeOwner);
@@ -1943,23 +1948,6 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  /*getOriginalValue(name, id, colId) {
-    if (isNull(id) || id == gFormFakeId) {
-      return _formLists[name][gItems][colId][gValue] ?? '';
-    }
-    List newData = _tableList[name][gDataSearch] ?? _tableList[name][gData];
-    Map col = getTableCol(name, colId);
-    for (int i = 0; i < newData.length; i++) {
-      Map dataRow = newData[i];
-      if (dataRow[gId] == id) {
-        var dataI = dataRow[colId];
-        var value = getValueByType(dataI, col);
-        return value;
-      }
-    }
-    return null;
-  }*/
-
   Widget getRowItemOne(
       typeOwner, name, int row, item, context, backColorValue) {
     Map info;
@@ -2006,8 +1994,8 @@ class DataModel extends ChangeNotifier {
       //var colname = item[gId];
       id = getValueOriginal(name, gId, id, typeOwner);
       param[gId] = id;
-      originalValue = getRowItemOneValue(param);
-
+      //originalValue = getRowItemOneValue(param);
+      originalValue = getValueOriginal(name, item[gId], null, typeOwner);
       droplist = item[gDroplist] ?? "";
       if (_mFocusNode[gType] == gForm &&
           _mFocusNode[gName] == name &&
@@ -2019,8 +2007,9 @@ class DataModel extends ChangeNotifier {
       List tableData = info[gDataSearch] ?? info[gData];
       Map dataRow = tableData[row];
       id = dataRow[gId];
-      var dataI = dataRow[colname];
-      originalValue = getValueByType(dataI, item);
+      /*var dataI = dataRow[colname];
+      originalValue = getValueByType(dataI, item);*/
+      originalValue = getValueOriginal(name, colname, id, typeOwner);
 
       droplist = item[gDroplist] ?? "";
       if (!isNull(info[gTableItemRow]) &&
@@ -2171,7 +2160,7 @@ class DataModel extends ChangeNotifier {
         }
 
         var dataI = dataRow[colname];
-        value = getValueByType(dataI, param[gItem]);
+        value = getValueGUI(dataI, param[gItem]);
       }
     }
     return value;
@@ -2601,7 +2590,7 @@ class DataModel extends ChangeNotifier {
     sendRequestOne(gProcess, [element], context);
   }
 
-  getTableItemByName(tableInfo, itemName, value) {
+  /*getTableItemByName(tableInfo, itemName, value) {
     //TextEditingController searchController = getTextController(value);
 
     Map item = {
@@ -2615,7 +2604,7 @@ class DataModel extends ChangeNotifier {
     };
 
     return item;
-  }
+  }*/
 
   getTableRowByID(tableName, id) {
     Map tableInfo = _tableList[tableName];
@@ -2736,7 +2725,7 @@ class DataModel extends ChangeNotifier {
     if (isRaw) {
       return result;
     }
-    return getValueByType(result, col);
+    return getValueGUI(result, col);
     //return result;
   }
 
@@ -2989,7 +2978,7 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  getValueByType(result, col) {
+  getValueGUI(result, col) {
     dynamic inputType = col[gInputType];
     if (inputType == gDatetime) {
       return toLocalTime(result);

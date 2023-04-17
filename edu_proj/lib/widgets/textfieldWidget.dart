@@ -18,7 +18,12 @@ class TextFieldWidget extends StatelessWidget {
   //final _debouncer = Debouncer(milliseconds: 2000);
 
   TextFieldWidget(
-      {this.item, this.backcolor, this.typeOwner, this.name, this.id});
+      {this.item,
+      this.backcolor,
+      this.typeOwner,
+      this.name,
+      this.id,
+      int gBackgroundColor});
   /*_getWidth() {
     return null;
     //item[gWidth] ?? null;
@@ -32,24 +37,10 @@ class TextFieldWidget extends StatelessWidget {
     dynamic thistext;
 
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      item[gType] = item[gType] ?? '';
       bool isPassword = (item[gType] == gPassword);
-      /*if (isPassword) {
-        item[gPasswordShow] = item[gPasswordShow] ?? true;
-
-        item[gSuffixIcon] = IconButton(
-            icon: Icon(
-              item[gPasswordShow]
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              color: Theme.of(context).disabledColor,
-            ),
-            onPressed: () {
-              item[gPasswordShow] = !item[gPasswordShow];
-              datamodel.myNotifyListeners();
-            });
-      }*/
       if (item[gType] == gAddress || item[gType] == gSearch) {
-        item[gSuffixIcon] = IconButton(
+        item[gSuffixIconLocal] = IconButton(
             icon: Icon(((item[gType] == gSearch)
                     ? Icons.content_paste_search_outlined
                     : Icons.expand_more)
@@ -96,8 +87,8 @@ class TextFieldWidget extends StatelessWidget {
             });
       }
       //datamodel.getItemIcon(item, context);
-      if (item[gIsFile] == true) {
-        item[gSuffixIcon] = IconButton(
+      if ((item[gIsFile] ?? false) == true) {
+        item[gSuffixIconLocal] = IconButton(
             icon: Icon(Icons.file_upload_outlined
                 //color: Theme.of(context).disabledColor,
                 ),
@@ -118,7 +109,9 @@ class TextFieldWidget extends StatelessWidget {
       if (datamodel.isNull(showValue)) {
         txtController.text = "";
       } else {
-        dynamic aValue = datamodel.getValueByType(item[gValue], item);
+        var modifiedValue = datamodel.getValue(name, item[gId], id, typeOwner);
+        //dynamic aValue = datamodel.getValueGUI(item[gValue], item);
+        dynamic aValue = datamodel.getValueGUI(modifiedValue, item);
         txtController.text = aValue;
       }
       bool autofocus = datamodel.getFocus(
@@ -140,7 +133,7 @@ class TextFieldWidget extends StatelessWidget {
         autofocus: autofocus,
         //focusNode: _focusNode,
         keyboardType: datamodel.getInputType(item[gInputType]),
-        maxLength: (typeOwner == gForm) ? item[gLength] : null,
+        maxLength: item[gLength],
         style: TextStyle(
           color: cBackColor,
           fontSize: item[gFontSize],
@@ -148,44 +141,23 @@ class TextFieldWidget extends StatelessWidget {
           fontWeight: item[gFontWeight],
           letterSpacing: item[gLetterSpacing],
         ),
-        decoration: /*isForm
-            ? InputDecoration(
-                labelText: datamodel.getSCurrent(labeltext),
-                labelStyle: TextStyle(
-                  color: cBackColor,
-                  fontSize: item[gFontSize],
-                  fontStyle: item[gFontStyle],
-                  fontWeight: item[gFontWeight],
-                  letterSpacing: item[gLetterSpacing],
-                ),
-                hintText: datamodel.getSCurrent(
-                    'Please enter ' + labeltext), //item[gPlaceHolder],
-                hintStyle: TextStyle(
-                  color: cBackColor,
-                  fontSize: item[gFontSize],
-                  fontStyle: item[gFontStyle],
-                  fontWeight: item[gFontWeight],
-                  letterSpacing: item[gLetterSpacing],
-                ),
-                enabled: ((item[gType] ?? "") != gLabel))
-            :*/
-            InputDecoration(
-                border: new OutlineInputBorder(
-                  //添加边框
-                  gapPadding: 0.0,
-                  borderRadius: BorderRadius.circular(2.0),
-                ),
-                hintText: datamodel.getSCurrent(
-                    'Please enter ' + labeltext), //item[gPlaceHolder],
-                hintStyle: TextStyle(
-                  color: cBackColor,
-                  fontSize: item[gFontSize],
-                  fontStyle: item[gFontStyle],
-                  fontWeight: item[gFontWeight],
-                  letterSpacing: item[gLetterSpacing],
-                ),
-                isDense: true, // Added this
-                enabled: ((item[gType] ?? "") != gLabel)),
+        decoration: InputDecoration(
+            border: new OutlineInputBorder(
+              //添加边框
+              gapPadding: 0.0,
+              borderRadius: BorderRadius.circular(2.0),
+            ),
+            hintText: datamodel
+                .getSCurrent('Please enter ' + labeltext), //item[gPlaceHolder],
+            hintStyle: TextStyle(
+              color: cBackColor,
+              fontSize: item[gFontSize],
+              fontStyle: item[gFontStyle],
+              fontWeight: item[gFontWeight],
+              letterSpacing: item[gLetterSpacing],
+            ),
+            isDense: true, // Added this
+            enabled: ((item[gType] ?? "") != gLabel)),
         obscureText: isPassword && item[gPasswordShow],
         inputFormatters: datamodel.getItemFormatters(item),
         validator: (dynamic value) {
@@ -211,9 +183,6 @@ class TextFieldWidget extends StatelessWidget {
         },
         onTap: () {
           //FocusScope.of(context).requestFocus(_commentFocus);
-          if (typeOwner != gForm) {
-            return;
-          }
           //set focus
           datamodel.setFocus(name, item[gId], null, typeOwner);
         },
@@ -223,24 +192,28 @@ class TextFieldWidget extends StatelessWidget {
           datamodel.myNotifyListeners();
         },
       );
-      w = Expanded(
-        child: Focus(
-            onKey: (node, event) {
-              String keyLabel = event.logicalKey.keyLabel;
-              if (keyLabel == 'Tab') {
-                datamodel.setFocusNext(name, item[gId], null);
+      if (item[gId] != gSearchZzy) {
+        w = Expanded(
+          child: Focus(
+              onKey: (node, event) {
+                String keyLabel = event.logicalKey.keyLabel;
+                if (keyLabel == 'Tab') {
+                  datamodel.setFocusNext(name, item[gId], null);
 
-                datamodel.myNotifyListeners();
-              } else {}
-              return KeyEventResult.ignored;
-            },
-            child: w),
-      );
-      /*if (item[gSuffixIcon] != null) {
-        w = Row(
-          children: [w, item[gSuffixIcon]],
+                  datamodel.myNotifyListeners();
+                } else {}
+                return KeyEventResult.ignored;
+              },
+              child: w),
         );
-      }*/
+      }
+
+      if (item[gSuffixIconLocal] != null) {
+        w = Expanded(child: w);
+        w = Row(
+          children: [w, item[gSuffixIconLocal]],
+        );
+      }
       txtController.selection = TextSelection.fromPosition(
           TextPosition(offset: txtController.text.length));
       return w;

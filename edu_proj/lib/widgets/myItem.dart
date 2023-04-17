@@ -71,22 +71,39 @@ class MyItem extends StatelessWidget {
       } else if (_param[gType] == gLabel) {
         result.add(MyLabel(_param, backcolor));
       } else if (_param[gType] == gTableEditor) {
-        //result.add(MyPaginatedDataTable(_param));
-        result.add(Text('no available'));
+        result.add(MyPaginatedDataTable(_param));
       } else if (_param[gType] == gSearch) {
         dynamic tableName = _param[gTableID];
-        Map tableInfo = datamodel.tableList[tableName];
 
-        Map searchItem = datamodel.getTableItemByName(
-            tableInfo, gSearch, tableInfo[gSearch] ?? '');
-        Map searchItemValue = searchItem;
+        Map item = {
+          //gWidth: 150.0,
+          gId: gSearchZzy,
+          gLabel: gSearch,
+          //gFocus: false,
+          gInputType: gSearch,
+          gType: gSearch,
+
+          //gTxtEditingController: searchController
+        };
+
+        Map searchItemValue = item;
         searchItemValue.putIfAbsent(gAction, () => gLocalAction);
-        searchItemValue.putIfAbsent(gWidth, () => 250.0);
+        //searchItemValue.putIfAbsent(gWidth, () => 250.0);
         searchItemValue.putIfAbsent(gContext, () => thisContext);
         searchItemValue.putIfAbsent(gTableID, () => tableName);
-        searchItemValue.putIfAbsent(gValue, () => tableInfo[gSearch] ?? '');
+
+        /*if (item[gTxtEditingController] == null) {
+          item[gTxtEditingController] = new TextEditingController();
+          item[gTxtEditingController].text =
+              datamodel.getValue(tableName, item[gId], null, gTable);
+        }
+        TextEditingController txtController = item[gTxtEditingController];*/
+
         result.add(TextFieldWidget(
-            item: searchItem, typeOwner: gSearch, name: tableName));
+            item: item,
+            typeOwner: gTable,
+            name: tableName,
+            backcolor: backcolor));
       } else if (_param[gType] == gTextLink) {
         _param[gAction1] = _param[gAction];
         //_param[gAction] = gTextLink;

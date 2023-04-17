@@ -20,6 +20,7 @@ class TableData extends DataTableSource {
   int get selectedRowCount => _selectRowCount;
 
   DataRow getRow(int index) {
+    debugPrint('===== getRow index is ' + index.toString());
     List<DataCell> dataCellList = [];
     dynamic dataRow = (_param[gDataSearch] ?? _param[gData])[index];
 
