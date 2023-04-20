@@ -60,7 +60,7 @@ class MyLabel extends StatelessWidget {
                     text: showValue,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: labelColor,
+                      color: _param[gColorLabel] ?? labelColor,
                     )),
               ]));
         }

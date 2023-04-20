@@ -96,7 +96,7 @@ class MyItem extends StatelessWidget {
         /*if (item[gTxtEditingController] == null) {
           item[gTxtEditingController] = new TextEditingController();
           item[gTxtEditingController].text =
-              datamodel.getValue(tableName, item[gId], null, gTable);
+              datamodel.getValue(tableName, item[gId], null, gTable)[gValue];
         }
         TextEditingController txtController = item[gTxtEditingController];*/
 

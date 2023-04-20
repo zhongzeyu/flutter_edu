@@ -101,7 +101,7 @@ class TextFieldWidget extends StatelessWidget {
       if (item[gTxtEditingController] == null) {
         item[gTxtEditingController] = new TextEditingController();
         item[gTxtEditingController].text =
-            datamodel.getValue(name, item[gId], id, typeOwner);
+            datamodel.getValue(name, item[gId], id, typeOwner)[gValue];
       }
       TextEditingController txtController = item[gTxtEditingController];
       var showValue = txtController.text ?? "";
@@ -109,7 +109,8 @@ class TextFieldWidget extends StatelessWidget {
       if (datamodel.isNull(showValue)) {
         txtController.text = "";
       } else {
-        var modifiedValue = datamodel.getValue(name, item[gId], id, typeOwner);
+        var modifiedValue =
+            datamodel.getValue(name, item[gId], id, typeOwner)[gValue];
         //dynamic aValue = datamodel.getValueGUI(item[gValue], item);
         dynamic aValue = datamodel.getValueGUI(modifiedValue, item);
         txtController.text = aValue;

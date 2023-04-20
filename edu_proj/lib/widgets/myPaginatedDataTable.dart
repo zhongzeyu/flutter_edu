@@ -33,7 +33,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         Map dataRow = tableData[i];
         //get updated value
         Map ti = datamodel.getTableRowShowValueFilter(
-            dataRow, columns, context, searchValue);
+            tableName, dataRow, columns, context, searchValue);
         if (ti != null) {
           newData.add(ti);
         }
