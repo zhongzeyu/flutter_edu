@@ -20,10 +20,12 @@ class MyForm extends StatelessWidget {
     int thisbackcolor = backcolor ?? Colors.black.value;
     bool _submitstatus = true;
     var typeOwner = gForm;
+    dynamic _formName = _param[gValue];
+    dynamic id = _param[gId];
     return Consumer<DataModel>(
       builder: (context, datamodel, child) {
         final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-        final dynamic _formName = _param;
+
         //['name'];
         if (datamodel.formLists[_formName] == null) {
           return MyLabel(
@@ -45,6 +47,7 @@ class MyForm extends StatelessWidget {
           List<Widget> result = [];
           //dynamic dataRow;
           //dataRow = _paramData[gData];
+
           datamodel.setFocus(_formName, null, null, typeOwner);
           datamodel.formLists[_formName][gStatus] = true;
           items.entries.forEach((itemOne) {
@@ -62,7 +65,7 @@ class MyForm extends StatelessWidget {
                 );
               } else {
                 Widget w = datamodel.getRowItemOne(
-                    gForm, _formName, -1, item, context, thisbackcolor);
+                    gForm, _formName, id, item, context, thisbackcolor);
                 w = InkWell(
                     onTap: () {
                       datamodel.setFocus(_formName, item[gId], null, gForm);

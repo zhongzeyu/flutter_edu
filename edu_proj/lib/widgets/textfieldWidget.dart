@@ -48,7 +48,7 @@ class TextFieldWidget extends StatelessWidget {
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () async {
-              item[gShowDetail] = true;
+              //item[gShowDetail] = true;
               if (typeOwner == gForm) {
                 datamodel.setFocus(name, item[gId], null, typeOwner);
               } else if (item[gType] == gSearch) {

@@ -42,10 +42,11 @@ class MyItem extends StatelessWidget {
           ));
         }
       } else if (_param[gType] == gForm) {
-        dynamic formID = _param[gValue];
+        /*dynamic formID = _param[gValue];
+        dynamic id = _param[gId];*/
         //datamodel.setFormListOne(formID, _param);
 
-        result.add(MyForm(formID, backcolor));
+        result.add(MyForm(_param, backcolor));
       } else if (_param[gType] == gIcon) {
         result.add(MyIcon(_param));
       } else if (_param[gType] == gImg) {

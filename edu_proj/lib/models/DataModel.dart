@@ -147,6 +147,7 @@ class DataModel extends ChangeNotifier {
     '12': 'Dec',
   };
   Map<dynamic, dynamic> _dpList = {};
+
   Map<dynamic, dynamic> _whereList = {};
   //Route _lastRoute;
   //'https://ipt.imgix.net/201444/x/0/?auto=format%2Ccompress&crop=faces%2Cedges%2Ccenter&bg=%23fff&fit=crop&q=35&h=944&dpr=1'
@@ -235,10 +236,14 @@ class DataModel extends ChangeNotifier {
     }
     if (isNew) {
       _tableList[data[gActionid]] = Map.of(data[gBody][data[gActionid]]);
+
       List dataList = _tableList[data[gActionid]][gData];
       if (dataList != null && dataList.length > 0) {
         for (int i = 0; i < dataList.length; i++) {
           dataList[i] = Map.of(dataList[i]);
+          /*if (_dpList.containsKey(data[gActionid])) {
+            dpListInsert(data[gActionid], dataList[i], context);
+          }*/
         }
       }
       List colList = _tableList[data[gActionid]][gColumns];
@@ -628,6 +633,7 @@ class DataModel extends ChangeNotifier {
     _menuLists = {};
     _dpList = {};
     _mFocusNode = {gType: null};
+
     removeAllScreens(context);
   }
 
@@ -928,7 +934,7 @@ class DataModel extends ChangeNotifier {
         }
         var oldValue = getValueOriginal(formid, item[gId], null, typeOwner);
         if (isNull(oldValue)) {
-          oldValue = value;
+          oldValue = '';
         }
         if (value == null) {
           value = '';
@@ -1296,7 +1302,7 @@ class DataModel extends ChangeNotifier {
                       typeOwner);
                   if (dateList[2] != '') {
                     //close the detail
-                    setFormValueShow(formname, id);
+                    //setFormValueShow(formname, id);
                     setFocusNext(formname, id, null);
 
                     myNotifyListeners();
@@ -1517,7 +1523,7 @@ class DataModel extends ChangeNotifier {
     items.entries.forEach((itemOne) {
       if (itemOne.value[gId] == colname) {
         item = itemOne.value;
-        item[gShowDetail] = false;
+        //item[gShowDetail] = false;
 
         item[gValue] = value;
         return item;
@@ -1716,8 +1722,9 @@ class DataModel extends ChangeNotifier {
       Map item, typeOwner, name, context, id, backcolor, actions) async {
     backcolor = Colors.blue.value;
 
-    if (item[gType] == gDate && (item[gShowDetail] ?? false)) {
-      item[gFocus] = true;
+    //if (item[gType] == gDate && (item[gShowDetail] ?? false)) {
+    if (item[gType] == gDate) {
+      //item[gFocus] = true;
       Map param = {
         gId: item[gId],
         gItem: item,
@@ -1728,7 +1735,8 @@ class DataModel extends ChangeNotifier {
       var value = getRowItemOneValue(param);
       return getDatePicker(
           value ?? item[gValue], backcolor, context, name, item[gId], actions);
-    } else if (item[gDroplist] != '' && (item[gShowDetail] ?? false)) {
+      //} else if (item[gDroplist] != '' && (item[gShowDetail] ?? false)) {
+    } else if (item[gDroplist] != '') {
       item[gFocus] = true;
       return getDPPicker(item, backcolor, context, name, item[gId], actions);
     }
@@ -1948,8 +1956,7 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  Widget getRowItemOne(
-      typeOwner, name, int row, item, context, backColorValue) {
+  Widget getRowItemOne(typeOwner, name, id, item, context, backColorValue) {
     Map info;
     if (typeOwner == gForm) {
       info = formLists[name];
@@ -1981,21 +1988,21 @@ class DataModel extends ChangeNotifier {
     if (item[gType] == gLabel) {
       isReadonly = true;
     }
-    var id;
+
     Map param = {
       gItem: item,
       gName: name,
-      gRow: row,
+      //gRow: row,
       gTypeOwner: typeOwner,
       gBackgroundColor: backColorValue
     };
 
     if (typeOwner == gForm) {
       //var colname = item[gId];
-      id = getValueOriginal(name, gId, id, typeOwner);
+      id = id ?? getValueOriginal(name, gId, id, typeOwner);
       param[gId] = id;
       //originalValue = getRowItemOneValue(param);
-      originalValue = getValueOriginal(name, item[gId], null, typeOwner);
+      originalValue = getValueOriginal(name, item[gId], id, typeOwner);
       droplist = item[gDroplist] ?? "";
       if (_mFocusNode[gType] == gForm &&
           _mFocusNode[gName] == name &&
@@ -2004,11 +2011,10 @@ class DataModel extends ChangeNotifier {
       }
     } else {
       var colname = item[gId];
-      List tableData = info[gDataSearch] ?? info[gData];
-      Map dataRow = tableData[row];
-      id = dataRow[gId];
-      /*var dataI = dataRow[colname];
-      originalValue = getValueByType(dataI, item);*/
+      //List tableData = info[gDataSearch] ?? info[gData];s
+      /*Map dataRow = tableData[row];
+      id = dataRow[gId];*/
+      Map dataRow = getTableRowByID(name, id);
       originalValue = getValueOriginal(name, colname, id, typeOwner);
 
       droplist = item[gDroplist] ?? "";
@@ -2025,6 +2031,7 @@ class DataModel extends ChangeNotifier {
     param[gFocus] = isFocus;
     param[gId] = id;
     param[gValue] = getRowItemOneValue(param);
+
     isModified = param[gValue] != originalValue;
     if (!isNull(droplist)) {
       needi10n = true;
@@ -2059,7 +2066,7 @@ class DataModel extends ChangeNotifier {
     if (!isNull(param[gAlert])) {
       _formLists[name][gStatus] = false;
     }
-    var showTxt = param[gValue];
+    var showTxt = getValueGUI(param[gValue], item);
     if (!isFocus || isReadonly) {
       if (item[gType] == gPassword) {
         showTxt = getStrMask(showTxt, '*');
@@ -2069,8 +2076,9 @@ class DataModel extends ChangeNotifier {
       }
       w = MyLabel({
         gLabel: showTxt,
-        gOriginalValue:
-            (isModified && item[gType] != gPassword) ? originalValue : null,
+        gOriginalValue: (isModified && item[gType] != gPassword)
+            ? getValueGUI(originalValue, item)
+            : null,
         gNeedi10n: needi10n
       }, backColorValue);
       param[gWidget] = w;
@@ -2159,8 +2167,7 @@ class DataModel extends ChangeNotifier {
           dataRow = tableData[param[gRow]];
         }
 
-        var dataI = dataRow[colname];
-        value = getValueGUI(dataI, param[gItem]);
+        value = dataRow[colname];
       }
     }
     return value;
@@ -2761,7 +2768,7 @@ class DataModel extends ChangeNotifier {
     if (dataRow == null) {
       return dataid;
     }
-    return getTableValueKeyFromTable(table, dataRow);
+    return getTableValueKeyFromTable(tableId, dataRow);
   }
 
   getTableRowShowValue(item, colList, context) {
@@ -2855,11 +2862,10 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableValueKey(tableid, dataRow) {
-    var table = _tableList[tableid];
-    return getTableValueKeyFromTable(table, dataRow);
+    return getTableValueKeyFromTable(tableid, dataRow);
   }
 
-  getTableValueKeyFromColumns(columns, dataRow) {
+  getTableValueKeyFromColumns(name, columns, dataRow) {
     var result = "";
     var sep = "";
     if (dataRow == null) {
@@ -2869,7 +2875,9 @@ class DataModel extends ChangeNotifier {
     columns.forEach((element) {
       bool isKeyword = element[gIsKeyword] ?? false;
       if (isKeyword) {
-        var value = dataRow[element[gId]];
+        //var value = dataRow[element[gId]];
+        var value = getValueGUI(
+            getValue(name, element[gId], dataRow[gId], gTable), element);
         if (!isNull(value)) {
           result += sep + value;
           sep = ",";
@@ -2879,10 +2887,11 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getTableValueKeyFromTable(table, dataRow) {
+  getTableValueKeyFromTable(tableid, dataRow) {
     //var data = table[gData][row];
+    var table = _tableList[tableid];
     List columns = table[gColumns];
-    return getTableValueKeyFromColumns(columns, dataRow);
+    return getTableValueKeyFromColumns(tableid, columns, dataRow);
   }
 
   getTableValuePrimary(tableId, data) {
@@ -2964,7 +2973,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getValueOriginal(name, colId, id, typeOwner) {
-    if (typeOwner == gForm) {
+    if (typeOwner == gForm && isNullID(id)) {
       Map<dynamic, dynamic> formDefine = _formLists[name];
       Map<dynamic, dynamic> items = formDefine[gItems];
       items.entries.forEach((itemOne) {
@@ -2984,6 +2993,18 @@ class DataModel extends ChangeNotifier {
       return toLocalTime(result);
     }
     if (!isNull(col[gDroplist])) {
+      if (!_dpList.containsKey(col[gDroplist])) {
+        var tableinfo = _tableList[col[gDroplist]];
+        if (tableinfo != null) {
+          List tableData = tableinfo[gData];
+          if (tableData.length > 0) {
+            tableData.forEach((element) {
+              dpListInsert(col[gDroplist], element, null);
+            });
+          }
+        }
+      }
+
       return getSCurrent(result);
     }
     return result;
@@ -3121,6 +3142,10 @@ class DataModel extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  isNullID(id) {
+    return isNull(id) || id == gFakeId;
   }
 
   isPopOpen() {
@@ -4263,7 +4288,7 @@ class DataModel extends ChangeNotifier {
     //print('============    1');
 
     //print('============    2');
-    var type = isNull(id) ? gForm : gTable;
+    var type = isNullID(id) ? gForm : gTable;
     bool findItem = false;
     if (type == gForm) {
       Map<dynamic, dynamic> itemsMap = _formLists[name][gItems];
@@ -4345,7 +4370,7 @@ class DataModel extends ChangeNotifier {
     //item[gTxtEditingController]..text = value;
   }
 
-  setFormValueShow(formid, colId) {
+  /* setFormValueShow(formid, colId) {
     var item = _formLists[formid][gItems][colId];
     setFormValueShowValue(formid, colId, !(item[gShowDetail] ?? false));
   }
@@ -4353,7 +4378,7 @@ class DataModel extends ChangeNotifier {
   setFormValueShowValue(formid, colId, value) {
     var item = _formLists[formid][gItems][colId];
     item[gShowDetail] = value;
-  }
+  }*/
 
   setI10n(actionData) {
     for (int i = 0; i < actionData.length; i++) {
@@ -4652,7 +4677,7 @@ class DataModel extends ChangeNotifier {
     dynamic dataRow = data[gRow];
     items.entries.forEach((itemOne) {
       Map item = itemOne.value;
-      item[gShowDetail] = false;
+      //item[gShowDetail] = false;
 
       item[gValue] = (dataRow == null) ? null : dataRow[item[gId]];
       //item[gTxtEditingController]..text = (dataRow == null) ? null : dataRow[item[gId]].toString();
@@ -4690,6 +4715,7 @@ class DataModel extends ChangeNotifier {
   showMyDetail(param, msg, context, backcolor) {
     Map<dynamic, dynamic> focusNodeClone =
         new Map<dynamic, dynamic>.of(_mFocusNode);
+    //_mFocusNode = {gType: null};
     navigatorPush(context, MyDetailNew(param, backcolor, focusNodeClone), msg);
   }
 
@@ -4812,7 +4838,7 @@ class DataModel extends ChangeNotifier {
     if (overlayEntry != null) {
       return;
     }
-    item[gShowDetail] = true;
+    //item[gShowDetail] = true;
 
     if (item[gType] == gAddress) {
       if (isNull(value)) {
@@ -4900,15 +4926,15 @@ class DataModel extends ChangeNotifier {
           showMyDetail(_screenLists[name], gShowScreenPage, context, backcolor);
         }
       } else {
-        showScreenPageOne(name, context, backcolor);
+        showScreenPageOne(name, context, backcolor, map);
       }
     }
     myNotifyListeners();
   }
 
-  showScreenPageOne(name, context, backcolor) {
+  showScreenPageOne(name, context, backcolor, data) {
     MyScreen aScreen = MyScreen(_screenLists[name], backcolor);
-    Map param = {gLabel: name, gScreen: aScreen};
+    Map param = {gLabel: name, gScreen: aScreen, gData: data};
 
     showMyDetail(param, 'showScreenPageOne', context, backcolor);
   }
@@ -4977,7 +5003,8 @@ class DataModel extends ChangeNotifier {
                 jsonEncode({gType: gLabel, gValue: keyValue, gFontSize: 24.0})
           },
           1: {
-            gItem: jsonEncode({gType: gForm, gValue: tableName})
+            gItem: jsonEncode(
+                {gType: gForm, gValue: tableName, gId: data[gRow][gId]})
           }
         }
       }
@@ -5086,7 +5113,7 @@ class DataModel extends ChangeNotifier {
   }
 
   textChange(text, Map item, BuildContext context, typeOwner, name, id) {
-    if (!isNull(id) || (typeOwner == gForm && item[gType] != gSearch)) {
+    if (!isNullID(id) || (typeOwner == gForm && item[gType] != gSearch)) {
       //setTableValueItem(name, item[gId], id, text);
       setValue(name, item[gId], id, text, typeOwner);
       return;
@@ -5175,7 +5202,8 @@ class DataModel extends ChangeNotifier {
     try {
       //return DateTime.fromMillisecondsSinceEpoch(int.parse('1639181163816'))
       //  .toLocal();
-      DateTime dt = DateTime.fromMillisecondsSinceEpoch(atime).toLocal();
+      DateTime dt =
+          DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
       dynamic formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
       return formattedDate;
       //return DateTime.fromMillisecondsSinceEpoch(int.parse(atime)).toLocal();
