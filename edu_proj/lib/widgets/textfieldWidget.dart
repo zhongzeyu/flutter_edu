@@ -49,14 +49,12 @@ class TextFieldWidget extends StatelessWidget {
                 ),
             onPressed: () async {
               //item[gShowDetail] = true;
-              if (typeOwner == gForm) {
-                datamodel.setFocus(name, item[gId], null, typeOwner);
-              } else if (item[gType] == gSearch) {
+              if (item[gType] == gSearch) {
                 textChange(thistext, item, datamodel, context, false);
                 return;
-              } else {
-                datamodel.setFocusItem(name, item, item[gId], typeOwner);
               }
+              datamodel.setFocus(name, item[gId], item[gId]);
+              //datamodel.setFocusItem(name, item, item[gId], typeOwner);
 
               if (item[gType] == gAddress) {
                 var searchTxt = thistext ?? item[gSearch] ?? item[gValue];
@@ -100,26 +98,21 @@ class TextFieldWidget extends StatelessWidget {
       Color cBackColor = datamodel.fromBdckcolor(backcolor);
       if (item[gTxtEditingController] == null) {
         item[gTxtEditingController] = new TextEditingController();
-        item[gTxtEditingController].text =
-            datamodel.getValue(name, item[gId], id, typeOwner)[gValue];
       }
+      item[gTxtEditingController].text =
+          datamodel.getValue(name, item[gId], id)[gValue];
       TextEditingController txtController = item[gTxtEditingController];
       var showValue = txtController.text ?? "";
 
       if (datamodel.isNull(showValue)) {
         txtController.text = "";
       } else {
-        var modifiedValue =
-            datamodel.getValue(name, item[gId], id, typeOwner)[gValue];
+        var modifiedValue = datamodel.getValue(name, item[gId], id)[gValue];
         //dynamic aValue = datamodel.getValueGUI(item[gValue], item);
         dynamic aValue = datamodel.getValueGUI(modifiedValue, item);
         txtController.text = aValue;
       }
-      bool autofocus = datamodel.getFocus(
-        typeOwner,
-        name,
-        item,
-      );
+      bool autofocus = datamodel.getFocus(name, item);
 
       /*if (autofocus && datamodel.isPopOpen()) {
         autofocus = false;
@@ -176,16 +169,16 @@ class TextFieldWidget extends StatelessWidget {
           //如果是表字段，检查状态是否改变
           //  如果状态变true,检查form的状态
 
-          if (typeOwner == gForm) {
+          /*if (typeOwner == gForm) {
             datamodel.checkFormStatus(name, item, text);
-          }
+          }*/
           thistext = text;
           textChange(thistext, item, datamodel, context, typeOwner);
         },
         onTap: () {
           //FocusScope.of(context).requestFocus(_commentFocus);
           //set focus
-          datamodel.setFocus(name, item[gId], null, typeOwner);
+          datamodel.setFocus(name, item[gId], null);
         },
         onEditingComplete: () {
           textChange(thistext, item, datamodel, context, typeOwner);

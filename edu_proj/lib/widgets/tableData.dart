@@ -103,14 +103,15 @@ class TableData extends DataTableSource {
       var colname = _param[gColumns][i][gId];
 
       int backColorValue = Colors.white.value;
-      Widget w = _dataModel.getRowItemOne(gTable, _param[gTableID],
-          dataRow[gId], _param[gColumns][i], _context, backColorValue);
+      Widget w = _dataModel.getRowItemOne(_param[gTableID], dataRow[gId],
+          _param[gColumns][i], _context, backColorValue, null);
 
       dataCellList.add(DataCell(w, onTap: () {
         _param[gLabel] = gTableItem;
-        _param[gTableItemRow] = dataRow[gId];
-        _param[gTableItemColName] = colname;
-        this._dataModel.myNotifyListeners();
+        //_param[gTableItemColName] = colname;
+        _dataModel.setFocus(_param[gTableID], colname, dataRow[gId]);
+
+        _dataModel.myNotifyListeners();
       }));
     }
     return DataRow(cells: dataCellList);

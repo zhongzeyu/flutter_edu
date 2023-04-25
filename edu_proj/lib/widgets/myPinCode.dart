@@ -68,7 +68,7 @@ class MyPinCode extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 onCompleted: (code) {
                   _param[gTextController].text = code;
-                  datamodel.setValue(_formName, _param[gId], null, code, gForm);
+                  datamodel.setValue(_formName, _param[gId], null, code);
                 },
                 onChanged: (code) {
                   //_param['teController'].text = code;

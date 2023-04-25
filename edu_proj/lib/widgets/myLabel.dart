@@ -29,17 +29,19 @@ class MyLabel extends StatelessWidget {
             (_param[gOriginalValue] ?? "") == value) {
           text = Text(
             showValue,
-            //textAlign: TextAlign.left,
+            textAlign: _param[gAlign] ?? TextAlign.center,
             maxLines: 10,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontWeight: (datamodel.isNull(_param[gIsBold]))
-                  ? _param[gFontWeight]
-                  : FontWeight.bold, //FontWeight.bold,
-              fontSize: _param[gFontSize],
-              color: _param[gColorLabel] ?? labelColor,
-              //backgroundColor: Colors.transparent
-            ),
+                fontWeight: (datamodel.isNull(_param[gIsBold]))
+                    ? _param[gFontWeight]
+                    : FontWeight.bold, //FontWeight.bold,
+                fontSize: _param[gFontSize],
+                color: _param[gColorLabel] ?? labelColor,
+                decoration: _param[gTextDecoration]
+
+                //backgroundColor: Colors.transparent
+                ),
           );
         } else {
           text = Text.rich(TextSpan(
@@ -47,8 +49,7 @@ class MyLabel extends StatelessWidget {
                   ? datamodel.getSCurrent(_param[gOriginalValue])
                   : _param[gOriginalValue],
               style: TextStyle(
-                color: labelColor,
-              ),
+                  color: labelColor, decoration: _param[gTextDecoration]),
               children: <TextSpan>[
                 TextSpan(
                     text: ' -> \r\n',

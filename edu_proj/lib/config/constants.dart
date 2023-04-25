@@ -282,7 +282,7 @@ const gTableAdd = 'tableAdd';
 const gTableDelete = 'tableDelete';
 const gTableEditor = 'tableEditor';
 const gTableItem = 'tableItem';
-const gTableItemColName = 'tableItemColName';
+//const gTableItemColName = 'tableItemColName';
 const gTableItemRow = 'tableItemRow';
 
 const gTablelistExist = 'tablelistExist';
@@ -294,6 +294,7 @@ const gTextController = 'textController';
 const gTextFontColor = 'textFontColor';
 const gTextLightColor = Color(0xFFACACAC);
 const gText = 'text';
+const gTextDecoration = 'textDecoration';
 const gTextLink = 'textlink';
 
 const gTimestamp = 'timestamp';

@@ -19,7 +19,7 @@ class MyForm extends StatelessWidget {
   Widget build(BuildContext context) {
     int thisbackcolor = backcolor ?? Colors.black.value;
     bool _submitstatus = true;
-    var typeOwner = gForm;
+
     dynamic _formName = _param[gValue];
     dynamic id = _param[gId];
     return Consumer<DataModel>(
@@ -32,6 +32,9 @@ class MyForm extends StatelessWidget {
               {gLabel: gNotavailable, gFontSize: 20.0}, thisbackcolor);
         }
         formSubmit(context, formKey) {
+          if (!_formKey.currentState.validate()) {
+            return;
+          }
           formKey.currentState.save();
           datamodel.formSubmit(context, _formName);
         }
@@ -48,8 +51,8 @@ class MyForm extends StatelessWidget {
           //dynamic dataRow;
           //dataRow = _paramData[gData];
 
-          datamodel.setFocus(_formName, null, null, typeOwner);
-          datamodel.formLists[_formName][gStatus] = true;
+          datamodel.setFocus(_formName, null, null);
+          //datamodel.formLists[_formName][gStatus] = true;
           items.entries.forEach((itemOne) {
             Map item = itemOne.value;
             if ((item[gIsHidden] ?? "false") != gTrue &&
@@ -65,10 +68,10 @@ class MyForm extends StatelessWidget {
                 );
               } else {
                 Widget w = datamodel.getRowItemOne(
-                    gForm, _formName, id, item, context, thisbackcolor);
+                    _formName, id, item, context, thisbackcolor, gForm);
                 w = InkWell(
                     onTap: () {
-                      datamodel.setFocus(_formName, item[gId], null, gForm);
+                      datamodel.setFocus(_formName, item[gId], id);
                       datamodel.myNotifyListeners();
                     },
                     child: w);
@@ -104,18 +107,18 @@ class MyForm extends StatelessWidget {
             gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
             gChild: MyLabel({gLabel: formDefine[gSubmit]}, Colors.blue.value)
           };
-          if (datamodel.formLists[_formName][gStatus] ?? false) {
-            result.add(InkWell(
-              child:
-                  _submitstatus ? MyGlass(paramSubmit) : SizedBox(height: 12.0),
-              onTap: () {
-                /* if (!_formKey.currentState.validate()) {
+          //if (datamodel.formLists[_formName][gStatus] ?? false) {
+          result.add(InkWell(
+            child:
+                _submitstatus ? MyGlass(paramSubmit) : SizedBox(height: 12.0),
+            onTap: () {
+              /* if (!_formKey.currentState.validate()) {
                   return;
                 }*/
-                formSubmit(context, _formKey);
-              },
-            ));
-          }
+              formSubmit(context, _formKey);
+            },
+          ));
+          //}
 
           datamodel.afterSubmit(context, _formName, result);
           return result;
