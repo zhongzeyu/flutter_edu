@@ -1,5 +1,5 @@
 import 'package:edu_proj/config/constants.dart';
-import 'package:edu_proj/widgets/myButton.dart';
+//import 'package:edu_proj/widgets/myButton.dart';
 //import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -20,14 +20,14 @@ class TableData extends DataTableSource {
   int get selectedRowCount => _selectRowCount;
 
   DataRow getRow(int index) {
-    debugPrint('===== getRow index is ' + index.toString());
+    //debugPrint('===== getRow index is ' + index.toString());
     List<DataCell> dataCellList = [];
     dynamic dataRow = (_param[gDataSearch] ?? _param[gData])[index];
 
     List<Widget> actionList = [];
-    double size = 25.0;
+    /*double size = 25.0;
     int backgroundcolor = Colors.white.value;
-    if (_param[gAttr][gCanEdit]) {
+  if (_param[gAttr][gCanEdit]) {
       var labelValue = gEdit;
       var icon = 61453;
       if (_dataModel.isModifiedValid(_param, dataRow)) {
@@ -89,7 +89,7 @@ class TableData extends DataTableSource {
         gIcon: 0xe246,
         gBackgroundColor: backgroundcolor
       }));
-    }
+    }*/
     if (actionList.length > 0) {
       dataCellList.add(DataCell(Row(
         children: actionList,
@@ -114,6 +114,8 @@ class TableData extends DataTableSource {
         _dataModel.myNotifyListeners();
       }));
     }
-    return DataRow(cells: dataCellList);
+
+    var isSelected = dataRow[gId] == _dataModel.mFocusNode[gId];
+    return DataRow(cells: dataCellList, selected: isSelected);
   }
 }

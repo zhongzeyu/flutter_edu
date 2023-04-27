@@ -79,6 +79,7 @@ const gDelimeterItem = '~';
 const gDetail = 'detail';
 const gDetailPage = 'detailPage';
 const gDivider = 'divider';
+const gDpAddress = 'dpAddress';
 const gDpid = 'dpid';
 
 const gDroplist = 'droplist';

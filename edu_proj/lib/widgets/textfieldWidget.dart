@@ -39,53 +39,19 @@ class TextFieldWidget extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       item[gType] = item[gType] ?? '';
       bool isPassword = (item[gType] == gPassword);
-      if (item[gType] == gAddress || item[gType] == gSearch) {
+      if (item[gType] == gSearch) {
         item[gSuffixIconLocal] = IconButton(
-            icon: Icon(((item[gType] == gSearch)
-                    ? Icons.content_paste_search_outlined
-                    : Icons.expand_more)
+            icon: Icon((Icons.content_paste_search_outlined)
 
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () async {
               //item[gShowDetail] = true;
-              if (item[gType] == gSearch) {
-                textChange(thistext, item, datamodel, context, false);
-                return;
-              }
-              datamodel.setFocus(name, item[gId], item[gId]);
-              //datamodel.setFocusItem(name, item, item[gId], typeOwner);
-
-              if (item[gType] == gAddress) {
-                var searchTxt = thistext ?? item[gSearch] ?? item[gValue];
-                datamodel.showPopupItem(
-                    item, typeOwner, name, searchTxt, id, backcolor, context);
-
-                return;
-              }
-              List actions = [];
-              actions.add({
-                gType: gIcon,
-                gValue: 0xef49,
-                gLabel: gConfirm,
-                gAction: gLocalAction,
-                gItem: item,
-                gTypeOwner: typeOwner,
-                gName: name,
-                gId: id,
-              });
-              Widget w = await datamodel.getItemSubWidget(
-                  item, typeOwner, name, context, id, backcolor, actions);
-
-              //}
-              datamodel.showPopup(context, w, null, actions);
-              //}
-
-              //datamodel.myNotifyListeners();
+              textChange(thistext, item, datamodel, context, false);
             });
       }
       //datamodel.getItemIcon(item, context);
-      if ((item[gIsFile] ?? false) == true) {
+      else if ((item[gIsFile] ?? false) == true) {
         item[gSuffixIconLocal] = IconButton(
             icon: Icon(Icons.file_upload_outlined
                 //color: Theme.of(context).disabledColor,
@@ -152,7 +118,7 @@ class TextFieldWidget extends StatelessWidget {
             ),
             isDense: true, // Added this
             enabled: ((item[gType] ?? "") != gLabel)),
-        obscureText: isPassword && item[gPasswordShow],
+        obscureText: isPassword && (item[gPasswordShow] ?? true),
         inputFormatters: datamodel.getItemFormatters(item),
         validator: (dynamic value) {
           var validResult = datamodel.isItemValueValidStr(item, value);

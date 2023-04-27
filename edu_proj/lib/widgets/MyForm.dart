@@ -112,9 +112,9 @@ class MyForm extends StatelessWidget {
             child:
                 _submitstatus ? MyGlass(paramSubmit) : SizedBox(height: 12.0),
             onTap: () {
-              /* if (!_formKey.currentState.validate()) {
-                  return;
-                }*/
+              if (!_formKey.currentState.validate()) {
+                return;
+              }
               formSubmit(context, _formKey);
             },
           ));
