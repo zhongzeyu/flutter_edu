@@ -16,7 +16,7 @@ class MyPic extends StatelessWidget {
   Widget build(BuildContext context) {
     //return Image.asset('/images/' + _param['img'], package: packageName);
     if (_param[gImg] == null) {
-      return null;
+      return Text('');
     }
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       if (_param[gImg].toString().toLowerCase().indexOf('http') > -1) {

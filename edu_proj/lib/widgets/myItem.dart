@@ -53,11 +53,15 @@ class MyItem extends StatelessWidget {
         //var imgOriginal = _param[gValue];
         var imgOriginal = datamodel.imgList[_param[gValue]] ??
             datamodel.imgList[gNotavailable];
-        result.add(MyPic({
+        Widget myPic = MyPic({
           gImg: imgOriginal,
           gHeight: _param[gHeight] ?? null,
           gWidth: _param[gWidth] ?? null,
-        }));
+        });
+        if (myPic != null) {
+          result.add(myPic);
+        }
+
         /*result.add(Image.memory(
           base64.decode(imgOriginal),
           fit: BoxFit.fill,

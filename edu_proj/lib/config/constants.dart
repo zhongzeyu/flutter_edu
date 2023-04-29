@@ -6,6 +6,7 @@ const gActionid = 'actionid';
 const gActions = 'actions';
 const gAddnew = 'Addnew';
 const gAddress = 'Address';
+const gAddTable = 'addTable';
 const gAlert = 'Alert';
 const gAlign = 'align';
 const gAlignment = 'alignment';
@@ -61,7 +62,6 @@ const gCreateAccount = 'createAccount';
 const gCreatenewpassword = 'createnewpassword';
 
 const gData = 'data';
-const gDataIDMap = 'dataidmap';
 const gDataModified = 'dataModified';
 const gDataModifiedInvalid = 'dataModifiedinvalid';
 const gDataSearch = 'datasearch';
@@ -95,7 +95,8 @@ const gEteremailtoresetpassword = 'eteremailtoresetpassword';
 const gExcel = 'Excel';
 const gExpanded = 'Expanded';
 
-const gFakeId = 'fakeId';
+//const gFakeId = 'fakeId';
+const gFakeId = '';
 const gFiledownload = 'filedownload';
 const gFilename = 'filename';
 const gFinishme = 'finishme';
@@ -183,7 +184,7 @@ const gNew = 'new';
 const gNochange = 'nochange';
 const gNode = 'node';
 const gNoecrypted = 'noecrypted';
-const gNotavailable = 'not available';
+const gNotavailable = 'processing...';
 
 const gNumber = 'number';
 const gNull = 'null';
@@ -285,8 +286,9 @@ const gTableEditor = 'tableEditor';
 const gTableItem = 'tableItem';
 //const gTableItemColName = 'tableItemColName';
 const gTableItemRow = 'tableItemRow';
-
 const gTablelistExist = 'tablelistExist';
+const gTableMapPrefix = 'zzymapprefix_';
+
 const gTabletree = "tabletree";
 const gTableUpdate = 'tableUpdate';
 const gTableID = 'tableid';
