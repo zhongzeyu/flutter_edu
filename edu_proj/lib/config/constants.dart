@@ -94,6 +94,7 @@ const gEntrytime = 'entrytime';
 const gEteremailtoresetpassword = 'eteremailtoresetpassword';
 const gExcel = 'Excel';
 const gExpanded = 'Expanded';
+const gSTRSEPITEM = "zy~";
 
 //const gFakeId = 'fakeId';
 const gFakeId = '';
@@ -287,7 +288,7 @@ const gTableItem = 'tableItem';
 //const gTableItemColName = 'tableItemColName';
 const gTableItemRow = 'tableItemRow';
 const gTablelistExist = 'tablelistExist';
-const gTableMapPrefix = 'zzymapprefix_';
+const gTableMapPrefix = 'zzymapprefix';
 
 const gTabletree = "tabletree";
 const gTableUpdate = 'tableUpdate';
@@ -331,9 +332,9 @@ const gWidth = 'width';
 const gWidget = 'widget';
 const gYear = 'year';
 const gYearmonth = 'yearmonth';
+const gZh = 'zh';
 const gZzydictionary = 'Zzydictionary';
 const gZzydictionaryitem = 'Zzydictionaryitem';
-const gZh = 'zh';
 const gZzyLanguageCode = 'Zzylanguagecode';
 const gZzylog = 'Zzylog';
 const gZzyi10nitem = 'Zzyi10nitem';

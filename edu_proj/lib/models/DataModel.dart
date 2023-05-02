@@ -661,6 +661,12 @@ class DataModel extends ChangeNotifier {
     _mFocusNode = {gType: null};
   }
 
+  clearTable(tablename) {
+    var tableInfo = _tableList[tablename];
+    tableInfo[gDataSearch] = null;
+    tableInfo[gTableMapPrefix] = null;
+  }
+
   createDragTarget({Offset offset, BuildContext context, view}) {
     removeOverlay();
 
@@ -2340,7 +2346,7 @@ class DataModel extends ChangeNotifier {
     if (isNull(sourceOriginal)) {
       return '';
     }
-    dynamic source = sourceOriginal.toString();
+    dynamic source = sourceOriginal.toString().replaceAll(gSTRSEPITEM, ' ');
     dynamic sourceLocase = source.toLowerCase();
 
     if (!isNull(_i10nMap[sourceLocase]) &&
@@ -2711,6 +2717,7 @@ class DataModel extends ChangeNotifier {
     if (dataRow == null) {
       return;
     }
+
     List<Widget> actionList = [];
     double size = 36.0;
     int backgroundcolor = Colors.white.value;
@@ -2778,6 +2785,7 @@ class DataModel extends ChangeNotifier {
         gBackgroundColor: backgroundcolor
       }));
     }
+
     if (actionList.length > 0) {
       actionList.insert(
           0,
@@ -2799,15 +2807,17 @@ class DataModel extends ChangeNotifier {
       return null;
     }
 
-    if (table != null && table[gTableMapPrefix + col] != null) {
-      return table[gTableMapPrefix + col];
+    if (table != null &&
+        table[gTableMapPrefix] != null &&
+        table[gTableMapPrefix][col] != null) {
+      return table[gTableMapPrefix][col];
     }
     Map map = {};
     for (int i = 0; i < table[gData].length; i++) {
       var dataRow = table[gData][i];
       map[dataRow[col]] = dataRow[gId];
     }
-    table[gTableMapPrefix + col] = map;
+    table[gTableMapPrefix][col] = map;
 
     return map;
   }
@@ -2836,16 +2846,20 @@ class DataModel extends ChangeNotifier {
     if (isNull(id)) {
       return null;
     }
-    if (tableInfo[gTableMapPrefix + gId] == null) {
+    if (tableInfo[gTableMapPrefix] == null ||
+        tableInfo[gTableMapPrefix][gId] == null) {
       Map map = {};
       List result = tableInfo[gData];
       //ggetTableDataFromWhere(tableInfo, "id=" + id);
       result.forEach((element) {
         map[element[gId]] = element;
       });
-      tableInfo[gTableMapPrefix + gId] = map;
+      if (tableInfo[gTableMapPrefix] == null) {
+        tableInfo[gTableMapPrefix] = {};
+      }
+      tableInfo[gTableMapPrefix][gId] = map;
     }
-    return tableInfo[gTableMapPrefix + gId][id];
+    return tableInfo[gTableMapPrefix][gId][id];
     /*List result = getTableDataFromWhere(tableInfo, "id=" + id);
     if (result.length > 0) {
       return result.elementAt(0);
@@ -4092,6 +4106,10 @@ class DataModel extends ChangeNotifier {
     if (data0[gActionid] == gTableAdd) {
       //tableData.insert(0, Map.of(data0[gBody]));
       //finishme(context);
+      removeTableModified(tablename, '');
+      clearTable(tablename);
+      _mFocusNode[gId] = data0[gBody][gId];
+
       tableInsert(tablename, data0[gBody], context);
       tableList[data0[gTableID]][gKey] = UniqueKey();
       //if table have detail, popup the detail page

@@ -103,6 +103,7 @@ class MyPaginatedDataTable extends StatelessWidget {
         rowsPerPage: datamodel.getRowsPerPage(tableInfo),
         availableRowsPerPage: [5, 10, 15, 20, 50],
         onPageChanged: (e) {},
+        //actions: [Text('action0'), Text('action1')],
         onRowsPerPageChanged: (int v) {
           //widget.onRowsPerPageChanged?.call(v ?? 10);
           datamodel.setRowsPerPage(tableInfo, v);
