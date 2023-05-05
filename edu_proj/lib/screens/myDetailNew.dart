@@ -130,6 +130,7 @@ class MyDetailNew extends StatelessWidget {
       };
 
       return Scaffold(
+        floatingActionButton: datamodel.getActionButtons(_param),
         body: Container(
           height: double.infinity,
           width: double.infinity,
@@ -140,7 +141,7 @@ class MyDetailNew extends StatelessWidget {
               //Image.network(datamodel.imgList[gMain]),
             ),
             SafeArea(
-              child: MyGlass(param),
+              child: SingleChildScrollView(child: MyGlass(param)),
             )
           ]),
         ),

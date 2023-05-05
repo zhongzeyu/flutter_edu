@@ -76,7 +76,8 @@ class MyItem extends StatelessWidget {
       } else if (_param[gType] == gLabel) {
         result.add(MyLabel(_param, backcolor));
       } else if (_param[gType] == gTableEditor) {
-        result.add(MyPaginatedDataTable(_param));
+        result.add(Expanded(
+            child: SingleChildScrollView(child: MyPaginatedDataTable(_param))));
       } else if (_param[gType] == gSearch) {
         dynamic tableName = _param[gTableID];
 

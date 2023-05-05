@@ -161,6 +161,7 @@ class DataModel extends ChangeNotifier {
   Map _dpListDefaultIndex = {};
   OverlayEntry overlayEntry;
   Map<dynamic, dynamic> _mFocusNode = {gType: null};
+  Map<dynamic, List<Widget>> _actionBtnMap = {};
 
   //dynamic get email => _email;
   dynamic get token => _token;
@@ -206,6 +207,36 @@ class DataModel extends ChangeNotifier {
   init() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _locale = (prefs.getString('locallan') ?? _locale);
+  }
+
+  addActionButton(name, param, context) {
+    List<Widget> alist = _actionBtnMap[name];
+    if (alist == null) {
+      alist = [];
+      _actionBtnMap[name] = alist;
+    }
+    List<Widget> btnList = _actionBtnMap[name];
+
+    btnList.add(Transform(
+      transform: Matrix4.translationValues(
+        0.0,
+        0.0,
+        0.0,
+      ),
+      child: FloatingActionButton.extended(
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          sendRequestOne(gLocalAction, param, param[gContext] ?? context);
+        },
+        icon: Icon(
+            IconData(
+              param[gIcon],
+              fontFamily: 'MaterialIcons',
+            ),
+            color: param[gColor] ?? Colors.white),
+        label: MyLabel({gLabel: param[gLabel]}, Colors.blue.value),
+      ),
+    ));
   }
 
   addTab(data, context, tabName) {
@@ -590,6 +621,7 @@ class DataModel extends ChangeNotifier {
     var id = data[gRow][gId];
     cancelTableModifyByType(tableName, id, context, gDataModified);
     cancelTableModifyByType(tableName, id, context, gDataModifiedInvalid);
+    getTableFloatingBtns(tableName, context);
     myNotifyListeners();
   }
 
@@ -657,8 +689,17 @@ class DataModel extends ChangeNotifier {
     removeAllScreens(context);
   }
 
+  clearActionBtnMap(name) {
+    _actionBtnMap[name] = null;
+  }
+
+  clearActionBtnMapAll() {
+    _actionBtnMap = {};
+  }
+
   clearMFocusNode() {
     _mFocusNode = {gType: null};
+    clearActionBtnMapAll();
   }
 
   clearTable(tablename) {
@@ -1055,6 +1096,44 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
+  getActionButtons(param) {
+    if (_actionBtnMap.length < 1) {
+      return;
+    }
+    if (param == null) {
+      return null;
+    }
+    /*print('======runtimetype is ' + param.runtimeType.toString());
+    if (param.runtimeType.toString() == '_Map<dynamic, dynamic>') {
+      Map<dynamic, dynamic> itemsMap = param;
+      itemsMap.entries.forEach((itemOne) {
+        Map item = itemOne.value;
+        var type = item[gType] ?? '';
+        if (type == gForm || type == gTable) {
+          var value = item[gValue] ?? '';
+        }
+      });
+    }*/
+    if (isNull(_mFocusNode[gType])) {
+      return;
+    }
+    if (isNull(_mFocusNode[gName])) {
+      return;
+    }
+    if (_actionBtnMap[_mFocusNode[gName]] == null) {
+      return;
+    }
+    List<Widget> list = _actionBtnMap[_mFocusNode[gName]];
+    if (list.length < 1) {
+      return;
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: list,
+    );
+  }
+
   getActions(List param, context, int backcolor) {
     List<Widget> result = getLocalComponentsList(context, backcolor);
     List<Widget> actions = getActionsBasic(param, context, backcolor);
@@ -1187,7 +1266,7 @@ class DataModel extends ChangeNotifier {
     }, backcolor);
   }
 
-  getDataWhere(List newData, aWhere) {
+  /*getDataWhere(List newData, aWhere) {
     List result = [];
     dynamic param = aWhere.split('=');
     dynamic value0 = param[1];
@@ -1201,7 +1280,7 @@ class DataModel extends ChangeNotifier {
       }
     });
     return result;
-  }
+  }*/
 
   getDatePicker(aDate, backcolor, context, formname, id, actions) {
     if (isNull(aDate)) {
@@ -2081,9 +2160,6 @@ class DataModel extends ChangeNotifier {
       }
     } else {
       var colname = item[gId];
-      //List tableData = info[gDataSearch] ?? info[gData];s
-      /*Map dataRow = tableData[row];
-      id = dataRow[gId];*/
       Map dataRow = getTableRowByID(name, id);
       originalValue = getValueOriginal(name, colname, id);
 
@@ -2249,7 +2325,7 @@ class DataModel extends ChangeNotifier {
     if (param[gTypeOwner] == gForm) {
       value = getValue(param[gName], colname, param[gId]);
     } else {
-      Map info = tableList[param[gName]];
+      //Map info = tableList[param[gName]];
 
       value = getValue(param[gName], colname, param[gId]);
       if (value == null || isNull(value[gValue])) {
@@ -2257,7 +2333,7 @@ class DataModel extends ChangeNotifier {
         if (param[gRow] == null) {
           dataRow = getTableRowByID(param[gName], param[gId]);
         } else {
-          List tableData = info[gDataSearch] ?? info[gData];
+          List tableData = getTableData(param[gName]);
           dataRow = tableData[param[gRow]];
         }
 
@@ -2324,6 +2400,7 @@ class DataModel extends ChangeNotifier {
         result.add(itemWidget);
       }
     });
+
     return result;
   }
 
@@ -2594,6 +2671,7 @@ class DataModel extends ChangeNotifier {
     return GestureDetector(
       onTap: () {
         _tabList[tabName][gTabIndex] = index;
+        clearMFocusNode();
         //_tabIndex = index;
         myNotifyListeners();
       },
@@ -2662,6 +2740,128 @@ class DataModel extends ChangeNotifier {
     return null;
   }
 
+  getTableData(name) {
+    Map info = tableList[name];
+    if ((info[gDataSearch] ?? []).length < 1) {
+      return info[gData];
+    }
+    Map<dynamic, int> mapIDIndex = {};
+    List tableData = info[gData];
+
+    for (int i = 0; i < tableData.length; i++) {
+      mapIDIndex[tableData[i][gId]] = i;
+    }
+    List result = [];
+    for (int i = 0; i < info[gDataSearch].length; i++) {
+      result.add(tableData[mapIDIndex[info[gDataSearch][i]]]);
+    }
+    return result;
+  }
+
+  getTableFloatingBtns(name, context) {
+    clearActionBtnMap(name);
+    var focusName = _mFocusNode[gName] ?? '';
+    if (isNull(focusName)) {
+      return;
+    }
+    if (name != focusName) {
+      return;
+    }
+    if (_tableList[name] == null) {
+      return;
+    }
+    var id = _mFocusNode[gId] ?? '';
+    if (isNull(id)) {
+      return;
+    }
+    var dataRow = getTableRowByID(name, id);
+    if (dataRow == null) {
+      return;
+    }
+
+    double size = 36.0;
+    int backgroundcolor = Colors.white.value;
+    var tableInfo = _tableList[name];
+    if (tableInfo[gAttr][gCanEdit]) {
+      var labelValue = gEdit;
+      var icon = 61453;
+      if (isModifiedValid(tableInfo, dataRow)) {
+        addActionButton(
+            name,
+            {
+              gLabel: gSave,
+              gAction: gLocalAction,
+              gTableID: tableInfo[gTableID],
+              gRow: dataRow,
+              gContext: context,
+              gIconSize: size,
+              gIcon: 62260,
+              gBackgroundColor: backgroundcolor
+            },
+            context);
+      }
+      if (isModifiedValidOrInvalid(tableInfo, dataRow)) {
+        addActionButton(
+            name,
+            {
+              gLabel: gCancel,
+              gAction: gLocalAction,
+              gTableID: tableInfo[gTableID],
+              gRow: dataRow,
+              gContext: context,
+              gIconSize: size,
+              gIcon: 62575,
+              gBackgroundColor: backgroundcolor
+            },
+            context);
+      }
+
+      addActionButton(
+          name,
+          {
+            gLabel: labelValue,
+            gAction: gLocalAction,
+            gTableID: tableInfo[gTableID],
+            gRow: dataRow,
+            gContext: context,
+            gIconSize: size,
+            gIcon: icon,
+            gBackgroundColor: backgroundcolor
+          },
+          context);
+    }
+    if (tableInfo[gAttr][gCanDelete]) {
+      addActionButton(
+          name,
+          {
+            gLabel: gDelete,
+            gAction: gLocalAction,
+            gTableID: tableInfo[gTableID],
+            gRow: dataRow,
+            gContext: context,
+            gIconSize: size,
+            gIcon: 57787,
+            gBackgroundColor: backgroundcolor
+          },
+          context);
+    }
+    if ((tableInfo[gAttr][gDetail] ?? "") != "") {
+      addActionButton(
+          name,
+          {
+            gLabel: gDetail,
+            gAction: gLocalAction,
+            gTableID: tableInfo[gTableID],
+            gRow: dataRow,
+            gContext: context,
+            gIconSize: size,
+            gIcon: 0xe246,
+            gBackgroundColor: backgroundcolor
+          },
+          context);
+    }
+  }
+
   getTableDataFromWhere(tableInfo, where) {
     //filter the table data by where condition
     Map mapWhere = {};
@@ -2718,87 +2918,18 @@ class DataModel extends ChangeNotifier {
       return;
     }
 
-    List<Widget> actionList = [];
-    double size = 36.0;
     int backgroundcolor = Colors.white.value;
-    var tableInfo = _tableList[name];
-    if (tableInfo[gAttr][gCanEdit]) {
-      var labelValue = gEdit;
-      var icon = 61453;
-      if (isModifiedValid(tableInfo, dataRow)) {
-        actionList.add(MyButton({
-          gLabel: gSave,
-          gAction: gLocalAction,
-          gTableID: tableInfo[gTableID],
-          gRow: dataRow,
-          gContext: context,
-          gIconSize: size,
-          gIcon: 62260,
-          gBackgroundColor: backgroundcolor
-        }));
-      }
-      if (isModifiedValidOrInvalid(tableInfo, dataRow)) {
-        actionList.add(MyButton({
-          gLabel: gCancel,
-          gAction: gLocalAction,
-          gTableID: tableInfo[gTableID],
-          gRow: dataRow,
-          gContext: context,
-          gIconSize: size,
-          gIcon: 62575,
-          gBackgroundColor: backgroundcolor
-        }));
-      }
-
-      actionList.add(MyButton({
-        gLabel: labelValue,
-        gAction: gLocalAction,
-        gTableID: tableInfo[gTableID],
-        gRow: dataRow,
-        gContext: context,
-        gIconSize: size,
-        gIcon: icon,
-        gBackgroundColor: backgroundcolor
-      }));
-    }
-    if (tableInfo[gAttr][gCanDelete]) {
-      actionList.add(MyButton({
-        gLabel: gDelete,
-        gAction: gLocalAction,
-        gTableID: tableInfo[gTableID],
-        gRow: dataRow,
-        gContext: context,
-        gIconSize: size,
-        gIcon: 57787,
-        gBackgroundColor: backgroundcolor
-      }));
-    }
-    if ((tableInfo[gAttr][gDetail] ?? "") != "") {
-      actionList.add(MyButton({
-        gLabel: gDetail,
-        gAction: gLocalAction,
-        gTableID: tableInfo[gTableID],
-        gRow: dataRow,
-        gContext: context,
-        gIconSize: size,
-        gIcon: 0xe246,
-        gBackgroundColor: backgroundcolor
-      }));
-    }
-
-    if (actionList.length > 0) {
-      actionList.insert(
-          0,
-          Expanded(
-              child: MyLabel({
-            gLabel: getTableKeyword(name, id, context).toString(),
-            gFontSize: 10.0
-          }, backgroundcolor)));
-      return Row(
-        children: actionList,
-      );
-    }
-    return null;
+    List<Widget> actionList = [];
+    actionList.insert(
+        0,
+        Expanded(
+            child: MyLabel({
+          gLabel: getTableKeyword(name, id, context).toString(),
+          gFontSize: 10.0
+        }, backgroundcolor)));
+    return Row(
+      children: actionList,
+    );
   }
 
   getTableMap(name, col) {
@@ -3898,6 +4029,8 @@ class DataModel extends ChangeNotifier {
     data.forEach((data0) {
       data0 = Map.of(data0);
       saveTableOne(data0, context);
+      var tablename = data0[gTableID];
+      getTableFloatingBtns(tablename, context);
     });
     showMsg(context, "Save successful", null);
 
@@ -4108,6 +4241,7 @@ class DataModel extends ChangeNotifier {
       //finishme(context);
       removeTableModified(tablename, '');
       clearTable(tablename);
+
       _mFocusNode[gId] = data0[gBody][gId];
 
       tableInsert(tablename, data0[gBody], context);
@@ -4136,7 +4270,9 @@ class DataModel extends ChangeNotifier {
     } else if (data0[gActionid] == gTableDelete) {
       //var deletedID = data0[gBody][gId];
       //tableData.removeWhere((element) => element[gId] == deletedID);
+
       tableRemove(tablename, data0[gBody], context);
+      clearMFocusNode();
     }
 
     myNotifyListeners();
@@ -4506,6 +4642,7 @@ class DataModel extends ChangeNotifier {
   }
 
   setFocus(name, colId, id) {
+    clearActionBtnMap(name);
     var typeOwner = gForm;
     if (_tableList[name] != null) {
       typeOwner = gTable;
@@ -4813,6 +4950,58 @@ class DataModel extends ChangeNotifier {
     _tabList[tabname][gFontSize] = 20.0;
   }
 
+  setTableDataSearch(tableName, context, paramother) {
+    Map tableInfo = _tableList[tableName];
+    List tableData = tableInfo[gData];
+    List columns = tableInfo[gColumns];
+    dynamic searchValue = tableInfo[gSearch] ?? '';
+    List newData = [];
+
+//get where
+    var aWhere = '';
+    dynamic value0 = '';
+    dynamic value1 = '';
+    List param = [];
+    dynamic other = paramother ?? null;
+    if (other != null) {
+      other = Map.of(other);
+      dynamic aTitle = other[gOther] ?? null;
+      if (aTitle != null) {
+        Map data0 = whereList[aTitle] ?? null;
+        if (data0 != null) {
+          aWhere = data0[gWhere] ?? '';
+          if (aWhere.indexOf("=") > 0) {
+            param = aWhere.split('=');
+            value0 = param[1];
+            value1 = value0;
+            if (value0[0] == "'") {
+              value1 = value1.substring(1, value1.length - 1);
+            }
+
+            //newData = getDataWhere(newData, aWhere);
+          }
+        }
+      }
+    }
+
+    for (int i = 0; i < tableData.length; i++) {
+      Map dataRow = tableData[i];
+      Map ti = getTableRowShowValueFilter(
+          tableName, dataRow, columns, context, searchValue);
+      if (ti != null) {
+        if (param.length > 1) {
+          if (ti[param[0]] == value1 || ti[param[0]] == value0) {
+            newData.add(ti[gId]);
+          }
+        } else {
+          newData.add(ti[gId]);
+        }
+      }
+    }
+
+    tableInfo[gDataSearch] = newData;
+  }
+
   setTableList(List<dynamic> data, context) {
     data.forEach((element) {
       element = Map.of(element);
@@ -4889,6 +5078,7 @@ class DataModel extends ChangeNotifier {
       if (mValue[colId] == value) {
         return;
       }
+
       //新值与原值相同，删除修改值，退出
       if (!isNull(originalValue) && !isNull(value) && originalValue == value) {
         mValue.remove(colId);
@@ -5188,6 +5378,7 @@ class DataModel extends ChangeNotifier {
         if (_tabList[tabName][gTabIndex] != i) {
           _tabList[tabName][gTabIndex] = i;
         }
+        clearMFocusNode();
         myNotifyListeners();
         return true;
       }
@@ -5207,13 +5398,6 @@ class DataModel extends ChangeNotifier {
           'showTable',
           context,
           backcolor);
-      /*navigatorPush(
-          context,
-          MyDetailNew(
-              getTableBodyParam(
-                  {gTableID: tableid, gOther: other, gWhere: where}, context),
-              backcolor),
-          'showTable');*/
 
       if (strSubexists(transpass, gPopupnew)) {
         Map param = {
@@ -5326,7 +5510,6 @@ class DataModel extends ChangeNotifier {
     }
     data.sort((a, b) =>
         tableSortCompare(a, b, columns, dataColumnIndex, ascending, context));
-    //tableInfo[gDataSearch] = data;
     tableList[tableName][gAscending] = ascending;
     tableList[tableName][gSortColumnIndex] = columnIndex;
   }
@@ -5363,6 +5546,7 @@ class DataModel extends ChangeNotifier {
       //if (!isNullID(id) || (typeOwner == gForm && item[gType] != gSearch)) {
       //setTableValueItem(name, item[gId], id, text);
       setValue(name, item[gId], id, text);
+      getTableFloatingBtns(name, context);
       return;
     }
 
@@ -5400,7 +5584,7 @@ class DataModel extends ChangeNotifier {
       header.add(getSCurrentLan(columns[i][gLabel], 'en'));
     }
 
-    List newData = tableInfo[gDataSearch] ?? tableInfo[gData];
+    List newData = getTableData(tableName);
 
     for (int i = 0; i < newData.length; i++) {
       Map dataRow = newData[i];
@@ -5412,7 +5596,6 @@ class DataModel extends ChangeNotifier {
       }
     }
 
-    tableInfo[gDataSearch] = newData;
     //header
     //body
     //request

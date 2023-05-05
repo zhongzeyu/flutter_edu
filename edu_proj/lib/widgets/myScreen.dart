@@ -14,14 +14,10 @@ class MyScreen extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       List screenItems = datamodel.getScreenItems(_param, context, _backcolor);
 
-      return SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(1.5),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: screenItems,
-          ),
-        ),
+      //return SingleChildScrollView(
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: screenItems,
       );
     });
   }

@@ -24,37 +24,8 @@ class MyPaginatedDataTable extends StatelessWidget {
       dynamic tableName = _param[gName];
 
       Map tableInfo = datamodel.tableList[tableName];
-      List tableData = tableInfo[gData];
       List columns = tableInfo[gColumns];
-      dynamic searchValue = tableInfo[gSearch] ?? '';
-      List newData = [];
-
-      for (int i = 0; i < tableData.length; i++) {
-        Map dataRow = tableData[i];
-        //get updated value
-        Map ti = datamodel.getTableRowShowValueFilter(
-            tableName, dataRow, columns, context, searchValue);
-        if (ti != null) {
-          newData.add(ti);
-        }
-      }
-      //get where
-      dynamic other = _param[gOther] ?? null;
-      if (other != null) {
-        other = Map.of(other);
-        dynamic aTitle = other[gOther] ?? null;
-        if (aTitle != null) {
-          Map data0 = datamodel.whereList[aTitle] ?? null;
-          if (data0 != null) {
-            dynamic aWhere = data0[gWhere] ?? '';
-            if (aWhere.indexOf("=") > 0) {
-              newData = datamodel.getDataWhere(newData, aWhere);
-            }
-          }
-        }
-      }
-
-      tableInfo[gDataSearch] = newData;
+      datamodel.setTableDataSearch(tableName, context, _param[gOther]);
 
       tabledata = TableData(tableInfo, context, datamodel);
 

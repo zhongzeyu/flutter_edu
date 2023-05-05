@@ -21,75 +21,12 @@ class TableData extends DataTableSource {
 
   DataRow getRow(int index) {
     //debugPrint('===== getRow index is ' + index.toString());
+
     List<DataCell> dataCellList = [];
-    dynamic dataRow = (_param[gDataSearch] ?? _param[gData])[index];
+    dynamic dataRow = _dataModel.getTableData(_param[gTableID])[index];
 
     List<Widget> actionList = [];
-    /*double size = 25.0;
-    int backgroundcolor = Colors.white.value;
-  if (_param[gAttr][gCanEdit]) {
-      var labelValue = gEdit;
-      var icon = 61453;
-      if (_dataModel.isModifiedValid(_param, dataRow)) {
-        actionList.add(MyButton({
-          gLabel: gSave,
-          gAction: gLocalAction,
-          gTableID: _param[gTableID],
-          gRow: dataRow,
-          gContext: _context,
-          gIconSize: size,
-          gIcon: 62260,
-          gBackgroundColor: backgroundcolor
-        }));
-      }
-      if (_dataModel.isModifiedValidOrInvalid(_param, dataRow)) {
-        actionList.add(MyButton({
-          gLabel: gCancel,
-          gAction: gLocalAction,
-          gTableID: _param[gTableID],
-          gRow: dataRow,
-          gContext: _context,
-          gIconSize: size,
-          gIcon: 62575,
-          gBackgroundColor: backgroundcolor
-        }));
-      }
 
-      actionList.add(MyButton({
-        gLabel: labelValue,
-        gAction: gLocalAction,
-        gTableID: _param[gTableID],
-        gRow: dataRow,
-        gContext: _context,
-        gIconSize: size,
-        gIcon: icon,
-        gBackgroundColor: backgroundcolor
-      }));
-    }
-    if (_param[gAttr][gCanDelete]) {
-      actionList.add(MyButton({
-        gLabel: gDelete,
-        gAction: gLocalAction,
-        gTableID: _param[gTableID],
-        gRow: dataRow,
-        gContext: _context,
-        gIconSize: size,
-        gIcon: 57787,
-        gBackgroundColor: backgroundcolor
-      }));
-    }
-    if ((_param[gAttr][gDetail] ?? "") != "") {
-      actionList.add(MyButton({
-        gLabel: gDetail,
-        gAction: gLocalAction,
-        gTableID: _param[gTableID],
-        gRow: dataRow,
-        gContext: _context,
-        gIconSize: size,
-        gIcon: 0xe246,
-        gBackgroundColor: backgroundcolor
-      }));
-    }*/
     if (actionList.length > 0) {
       dataCellList.add(DataCell(Row(
         children: actionList,
@@ -110,6 +47,7 @@ class TableData extends DataTableSource {
         _param[gLabel] = gTableItem;
         //_param[gTableItemColName] = colname;
         _dataModel.setFocus(_param[gTableID], colname, dataRow[gId]);
+        _dataModel.getTableFloatingBtns(_param[gTableID], _context);
 
         _dataModel.myNotifyListeners();
       }));
