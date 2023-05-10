@@ -85,11 +85,6 @@ class MyForm extends StatelessWidget {
 
           //_top += 30;
 
-          result.add(
-            SizedBox(
-              height: 24.0,
-            ),
-          );
           datamodel.beforeSubmit(context, _formName, result);
 
           Map paramSubmit = {
@@ -127,7 +122,7 @@ class MyForm extends StatelessWidget {
         Form form = Form(
           key: _formKey,
           child: Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
+            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: _showItems(),
           ),
         );

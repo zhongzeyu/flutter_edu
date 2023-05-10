@@ -71,7 +71,7 @@ class MyPaginatedDataTable extends StatelessWidget {
 
       return PaginatedDataTable(
         key: tableInfo[gKey],
-        rowsPerPage: datamodel.getRowsPerPage(tableInfo),
+        rowsPerPage: datamodel.getRowsPerPage(tableInfo, context),
         availableRowsPerPage: [5, 10, 15, 20, 50],
         onPageChanged: (e) {},
         //actions: [Text('action0'), Text('action1')],

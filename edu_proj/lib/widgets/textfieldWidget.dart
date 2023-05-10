@@ -78,6 +78,7 @@ class TextFieldWidget extends StatelessWidget {
         dynamic aValue = datamodel.getValueGUI(modifiedValue, item);
         txtController.text = aValue;
       }
+      thistext = txtController.text;
       bool autofocus = datamodel.getFocus(name, item);
 
       /*if (autofocus && datamodel.isPopOpen()) {
@@ -148,24 +149,22 @@ class TextFieldWidget extends StatelessWidget {
         },
         onEditingComplete: () {
           textChange(thistext, item, datamodel, context, typeOwner);
-          datamodel.setFocusNext(name, item[gId], null);
+          datamodel.setFocusNext(name, item[gId], id);
           datamodel.myNotifyListeners();
         },
       );
       if (item[gId] != gSearchZzy) {
-        w = Expanded(
-          child: Focus(
-              onKey: (node, event) {
-                String keyLabel = event.logicalKey.keyLabel;
-                if (keyLabel == 'Tab') {
-                  datamodel.setFocusNext(name, item[gId], null);
+        w = Focus(
+            onKey: (node, event) {
+              String keyLabel = event.logicalKey.keyLabel;
+              if (keyLabel == 'Tab') {
+                datamodel.setFocusNext(name, item[gId], null);
 
-                  datamodel.myNotifyListeners();
-                } else {}
-                return KeyEventResult.ignored;
-              },
-              child: w),
-        );
+                datamodel.myNotifyListeners();
+              } else {}
+              return KeyEventResult.ignored;
+            },
+            child: w);
       }
 
       if (item[gSuffixIconLocal] != null) {

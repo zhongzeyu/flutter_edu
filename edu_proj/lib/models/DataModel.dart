@@ -223,7 +223,20 @@ class DataModel extends ChangeNotifier {
         0.0,
         0.0,
       ),
-      child: FloatingActionButton.extended(
+      child: FloatingActionButton.small(
+        tooltip: getSCurrent(param[gLabel]),
+        backgroundColor: Colors.blue,
+        onPressed: () {
+          sendRequestOne(gLocalAction, param, param[gContext] ?? context);
+        },
+        child: Icon(
+            IconData(
+              param[gIcon],
+              fontFamily: 'MaterialIcons',
+            ),
+            color: param[gColor] ?? Colors.white),
+      ),
+      /*FloatingActionButton.extended(
         backgroundColor: Colors.blue,
         onPressed: () {
           sendRequestOne(gLocalAction, param, param[gContext] ?? context);
@@ -235,7 +248,7 @@ class DataModel extends ChangeNotifier {
             ),
             color: param[gColor] ?? Colors.white),
         label: MyLabel({gLabel: param[gLabel]}, Colors.blue.value),
-      ),
+      ),*/
     ));
   }
 
@@ -254,6 +267,7 @@ class DataModel extends ChangeNotifier {
   }
 
   addTable(data, context) {
+    clearMFocusNode();
     if (data[gBody] != null && data[gBody][gZzylog] != null) {
       addZzylog(Map.of(data[gBody][gZzylog]), context);
       return;
@@ -281,6 +295,7 @@ class DataModel extends ChangeNotifier {
           colList[i] = Map.of(colList[i]);
         }
       }
+
       _tableList[name][gAttr] = Map.of(_tableList[name][gAttr]);
 
       _tableList[name][gAscending] = true;
@@ -536,31 +551,30 @@ class DataModel extends ChangeNotifier {
   }
 
   afterTableAdded(tablename, context) {
-    if (tablename == gZzyi10nitem) {
-      List tableData = _tableList[tablename][gData];
-      for (int i = 0; i < tableData.length; i++) {
-        Map row = tableData[i];
-        afterTableInsert(tablename, row, context);
-      }
-      /*tableData.forEach((row) {
-        afterTableInsert(tablename, row, context);
-      });*/
+    List tableData = _tableList[tablename][gData];
+    for (int i = 0; i < tableData.length; i++) {
+      Map row = tableData[i];
+      afterTableInsert(tablename, row, context);
     }
   }
 
-  afterTableInsert(tablename, row, context) {
-    if (tablename == gZzyi10nitem) {
-      var parentid = row[gParentid];
-      var tableid = gZzyi10nlist;
-      var parent = getTableRowByID(tableid, parentid);
-      //  var result = getTableByTableID(tableid, gId + '=' + parentid, context);
-      var langcode = row[gLangcode];
-      var langcontent = row[gLangcontent];
-      var sourceChck = parent[gName];
+  afterTableInsert(tablename, Map row, context) {
+    if (tablename == gZzyi10nlist) {
+      var sourceChck = row[gName];
       if (_i10nMap[sourceChck] == null) {
         _i10nMap[sourceChck] = {};
       }
-      _i10nMap[sourceChck][langcode] = langcontent;
+      row.entries.forEach((element) {
+        if (element.key.indexOf(gZzyi10nitemPrefix) == 0) {
+          var langcode = element.key.substring(gZzyi10nitemPrefix.length);
+          _i10nMap[sourceChck][langcode] = element.value;
+        }
+      });
+    } else if (tablename.indexOf('Zzylog_') == 0) {
+      setValue(tablename, 'changefrom', row[gId], row['changeto']);
+      setValue(tablename, 'action', row[gId], row['colname']);
+      row['changeto'] = '';
+      row['colname'] = '';
     }
   }
 
@@ -2346,9 +2360,16 @@ class DataModel extends ChangeNotifier {
     return value;
   }
 
-  getRowsPerPage(tableInfo) {
+  getRowsPerPage(tableInfo, context) {
+    int lines = ((MediaQuery.of(context).size.height - 600) / 150).round() * 5;
+    if (lines < 5) {
+      lines = 5;
+    }
+    if (lines > 50) {
+      lines = 50;
+    }
     if (tableInfo[gRowsPerPage] == null) {
-      tableInfo[gRowsPerPage] = 15;
+      tableInfo[gRowsPerPage] = lines;
     }
     return tableInfo[gRowsPerPage];
   }
@@ -2791,7 +2812,7 @@ class DataModel extends ChangeNotifier {
             {
               gLabel: gSave,
               gAction: gLocalAction,
-              gTableID: tableInfo[gTableID],
+              gTableID: name,
               gRow: dataRow,
               gContext: context,
               gIconSize: size,
@@ -2806,7 +2827,7 @@ class DataModel extends ChangeNotifier {
             {
               gLabel: gCancel,
               gAction: gLocalAction,
-              gTableID: tableInfo[gTableID],
+              gTableID: name,
               gRow: dataRow,
               gContext: context,
               gIconSize: size,
@@ -2821,7 +2842,7 @@ class DataModel extends ChangeNotifier {
           {
             gLabel: labelValue,
             gAction: gLocalAction,
-            gTableID: tableInfo[gTableID],
+            gTableID: name,
             gRow: dataRow,
             gContext: context,
             gIconSize: size,
@@ -2836,7 +2857,7 @@ class DataModel extends ChangeNotifier {
           {
             gLabel: gDelete,
             gAction: gLocalAction,
-            gTableID: tableInfo[gTableID],
+            gTableID: name,
             gRow: dataRow,
             gContext: context,
             gIconSize: size,
@@ -2851,11 +2872,26 @@ class DataModel extends ChangeNotifier {
           {
             gLabel: gDetail,
             gAction: gLocalAction,
-            gTableID: tableInfo[gTableID],
+            gTableID: name,
             gRow: dataRow,
             gContext: context,
             gIconSize: size,
             gIcon: 0xe246,
+            gBackgroundColor: backgroundcolor
+          },
+          context);
+    }
+    if (name.indexOf(gZzylog) < 0) {
+      addActionButton(
+          name,
+          {
+            gLabel: gLog,
+            gAction: gLocalAction,
+            gTableID: name,
+            gRow: dataRow,
+            gContext: context,
+            gIconSize: size,
+            gIcon: 0xf102,
             gBackgroundColor: backgroundcolor
           },
           context);
@@ -2917,16 +2953,16 @@ class DataModel extends ChangeNotifier {
     if (dataRow == null) {
       return;
     }
-
+    var value = getTableKeyword(name, id, context);
+    if (isNull(value)) {
+      return;
+    }
     int backgroundcolor = Colors.white.value;
     List<Widget> actionList = [];
     actionList.insert(
         0,
         Expanded(
-            child: MyLabel({
-          gLabel: getTableKeyword(name, id, context).toString(),
-          gFontSize: 10.0
-        }, backgroundcolor)));
+            child: MyLabel({gLabel: value, gFontSize: 10.0}, backgroundcolor)));
     return Row(
       children: actionList,
     );
@@ -2977,25 +3013,22 @@ class DataModel extends ChangeNotifier {
     if (isNull(id)) {
       return null;
     }
+    List tableData = tableInfo[gData];
+
     if (tableInfo[gTableMapPrefix] == null ||
         tableInfo[gTableMapPrefix][gId] == null) {
-      Map map = {};
-      List result = tableInfo[gData];
-      //ggetTableDataFromWhere(tableInfo, "id=" + id);
-      result.forEach((element) {
-        map[element[gId]] = element;
-      });
+      Map<dynamic, int> mapIDIndex = {};
+
+      for (int i = 0; i < tableData.length; i++) {
+        mapIDIndex[tableData[i][gId]] = i;
+      }
+
       if (tableInfo[gTableMapPrefix] == null) {
         tableInfo[gTableMapPrefix] = {};
       }
-      tableInfo[gTableMapPrefix][gId] = map;
+      tableInfo[gTableMapPrefix][gId] = mapIDIndex;
     }
-    return tableInfo[gTableMapPrefix][gId][id];
-    /*List result = getTableDataFromWhere(tableInfo, "id=" + id);
-    if (result.length > 0) {
-      return result.elementAt(0);
-    }
-    return null;*/
+    return tableData[tableInfo[gTableMapPrefix][gId][id]];
   }
 
   getTableBodyParam(data, context) {
@@ -3766,6 +3799,13 @@ class DataModel extends ChangeNotifier {
       logOff(context);
     } else if (!isNull(data[gAction1])) {
       businessFunc(data[gAction1], context, data);
+    } else if (data[gLabel] != null &&
+        data[gLabel] == gLog &&
+        data[gTableID] != null) {
+      var id = data[gRow][gId];
+      var name = data[gTableID];
+      var where = "dataid='" + id + "' order by entrytime";
+      getTableFromDB(gZzylog + '_' + name, where, context);
     }
   }
 
@@ -4011,6 +4051,10 @@ class DataModel extends ChangeNotifier {
           data0[gType] == gTabletree) {
         addTable(data0, context);
         if (data0[gWhere] != null && data0[gWhere].indexOf("=") > 0) {
+          if (data0[gWhere].indexOf(' order by') > 0) {
+            data0[gWhere] =
+                data0[gWhere].substring(0, data0[gWhere].indexOf(' order by'));
+          }
           _whereList[data0[gActionid] + '_' + data0[gLabel]] = data0;
 
           showTable(data0[gActionid], context, data0[gLabel], data0[gTranspass],
@@ -4030,6 +4074,7 @@ class DataModel extends ChangeNotifier {
       data0 = Map.of(data0);
       saveTableOne(data0, context);
       var tablename = data0[gTableID];
+
       getTableFloatingBtns(tablename, context);
     });
     showMsg(context, "Save successful", null);
@@ -4234,6 +4279,7 @@ class DataModel extends ChangeNotifier {
   saveTableOne(data0, context) {
     //formid = data0[gFormid];
     var tablename = data0[gTableID];
+    _tableList[tablename][gTableMapPrefix] = null;
     //List tableData = tableList[tablename][gData];
 
     if (data0[gActionid] == gTableAdd) {
@@ -4738,10 +4784,14 @@ class DataModel extends ChangeNotifier {
           if (columns[i][gType] == gLabel) {
             continue;
           }
-          _mFocusNode = {gType: type, gName: name, gCol: columns[i][gId]};
+          _mFocusNode = {
+            gType: type,
+            gName: name,
+            gCol: columns[i][gId],
+            gId: id
+          };
           return;
         }
-        colId = columns[i][gId];
         if (columns[i][gId] == colId) {
           findItem = true;
         }
@@ -5491,6 +5541,8 @@ class DataModel extends ChangeNotifier {
 
   tableSort(tableName, columnIndex, ascending, context) {
     //List data = tableList[tableName][gData];
+    clearMFocusNode();
+    clearTable(tableName);
     Map tableInfo = tableList[tableName];
     List data = tableInfo[gData];
     if (data == null || data.length < 2) {

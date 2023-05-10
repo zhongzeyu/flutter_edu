@@ -28,7 +28,9 @@ class MyPic extends StatelessWidget {
           print('=================' + imgUrl);
           datamodel.imgCache[imgName] = Image(
             image: NetworkImage(imgUrl),
-            fit: BoxFit.fitWidth,
+            fit: BoxFit.fill,
+            height: _param[gHeight] ?? null,
+            width: _param[gWidth] ?? null,
           );
         }
 

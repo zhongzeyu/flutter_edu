@@ -86,7 +86,7 @@ class MyDetailNew extends StatelessWidget {
 
       Map param1 = {
         gWidth: MediaQuery.of(context).size.width,
-        gHeight: MediaQuery.of(context).size.height - 65,
+        gHeight: MediaQuery.of(context).size.height - 92.0,
         gBorderRadius: 10.0,
         gMargin: const EdgeInsets.all(1.5),
         gPadding: const EdgeInsets.all(5.5),
@@ -97,9 +97,9 @@ class MyDetailNew extends StatelessWidget {
         gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
         gChild: Column(
           children: [
-            Expanded(child: MyScreen(_param, backcolor)),
+            MyScreen(_param, backcolor),
             Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children:
                     datamodel.getScreenItemsList(mapBottoms, context, backcolor)
                 //datamodel.getActions({gActions: mapBottoms}, context)),
@@ -110,7 +110,7 @@ class MyDetailNew extends StatelessWidget {
 
       Map param = {
         gWidth: MediaQuery.of(context).size.width,
-        gHeight: MediaQuery.of(context).size.height,
+        gHeight: MediaQuery.of(context).size.height - 20.0,
         gBorderRadius: 10.0,
         gMargin: const EdgeInsets.all(1.5),
         gPadding: const EdgeInsets.all(5.5),
@@ -124,7 +124,7 @@ class MyDetailNew extends StatelessWidget {
         gChild: Column(
           children: [
             MyGlass(param0),
-            Expanded(child: MyGlass(param1)),
+            MyGlass(param1),
           ],
         )
       };
@@ -137,12 +137,13 @@ class MyDetailNew extends StatelessWidget {
           color: Colors.black,
           child: Stack(children: [
             Center(
-              child: MyPic({gImg: datamodel.imgList[gMain]}),
+              child: MyPic({
+                gImg: datamodel.imgList[gMain],
+                gHeight: MediaQuery.of(context).size.height,
+              }),
               //Image.network(datamodel.imgList[gMain]),
             ),
-            SafeArea(
-              child: SingleChildScrollView(child: MyGlass(param)),
-            )
+            MyGlass(param)
           ]),
         ),
       );

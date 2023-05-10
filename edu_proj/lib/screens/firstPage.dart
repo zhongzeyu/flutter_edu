@@ -78,7 +78,11 @@ class FirstPage extends StatelessWidget {
           color: Colors.black,
           child: Stack(children: [
             Center(
-              child: MyPic({gImg: datamodel.imgList[gMain]}),
+              child: MyPic({
+                gImg: datamodel.imgList[gMain],
+                gHeight: MediaQuery.of(context).size.height,
+                gWidth: MediaQuery.of(context).size.width
+              }),
               //Image.network(datamodel.imgList[gMain]),
             ),
             SafeArea(
