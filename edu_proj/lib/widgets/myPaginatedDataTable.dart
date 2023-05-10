@@ -80,14 +80,14 @@ class MyPaginatedDataTable extends StatelessWidget {
           datamodel.setRowsPerPage(tableInfo, v);
         },
         columns: getTableColumns(),
-        columnSpacing: 20,
-        horizontalMargin: 5,
+        columnSpacing: 15,
+        //horizontalMargin: 5,
         source: tabledata,
         showCheckboxColumn: true,
         sortAscending: tableInfo[gAscending],
         sortColumnIndex:
             actionBtnCnts + getShowIndex(tableInfo[gSortColumnIndex]),
-        header: datamodel.getTableHeader(tableName, context),
+        //header: datamodel.getTableHeader(tableName, context),
       );
     });
   }

@@ -2274,7 +2274,7 @@ class DataModel extends ChangeNotifier {
     if (isNull(droplist)) {
       item[gFocus] = isFocus;
 
-      item[gFontSize] = 12.0;
+      item[gFontSize] = 11.0;
       item[gFontStyle] = FontStyle.italic;
       if (param[gTypeOwner] != gForm) item[gLength] = null;
       w = TextFieldWidget(
@@ -2958,14 +2958,16 @@ class DataModel extends ChangeNotifier {
       return;
     }
     int backgroundcolor = Colors.white.value;
-    List<Widget> actionList = [];
+
+    return MyLabel({gLabel: value, gFontSize: 10.0}, backgroundcolor);
+    /*List<Widget> actionList = [];
     actionList.insert(
         0,
         Expanded(
             child: MyLabel({gLabel: value, gFontSize: 10.0}, backgroundcolor)));
     return Row(
       children: actionList,
-    );
+    );*/
   }
 
   getTableMap(name, col) {

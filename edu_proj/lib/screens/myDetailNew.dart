@@ -84,7 +84,7 @@ class MyDetailNew extends StatelessWidget {
             ])
       };
 
-      Map param1 = {
+      /*Map param1 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: MediaQuery.of(context).size.height - 92.0,
         gBorderRadius: 10.0,
@@ -106,9 +106,9 @@ class MyDetailNew extends StatelessWidget {
                 ),
           ],
         )
-      };
+      };*/
 
-      Map param = {
+      /*Map param = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: MediaQuery.of(context).size.height - 20.0,
         gBorderRadius: 10.0,
@@ -127,25 +127,37 @@ class MyDetailNew extends StatelessWidget {
             MyGlass(param1),
           ],
         )
-      };
+      };*/
 
       return Scaffold(
         floatingActionButton: datamodel.getActionButtons(_param),
-        body: Container(
-          height: double.infinity,
-          width: double.infinity,
-          color: Colors.black,
-          child: Stack(children: [
-            Center(
-              child: MyPic({
-                gImg: datamodel.imgList[gMain],
-                gHeight: MediaQuery.of(context).size.height,
-              }),
-              //Image.network(datamodel.imgList[gMain]),
+        body: Stack(children: [
+          Center(
+            child: MyPic({
+              gImg: datamodel.imgList[gMain],
+              gHeight: MediaQuery.of(context).size.height,
+            }),
+            //Image.network(datamodel.imgList[gMain]),
+          ),
+          //MyGlass(param)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(children: [
+                MyGlass(param0),
+                Expanded(
+                    child: SingleChildScrollView(
+                        child: MyScreen(_param, backcolor))),
+                Row(
+                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: datamodel.getScreenItemsList(
+                        mapBottoms, context, backcolor)
+                    //datamodel.getActions({gActions: mapBottoms}, context)),
+                    ),
+              ]),
             ),
-            MyGlass(param)
-          ]),
-        ),
+          )
+        ]),
       );
     });
   }

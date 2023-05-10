@@ -36,7 +36,7 @@ class FirstPage extends StatelessWidget {
             ])
       };
 
-      Map param1 = {
+      /*Map param1 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: MediaQuery.of(context).size.height - 65,
         gBorderRadius: 10.0,
@@ -48,9 +48,9 @@ class FirstPage extends StatelessWidget {
         gColor: Colors.green,
         gBackgroundColor: Colors.white, //Color.fromARGB(255, 218, 165, 32),
         gChild: _aScreen
-      };
+      };*/
 
-      Map param = {
+      /*Map param = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: MediaQuery.of(context).size.height,
         gBorderRadius: 10.0,
@@ -69,27 +69,31 @@ class FirstPage extends StatelessWidget {
             Expanded(child: MyGlass(param1)),
           ],
         )
-      };
+      };*/
 
       return Scaffold(
-        body: Container(
-          height: double.infinity,
-          width: double.infinity,
-          color: Colors.black,
-          child: Stack(children: [
-            Center(
-              child: MyPic({
-                gImg: datamodel.imgList[gMain],
-                gHeight: MediaQuery.of(context).size.height,
-                gWidth: MediaQuery.of(context).size.width
-              }),
-              //Image.network(datamodel.imgList[gMain]),
+        body: Stack(children: [
+          Center(
+            child: MyPic({
+              gImg: datamodel.imgList[gMain],
+              gHeight: MediaQuery.of(context).size.height,
+              gWidth: MediaQuery.of(context).size.width
+            }),
+            //Image.network(datamodel.imgList[gMain]),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  MyGlass(param0),
+                  Expanded(child: SingleChildScrollView(child: _aScreen)),
+                ],
+              ),
             ),
-            SafeArea(
-              child: MyGlass(param),
-            )
-          ]),
-        ),
+          )
+        ]),
       );
     });
   }

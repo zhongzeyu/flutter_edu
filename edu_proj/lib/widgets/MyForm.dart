@@ -18,7 +18,7 @@ class MyForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int thisbackcolor = backcolor ?? Colors.black.value;
-    bool _submitstatus = true;
+    //bool _submitstatus = true;
 
     dynamic _formName = _param[gValue];
     dynamic id = _param[gId];
@@ -69,16 +69,18 @@ class MyForm extends StatelessWidget {
               } else {
                 Widget w = datamodel.getRowItemOne(
                     _formName, id, item, context, thisbackcolor, gForm);
-                w = InkWell(
-                    onTap: () {
-                      datamodel.setFocus(_formName, item[gId], id);
-                      datamodel.myNotifyListeners();
-                    },
-                    child: w);
-                result.add(w);
-                result.add(SizedBox(
-                  height: 10.0,
-                ));
+                if (w != null) {
+                  w = InkWell(
+                      onTap: () {
+                        datamodel.setFocus(_formName, item[gId], id);
+                        datamodel.myNotifyListeners();
+                      },
+                      child: w);
+                  result.add(w);
+                  result.add(SizedBox(
+                    height: 10.0,
+                  ));
+                }
               }
             }
           });
@@ -104,8 +106,7 @@ class MyForm extends StatelessWidget {
           };
           //if (datamodel.formLists[_formName][gStatus] ?? false) {
           result.add(InkWell(
-            child:
-                _submitstatus ? MyGlass(paramSubmit) : SizedBox(height: 12.0),
+            child: MyGlass(paramSubmit),
             onTap: () {
               if (!_formKey.currentState.validate()) {
                 return;
@@ -114,19 +115,23 @@ class MyForm extends StatelessWidget {
             },
           ));
           //}
+          result.add(SizedBox(
+            height: 10.0,
+          ));
 
           datamodel.afterSubmit(context, _formName, result);
           return result;
         }
 
+        List<Widget> listChildren = _showItems();
+        //print('==== listChildren is ' + listChildren.toString());
         Form form = Form(
           key: _formKey,
           child: Column(
-            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: _showItems(),
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: listChildren,
           ),
         );
-        //_submitstatus = _formKey.currentState.validate();
         return form;
       },
     );

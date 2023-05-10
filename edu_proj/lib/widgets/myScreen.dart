@@ -2,6 +2,8 @@ import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../config/constants.dart';
+
 //import '../config/constants.dart';
 
 class MyScreen extends StatelessWidget {
@@ -15,10 +17,12 @@ class MyScreen extends StatelessWidget {
       List screenItems = datamodel.getScreenItems(_param, context, _backcolor);
 
       //return SingleChildScrollView(
-      return Column(
+      Widget w = Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: screenItems,
       );
+
+      return w;
     });
   }
 }
