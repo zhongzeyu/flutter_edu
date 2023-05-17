@@ -2,10 +2,6 @@ import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../config/constants.dart';
-
-//import '../config/constants.dart';
-
 class MyScreen extends StatelessWidget {
   final Map _param;
   final int _backcolor;

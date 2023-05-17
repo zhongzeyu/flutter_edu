@@ -1,14 +1,10 @@
 // @dart=2.9
-//import 'package:edu_proj/common/theme.dart';
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
-//import 'package:edu_proj/screens/myDetail.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
 import 'package:edu_proj/widgets/tableData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-//import 'textfieldWidget.dart';
 
 class MyPaginatedDataTable extends StatelessWidget {
   final dynamic _param;
@@ -73,11 +69,14 @@ class MyPaginatedDataTable extends StatelessWidget {
         key: tableInfo[gKey],
         rowsPerPage: datamodel.getRowsPerPage(tableInfo, context),
         availableRowsPerPage: [5, 10, 15, 20, 50],
-        onPageChanged: (e) {},
+        onPageChanged: (e) {
+          tableInfo[gRowCurrent] = e;
+        },
+        initialFirstRowIndex: tableInfo[gRowCurrent],
         //actions: [Text('action0'), Text('action1')],
         onRowsPerPageChanged: (int v) {
           //widget.onRowsPerPageChanged?.call(v ?? 10);
-          datamodel.setRowsPerPage(tableInfo, v);
+          //datamodel.setRowsPerPage(tableInfo, v);
         },
         columns: getTableColumns(),
         columnSpacing: 15,

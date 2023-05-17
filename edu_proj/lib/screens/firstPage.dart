@@ -13,6 +13,9 @@ class FirstPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      if (datamodel.myDetailIDCurrent != 0) {
+        return SizedBox();
+      }
       MyScreen _aScreen =
           MyScreen(datamodel.screenLists[gFirstPage], Colors.black.value);
 

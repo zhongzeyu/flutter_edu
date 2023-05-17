@@ -19,6 +19,7 @@ const gBackgroundColor = Colors.white;
 const gBackbtn = 'backbtn';
 const gBlur = 'blur';
 const gBody = 'body';
+const gBool = 'bool';
 const gBorder = 'border';
 const gBorderRadius = 'borderRadius';
 
@@ -80,6 +81,7 @@ const gDetail = 'detail';
 const gDetailPage = 'detailPage';
 const gDivider = 'divider';
 const gDpAddress = 'dpAddress';
+const gDpIcon = 'dpIcon';
 const gDpid = 'dpid';
 
 const gDroplist = 'droplist';
@@ -142,6 +144,7 @@ const gIsBold = 'isBold';
 const gIsFile = 'isFile';
 
 const gIsHidden = 'isHidden';
+const gIsIcon = 'isIcon';
 const gIsKeyword = 'isKeyword';
 const gIsLabel = 'isLabel';
 const gIsPrimary = 'isPrimary';
@@ -229,6 +232,7 @@ const gRequired = 'required';
 const gResetpassword = 'resetpassword';
 const gRole = 'role';
 const gRow = 'row';
+const gRowCurrent = 'rowCurrent';
 const gRowsPerPage = 'rowsPerPage';
 
 const gSave = 'Save';

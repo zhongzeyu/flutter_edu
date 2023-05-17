@@ -10,10 +10,11 @@ class MyIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
+      print('========= myIcon param value is ' + _param[gValue].toString());
       return IconButton(
         icon: Icon(
             IconData(
-              _param[gValue],
+              datamodel.getInt(_param[gValue]),
               fontFamily: 'MaterialIcons',
             ),
             color: _param[gColor] ?? Colors.green),

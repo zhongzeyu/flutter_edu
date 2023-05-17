@@ -2,55 +2,62 @@ import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myGlass.dart';
 import 'package:edu_proj/widgets/myScreen.dart';
-//import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/myPic.dart';
 
-class MyDetailNew extends StatelessWidget {
+class MyDetail extends StatelessWidget {
   final Map _param;
   final int backcolor;
   final Map<dynamic, dynamic> lastFocus;
-  MyDetailNew(this._param, this.backcolor, this.lastFocus);
+  final int myid;
+  final int lastid;
+  MyDetail(this._param, this.backcolor, this.lastFocus, this.myid, this.lastid);
 
   @override
   Widget build(BuildContext context) {
     if (_param == null) {
       return SizedBox();
     }
-    List mapActions = [];
-    List mapBottoms = [];
-    bool isHome = false;
-    int thisbackcolor = backcolor ?? Colors.black.value;
-    _param.forEach((key, value) {
-      if (value == null) {
-        return;
-      }
-      Map mapItem = Map.of(value);
-      if (mapItem == null) {
-        return;
-      }
 
-      mapItem.forEach((key1, value1) {
-        if (key1 == gActions) {
-          mapActions = value1;
-          /*for (int i = 0; i < value1.length; i++) {
+    return Consumer<DataModel>(builder: (context, datamodel, child) {
+      if (myid != datamodel.myDetailIDCurrent) {
+        return SizedBox();
+      }
+      print('=========refresh ' + myid.toString());
+      List mapActions = [];
+      List mapBottoms = [];
+      bool isHome = false;
+      int thisbackcolor = backcolor ?? Colors.black.value;
+      _param.forEach((key, value) {
+        if (value == null) {
+          return;
+        }
+        Map mapItem = Map.of(value);
+        if (mapItem == null) {
+          return;
+        }
+
+        mapItem.forEach((key1, value1) {
+          if (key1 == gActions) {
+            mapActions = value1;
+            /*for (int i = 0; i < value1.length; i++) {
             mapActions.add(Map.of(value1[i]));
           }*/
-        } else if (key1 == gBottoms) {
-          mapBottoms = value1;
-          /*for (int i = 0; i < value1.length; i++) {
+          } else if (key1 == gBottoms) {
+            mapBottoms = value1;
+            /*for (int i = 0; i < value1.length; i++) {
             mapBottoms.add(Map.of(value1[i]));
           }*/
-        } else if (key1 == gItem) {
-          if (value1 is String && ((value1 + "") ?? "").indexOf(gHometab) > 0) {
-            isHome = true;
+          } else if (key1 == gItem) {
+            if (value1 is String &&
+                ((value1 + "") ?? "").indexOf(gHometab) > 0) {
+              isHome = true;
+            }
           }
-        }
+        });
       });
-    });
-    return Consumer<DataModel>(builder: (context, datamodel, child) {
       Map param0 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: 45,
@@ -70,7 +77,7 @@ class MyDetailNew extends StatelessWidget {
                   : IconButton(
                       icon: Icon(Icons.arrow_back),
                       onPressed: () {
-                        datamodel.backContext(lastFocus, context);
+                        datamodel.backContext(lastFocus, context, lastid);
 
                         //Navigator.pop(context);
                         //Navigator.removeRoute(context, datamodel.lastRoute);
@@ -129,35 +136,40 @@ class MyDetailNew extends StatelessWidget {
         )
       };*/
 
-      return Scaffold(
-        floatingActionButton: datamodel.getActionButtons(_param),
-        body: Stack(children: [
-          Center(
-            child: MyPic({
-              gImg: datamodel.imgList[gMain],
-              gHeight: MediaQuery.of(context).size.height,
-            }),
-            //Image.network(datamodel.imgList[gMain]),
-          ),
-          //MyGlass(param)
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(children: [
-                MyGlass(param0),
-                Expanded(
-                    child: SingleChildScrollView(
-                        child: MyScreen(_param, backcolor))),
-                Row(
-                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: datamodel.getScreenItemsList(
-                        mapBottoms, context, backcolor)
-                    //datamodel.getActions({gActions: mapBottoms}, context)),
-                    ),
-              ]),
+      return WillPopScope(
+        onWillPop: () => datamodel.backContext(lastFocus, context, lastid),
+        child: Scaffold(
+          floatingActionButton: datamodel.getActionButtons(_param, myid),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.miniStartFloat,
+          body: Stack(children: [
+            Center(
+              child: MyPic({
+                gImg: datamodel.imgList[gMain],
+                gHeight: MediaQuery.of(context).size.height,
+              }),
+              //Image.network(datamodel.imgList[gMain]),
             ),
-          )
-        ]),
+            //MyGlass(param)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: [
+                  MyGlass(param0),
+                  Expanded(
+                      child: SingleChildScrollView(
+                          child: MyScreen(_param, backcolor))),
+                  Row(
+                      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: datamodel.getScreenItemsList(
+                          mapBottoms, context, backcolor)
+                      //datamodel.getActions({gActions: mapBottoms}, context)),
+                      ),
+                ]),
+              ),
+            )
+          ]),
+        ),
       );
     });
   }

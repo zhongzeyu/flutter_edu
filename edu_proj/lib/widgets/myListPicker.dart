@@ -42,6 +42,11 @@ class MyListPicker extends StatelessWidget {
       if (_param[gIsLabel] ?? false) {
         isLabel = true;
       }
+      bool isIcon = false;
+      if (_param[gIsIcon] ?? false) {
+        isIcon = true;
+      }
+
       Color labelColor = Colors.black;
       if (backcolor != null) {
         labelColor = datamodel.fromBdckcolor(backcolor);
@@ -66,7 +71,7 @@ class MyListPicker extends StatelessWidget {
             //offAxisFraction: 0.2, //轴偏离系数
             //useMagnifier: false, //使用放大镜
             //magnification: 1.5, //当前选中item放大倍数
-            itemExtent: 32.0, //行高
+            itemExtent: 40.0, //行高
             onSelectedItemChanged: (value) {
               datamodel.dpListDefaultIndex[_param[gData][i]] = value;
               /*_param[gRow] = i;
@@ -87,7 +92,26 @@ class MyListPicker extends StatelessWidget {
                         color: labelColor,
                         //backgroundColor: Colors.transparent
                       ))
-                  : MyLabel({gLabel: data}, backcolor);
+                  : isIcon
+                      ? Row(children: [
+                          SizedBox(
+                            width: 5.0,
+                          ),
+                          Expanded(
+                              child:
+                                  MyLabel({gLabel: data[gLabel]}, backcolor)),
+                          Icon(
+                              IconData(
+                                data[gValue],
+                                fontFamily: 'MaterialIcons',
+                              ),
+                              size: 36.0,
+                              color: Colors.white),
+                          SizedBox(
+                            width: 5.0,
+                          )
+                        ])
+                      : MyLabel({gLabel: data}, backcolor);
             }).toList(),
           ),
         ));
