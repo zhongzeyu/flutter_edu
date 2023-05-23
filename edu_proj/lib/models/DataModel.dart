@@ -28,6 +28,7 @@ import 'package:edu_proj/widgets/radios.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
 //import 'package:flutter_treeview/flutter_treeview.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -70,6 +71,7 @@ class DataModel extends ChangeNotifier {
   //dynamic _email;
   dynamic _token = '';
   dynamic _myId = '';
+  dynamic _myDBId = '';
   dynamic _sessionkey = '';
   dynamic initRequest = ''; //'checkout';
   int _zzyprime = 91473769;
@@ -680,6 +682,7 @@ class DataModel extends ChangeNotifier {
     //print('  ================== clear');
     _token = '';
     _myId = '';
+    _myDBId = '';
     _formLists = {};
     _tabList = {};
     _tableList = {};
@@ -1700,6 +1703,20 @@ class DataModel extends ChangeNotifier {
     return IconData(iconname, fontFamily: 'MaterialIcons');
   }
 
+  getImg(param, backColorValue) {
+    if (param[gValue].toString().indexOf('http') >= 0) {
+      return MyPic({gImg: param[gValue], gHeight: 32.0, gWidth: 32.0});
+    } else {
+      return MyIcon(
+          {gValue: param[gValue], gColor: fromBdckcolor(backColorValue)});
+    }
+  }
+
+  getImgCompany() {
+    var logo = getTableRowByID(gZzycompany, _globalCompanyid)[gLogo];
+    return getImg({gValue: logo}, Colors.black.value);
+  }
+
   getInputType(s) {
     if (isPopOpen()) {
       return TextInputType.none;
@@ -1730,8 +1747,8 @@ class DataModel extends ChangeNotifier {
   }
 
   getInt(s) {
-    print('=========== getInst s is ' + s.toString());
-    if (isNull(s)) {
+    //print('=========== getInst s is ' + s.toString());
+    if (isNull(s.toString())) {
       return 0;
     }
     return int.parse(s.toString());
@@ -2325,8 +2342,15 @@ class DataModel extends ChangeNotifier {
       }
       if (item[gType] == gIcon && !isNull(param[gValue])) {
         param[gIsIcon] = true;
-        w = MyIcon(
-            {gValue: param[gValue], gColor: fromBdckcolor(backColorValue)});
+        Widget wIcon = getImg(param, backColorValue);
+        w = Row(
+          children: [
+            Expanded(child: SizedBox()),
+            IgnorePointer(
+              child: wIcon,
+            ),
+          ],
+        );
       } else {
         w = MyLabel(labelParam, backColorValue);
         param[gIsLabel] = true;
@@ -3100,6 +3124,22 @@ class DataModel extends ChangeNotifier {
     return tableData[tableInfo[gTableMapPrefix][gId][id]];
   }
 
+  getTableRowByParentID(tableName, parentid) {
+    Map tableInfo = _tableList[tableName];
+    if (tableInfo[gData] == null) {
+      return null;
+    }
+    List tableData = tableInfo[gData];
+    List result = [];
+    for (int i = 0; i < tableData.length; i++) {
+      dynamic dataRow = tableData[i];
+      if ((dataRow[gParentid] ?? '') == parentid) {
+        result.add(dataRow);
+      }
+    }
+    return result;
+  }
+
   getTableBodyParam(data, context) {
     //_tableList[tableName][gKey] = UniqueKey();
     dynamic tableName = data[gActionid] ?? data[gTableID];
@@ -3417,7 +3457,91 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  getTreeNodesFromTable(tableName, context, level) {}
+  getTreeNodeTable(tableName, parentid, context, backcolor) {
+    List list = getTableRowByParentID(tableName, parentid);
+    if (list.length < 1) {
+      return null;
+    }
+
+    List<TreeNode> result = [];
+    for (int i = 0; i < list.length; i++) {
+      Map dataRow = list[i];
+      var id = dataRow[gId];
+      List<TreeNode> listChild =
+          getTreeNodeTable(tableName, id, context, backcolor);
+      int imgDefault = 0xf064c;
+      if (!isNull(dataRow[gImage])) {
+        imgDefault = getInt(dataRow[gImage]);
+      }
+      result.add(TreeNode(
+          content: InkWell(
+              child: Row(
+                children: [
+                  getImg({gValue: imgDefault}, backcolor),
+                  MyLabel(
+                      {gValue: getTableValueKeyFromTable(tableName, dataRow)},
+                      backcolor),
+                ],
+              ),
+              onTap: () {
+                sendRequestOne(
+                    gLocalAction,
+                    {
+                      gLabel: gEdit,
+                      gAction: gLocalAction,
+                      gTableID: tableName,
+                      gRow: dataRow
+                    },
+                    context);
+              }),
+          children: listChild));
+    }
+    return result;
+  }
+
+  getTreeViewTable(droplistName, context, backcolor) {
+    var tableName = droplistName;
+    var parentid = '';
+    if (droplistName.indexOf("[") > 0) {
+      //roleid from Zzyuserrole where parentid=@uid
+      tableName = droplistName.substring(0, droplistName.indexOf('['));
+      var tableNameParent =
+          droplistName.substring(droplistName.indexOf('[') + 1);
+      tableNameParent =
+          tableNameParent.substring(0, tableNameParent.indexOf(']'));
+      var tableNameParentCol =
+          tableNameParent.substring(0, tableNameParent.indexOf(' from '));
+      tableNameParent =
+          tableNameParent.substring(tableNameParent.indexOf(' from ') + 6);
+      var where =
+          tableNameParent.substring(tableNameParent.indexOf(' where ') + 7);
+      tableNameParent =
+          tableNameParent.substring(0, tableNameParent.indexOf(' where '));
+      //if (tableName == gZzyrole) {
+      if (where.indexOf('@myDBId') > 0) {
+        where = where.toString().replaceAll('@myDBId', _myDBId);
+      }
+      //}
+      List data = getTableByTableID(tableNameParent, where, context);
+      if (data == null || data.length < 1) {
+        return;
+      }
+      parentid = data[0][tableNameParentCol];
+    }
+
+    return TreeView(nodes: [
+      TreeNode(
+          content: Row(
+            children: [
+              getImg({gValue: getTableValueAttr(tableName, gIcon)}, backcolor),
+              MyLabel(
+                  {gValue: getTableValueAttr(tableName, gLabel)}, backcolor),
+            ],
+          ),
+          children: getTreeNodeTable(tableName, parentid, context, backcolor)),
+    ]);
+  }
+
   getTxtImage(label, color, fontSize, height, letterSpacing) {
     return Text(
       getSCurrent(label),
@@ -3654,24 +3778,54 @@ class DataModel extends ChangeNotifier {
     return overlayEntry != null;
   }
 
-  loadFile(formname, item, typeOwner) async {
+  loadFile(formname, item, id, context) async {
     if (isNull(formname)) {
       return;
     }
-    PlatformFile file = await pickFiles();
+
+    removeOverlay();
+
+    FilePickerResult result = await pickFiles();
+    if (result == null || result.files.isEmpty) {
+      //showMsg(context, 'No files picked or file picker was canceled', null);
+
+      throw Exception('Cannot read file from null stream');
+      //throw Exception('No files picked or file picker was canceled');
+    }
+    var file = result.files.first;
+    //var filePath = file.path;
     var filename = file.name;
+    final fileReadStream = file.readStream;
+    if (fileReadStream == null) {
+      //showMsg(context, 'Cannot read file from null stream', null);
+
+      throw Exception('Cannot read file from null stream');
+      //return;
+    }
+    print('================ file size is ' + file.size.toString());
+    if (file.size > 1048576) {
+      //showMsg(context, 'Cannot read file from null stream', null);
+      //return;
+      throw Exception('file size can not be over 1M');
+    }
+    final stream = http.ByteStream(fileReadStream);
+
     dynamic myUrl = 'http://' + MyConfig.URL.name + '/' + MyConfig.UPLOAD.name;
     var request = http.MultipartRequest('POST', Uri.parse(myUrl));
     request.fields['param0'] = filename;
     request.fields['param1'] = _globalCompanyid;
     /*http.MultipartFile multipartFile =
         await http.MultipartFile.fromPath("image", file.name);*/
-    request.files.add(http.MultipartFile.fromBytes(_globalCompanyid, file.bytes,
+    request.files.add(http.MultipartFile(_globalCompanyid, stream, file.size,
         filename: filename));
     //upload file
     var res = await request.send();
     if (res.statusCode == 200) {
-      setValue(formname, item[gId], null, filename);
+      if (res.toString().indexOf('Error') == 0) {
+        showMsg(context, res.toString(), null);
+      }
+      var resultname = 'http:/images/' + _globalCompanyid + '/' + filename;
+      setValue(formname, item[gId], id, resultname);
       myNotifyListeners();
     }
   }
@@ -3709,8 +3863,11 @@ class DataModel extends ChangeNotifier {
         var type = item[gType];
         String value = '';
         var dpid = item[gDroplist] ?? '';
-        if (type == gAddress) {}
+
         dpid = gDpAddress;
+        if (type == gIcon) {
+          dpid = gDpIcon;
+        }
         if (type == gDate || !isNull(dpid)) {
           if (type == gDate) {
             value = _dpList[gYear][_dpListDefaultIndex[gYear]] +
@@ -3718,6 +3875,19 @@ class DataModel extends ChangeNotifier {
                 _dpList[gMonth][_dpListDefaultIndex[gMonth]] +
                 '-' +
                 _dpList[gDay][_dpListDefaultIndex[gDay]];
+          } else if (type == gIcon) {
+            value = getInt(_dpList[dpid][_dpListDefaultIndex[dpid]][gValue])
+                .toString();
+            if (value == '0') {
+              //upload a file
+              try {
+                loadFile(_mFocusNode[gName], item, id, context);
+              } catch (e) {
+                showMsg(context, e.toString(), null);
+              }
+
+              return;
+            }
           } else {
             //print('=========   confirm: ' + item.toString());
             value = _dpList[dpid][_dpListDefaultIndex[dpid]];
@@ -3728,8 +3898,6 @@ class DataModel extends ChangeNotifier {
           if (status) {
             removeOverlay();
           }
-        } else if (type == gIcon) {
-          setValue(data[gName], item[gId], id, data[gValue]);
         }
       }
     } else if (data[gLabel] != null &&
@@ -3991,12 +4159,13 @@ class DataModel extends ChangeNotifier {
   }
 
   pickFiles() async {
-    FilePickerResult result = await FilePicker.platform.pickFiles();
+    FilePickerResult result =
+        await FilePicker.platform.pickFiles(withReadStream: true);
     if (result == null) {
       return result;
     }
-    PlatformFile file = result.files.first;
-    return file;
+
+    return result;
   }
 
   processRequest(requestFirst, context) async {
@@ -4601,6 +4770,7 @@ class DataModel extends ChangeNotifier {
 
   setDplistIcon() {
     List result = [
+      {gLabel: 'upload image', gValue: 0},
       {gLabel: 'ten_k', gValue: 0xedf2},
       {gLabel: 'ten_mp', gValue: 0xedf3},
       {gLabel: 'eleven_mp', gValue: 0xedf4},
@@ -7148,6 +7318,7 @@ class DataModel extends ChangeNotifier {
     //_formLists[gLogin][gItems][gEmail][gDefaultValue] = data[gEmail];
     _token = data[gToken];
     _myId = data[gEmail];
+    _myDBId = data[gId];
 
     _globalCompanyid = data[gParentid];
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -7443,14 +7614,7 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  setTreeNode(data, context) {
-    /*List<Node> nodes = [];
-    if (data[gType] == gTabletree) {
-      dynamic tableName = data[gActionid];
-      nodes = getTreeNodesFromTable(tableName, context, 0);
-    }
-    data[gNode] = nodes;*/
-  }
+  setTreeNode(data, context) {}
 
   showDropList(dpid, item, context) {}
   showFormEdit(data, context) {
@@ -7490,6 +7654,9 @@ class DataModel extends ChangeNotifier {
   }
 
   showMsg(context, dynamic result, backcolor) {
+    if (backcolor == null) {
+      backcolor = Colors.black.value;
+    }
     Widget w = MyLabel({
       gLabel: result.toString(),
     }, backcolor);

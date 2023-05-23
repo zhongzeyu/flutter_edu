@@ -76,7 +76,31 @@ class MyItem extends StatelessWidget {
       } else if (_param[gType] == gLabel) {
         result.add(MyLabel(_param, backcolor));
       } else if (_param[gType] == gTableEditor) {
-        result.add(MyPaginatedDataTable(_param));
+        //if is parent self table, use tree
+        dynamic tableName = _param[gName];
+
+        Map tableInfo = datamodel.tableList[tableName];
+        List columns = tableInfo[gColumns];
+        bool isTreeview = false;
+        for (int i = 0; i < columns.length; i++) {
+          if (columns[i][gId] == gParentid) {
+            var droplistName = columns[i][gDroplist] ?? '';
+            var droplistNameTable = droplistName;
+            if (droplistName.indexOf('[') > 0) {
+              droplistNameTable =
+                  droplistName.substring(0, droplistName.indexOf('['));
+            }
+            if (droplistNameTable == tableName) {
+              isTreeview = true;
+              result.add(
+                  datamodel.getTreeViewTable(droplistName, context, backcolor));
+              break;
+            }
+          }
+        }
+        if (!isTreeview) {
+          result.add(MyPaginatedDataTable(_param));
+        }
       } else if (_param[gType] == gSearch) {
         dynamic tableName = _param[gTableID];
 

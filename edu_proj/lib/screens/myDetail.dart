@@ -73,7 +73,7 @@ class MyDetail extends StatelessWidget {
             //mainAxisAlignment: MainAxisAlignment.end,
             children: [
               isHome
-                  ? new Text("")
+                  ? datamodel.getImgCompany()
                   : IconButton(
                       icon: Icon(Icons.arrow_back),
                       onPressed: () {

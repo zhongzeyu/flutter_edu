@@ -57,7 +57,7 @@ class TextFieldWidget extends StatelessWidget {
                 //color: Theme.of(context).disabledColor,
                 ),
             onPressed: () {
-              datamodel.loadFile(name, item, typeOwner);
+              datamodel.loadFile(name, item, id, context);
             });
       }
 

@@ -20,15 +20,25 @@ class MyPic extends StatelessWidget {
     }
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       if (_param[gImg].toString().toLowerCase().indexOf('http') > -1) {
-        var imgName = _param[gImg]
-            .toString()
-            .substring(_param[gImg].toString().lastIndexOf('/') + 1);
+        //print('===========  myPic param is ' + _param.toString());
+        String imgName = _param[gImg].toString();
+        if (_param[gImg].toString().toLowerCase().indexOf('/images/') < 1) {
+          imgName =
+              imgName.substring(_param[gImg].toString().lastIndexOf('/') + 1);
+        } else {
+          imgName = imgName.substring(
+              _param[gImg].toString().toLowerCase().indexOf('/images/') + 7);
+        }
+
         var imgUrl = 'http://' + MyConfig.URL.name + '/images/' + imgName;
         if (!datamodel.imgCache.containsKey(imgName)) {
           print('=================' + imgUrl);
+          dynamic fillType = BoxFit.fill;
+
           datamodel.imgCache[imgName] = Image(
             image: NetworkImage(imgUrl),
-            fit: BoxFit.fill,
+            fit: fillType,
+            //((_param[gHeight] ?? null) == null) ? BoxFit.fill : BoxFit.none,
             height: _param[gHeight] ?? null,
             width: _param[gWidth] ?? null,
           );

@@ -79,6 +79,7 @@ class FirstPage extends StatelessWidget {
           Center(
             child: MyPic({
               gImg: datamodel.imgList[gMain],
+              //gHeight: 30.0,
               gHeight: MediaQuery.of(context).size.height,
               gWidth: MediaQuery.of(context).size.width
             }),
