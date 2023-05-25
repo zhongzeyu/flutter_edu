@@ -1,6 +1,7 @@
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myGlass.dart';
+import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +26,45 @@ class MyPopup extends StatelessWidget {
         return actions;
       }
 
+      /*Map item = {
+          //gWidth: 150.0,
+          gId: gSearchZzy,
+          gLabel: gSearch,
+          //gFocus: false,
+          gInputType: gSearch,
+          gType: gSearch,
+
+          //gTxtEditingController: searchController
+        };
+
+        Map searchItemValue = item;
+        searchItemValue.putIfAbsent(gAction, () => gLocalAction);
+        //searchItemValue.putIfAbsent(gWidth, () => 250.0);
+        searchItemValue.putIfAbsent(gContext, ()=>context);
+        searchItemValue.putIfAbsent(gTableID, () => tableName);*/
+      Widget wSearch = SizedBox();
+      if (_param[gSearch] ?? false) {
+        var dpid = datamodel.getDPidfromItem(_param[gActions][0][gItem]);
+        Map item = {
+          //gWidth: 150.0,
+          gId: gSearchZzy,
+          gLabel: gSearch,
+          //gFocus: false,
+          gInputType: gSearch,
+          gType: gSearch,
+
+          //gTxtEditingController: searchController
+        };
+
+        wSearch = SizedBox(
+          width: 180.0,
+          child: TextFieldWidget(
+              item: item,
+              typeOwner: gDroplist,
+              name: dpid,
+              backcolor: btnColorValue),
+        );
+      }
       Map param0 = {
         gWidth: MediaQuery.of(context).size.width,
         gHeight: 45,
@@ -48,6 +88,7 @@ class MyPopup extends StatelessWidget {
                   //Navigator.removeRoute(context, datamodel.lastRoute);
                 },
               ),
+              wSearch,
               Expanded(
                   child: datamodel.getTitle(_param, context, backColor.value)),
               Row(children: getActions(context, backColor.value)),

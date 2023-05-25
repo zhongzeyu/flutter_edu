@@ -39,6 +39,11 @@ class TextFieldWidget extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       item[gType] = item[gType] ?? '';
       bool isPassword = (item[gType] == gPassword);
+      Color cBackColor = datamodel.fromBdckcolor(backcolor);
+      if (item[gTxtEditingController] == null) {
+        item[gTxtEditingController] = new TextEditingController();
+      }
+
       if (item[gType] == gSearch) {
         item[gSuffixIconLocal] = IconButton(
             icon: Icon((Icons.content_paste_search_outlined)
@@ -49,9 +54,12 @@ class TextFieldWidget extends StatelessWidget {
               //item[gShowDetail] = true;
               textChange(thistext, item, datamodel, context, false);
             });
-      }
-      //datamodel.getItemIcon(item, context);
-      else if ((item[gIsFile] ?? false) == true) {
+        if ((typeOwner ?? '') == gDroplist) {
+          dynamic aValue = datamodel.dpListSearch[name] ?? '';
+
+          item[gTxtEditingController].text = aValue;
+        }
+      } else if ((item[gIsFile] ?? false) == true) {
         item[gSuffixIconLocal] = IconButton(
             icon: Icon(Icons.file_upload_outlined
                 //color: Theme.of(context).disabledColor,
@@ -59,24 +67,23 @@ class TextFieldWidget extends StatelessWidget {
             onPressed: () {
               datamodel.loadFile(name, item, id, context);
             });
+      } else {
+        item[gTxtEditingController].text =
+            datamodel.getValue(name, item[gId], id)[gValue];
       }
 
-      Color cBackColor = datamodel.fromBdckcolor(backcolor);
-      if (item[gTxtEditingController] == null) {
-        item[gTxtEditingController] = new TextEditingController();
-      }
-      item[gTxtEditingController].text =
-          datamodel.getValue(name, item[gId], id)[gValue];
       TextEditingController txtController = item[gTxtEditingController];
       var showValue = txtController.text ?? "";
 
       if (datamodel.isNull(showValue)) {
         txtController.text = "";
       } else {
-        var modifiedValue = datamodel.getValue(name, item[gId], id)[gValue];
-        //dynamic aValue = datamodel.getValueGUI(item[gValue], item);
-        dynamic aValue = datamodel.getValueGUI(modifiedValue, item);
-        txtController.text = aValue;
+        if ((typeOwner ?? '') != gDroplist) {
+          var modifiedValue = datamodel.getValue(name, item[gId], id)[gValue];
+          //dynamic aValue = datamodel.getValueGUI(item[gValue], item);
+          dynamic aValue = datamodel.getValueGUI(modifiedValue, item);
+          txtController.text = aValue;
+        }
       }
       thistext = txtController.text;
       bool autofocus = datamodel.getFocus(name, item);

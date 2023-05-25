@@ -26,6 +26,7 @@ import 'package:edu_proj/widgets/myScreen.dart';
 //import 'package:edu_proj/widgets/picsAndButtons.dart';
 import 'package:edu_proj/widgets/radios.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
@@ -161,6 +162,7 @@ class DataModel extends ChangeNotifier {
   Queue _requestListRunning = new Queue();
   Map _itemSubList = {};
   Map _dpListDefaultIndex = {};
+  Map _dpListSearch = {};
   OverlayEntry overlayEntry;
   Map<dynamic, dynamic> _mFocusNode = {gType: null};
   Map<dynamic, List<Widget>> _actionBtnMap = {};
@@ -180,6 +182,7 @@ class DataModel extends ChangeNotifier {
   Map<dynamic, dynamic> get dpList => _dpList;
   Map<dynamic, dynamic> get whereList => _whereList;
   Map get dpListDefaultIndex => _dpListDefaultIndex;
+  Map get dpListSearch => _dpListSearch;
   Map<dynamic, dynamic> get mFocusNode => _mFocusNode;
   //Widget get tabWidget => _tabWidget;
   //int _tabIndex = 0;
@@ -1326,7 +1329,7 @@ class DataModel extends ChangeNotifier {
       gId: id,
       gType: gDate
     };
-    Widget result = MyListPicker(param, backcolor, actions);
+    Widget result = MyListPicker(param, backcolor);
     return result;
   }
 
@@ -1444,8 +1447,21 @@ class DataModel extends ChangeNotifier {
     return Row(children: bottom);
   }
 
+  getDPidfromItem(item) {
+    if (item[gType] == gAddress) {
+      return gDpAddress;
+    } else if (item[gType] == gIcon) {
+      return gDpIcon;
+    }
+    var droplist = item[gDroplist];
+    if (droplist != null && droplist.indexOf("[") > 0) {
+      return droplist.substring(0, droplist.indexOf("["));
+    }
+
+    return null;
+  }
+
   getDpListByKey(key, context, value) {
-    //print('========  getDpListByKey 0: key is ' + key.toString());
     List result = [];
     if (!_dpList.containsKey(key)) {
       if (key == gDpIcon) {
@@ -1454,30 +1470,24 @@ class DataModel extends ChangeNotifier {
     }
 
     if (_dpList.containsKey(key)) {
-      //print('========  getDpListByKey 0 1: ');
       result = _dpList[key] ?? [];
     }
-
-    //print('========  getDpListByKey 1: ' + result.toString());
 
     if (result.length < 1) {
       result.add(value);
     }
-    //print('========  getDpListByKey 2');
 
     return result;
   }
 
   getDPPicker(item, backcolor, context, formname, id, actions) {
-    var dpid = item[gDroplist];
+    var dpid = getDPidfromItem(item);
     bool isLabel = false;
     bool isIcon = false;
     if (item[gType] == gAddress) {
       isLabel = true;
-      dpid = gDpAddress;
     } else if (item[gType] == gIcon) {
       isIcon = true;
-      dpid = gDpIcon;
     }
     List sList = getDpListByKey(dpid, context, item[gValue]);
     int selectedIndex = -1;
@@ -1494,6 +1504,10 @@ class DataModel extends ChangeNotifier {
         break;
       }
     }
+    bool isSearch = false;
+    if (isIcon) {
+      isSearch = true;
+    }
     Map param = {
       gAction: gLocalAction,
       gAction1: gDroplist,
@@ -1505,9 +1519,10 @@ class DataModel extends ChangeNotifier {
       gId: id,
       gType: gDate,
       gIsLabel: isLabel,
-      gIsIcon: isIcon
+      gIsIcon: isIcon,
+      gSearch: isSearch
     };
-    Widget result = MyListPicker(param, backcolor, actions);
+    Widget result = MyListPicker(param, backcolor);
 
     return result;
   }
@@ -1718,7 +1733,7 @@ class DataModel extends ChangeNotifier {
   }
 
   getInputType(s) {
-    if (isPopOpen()) {
+    if (isPopOpen() && (s ?? '') != gSearch) {
       return TextInputType.none;
     }
     if (s == gVisiblePassword) {
@@ -1819,12 +1834,39 @@ class DataModel extends ChangeNotifier {
       if (param[gItem][gSuffixIcon] == null) {
         var value = getValue(
             _mFocusNode[gName], _mFocusNode[gCol], _mFocusNode[gId])[gValue];
-        param[gItem][gSuffixIcon] = IconButton(
-            icon: Icon(Icons.image_search_outlined),
-            onPressed: () {
-              showPopupItem(param[gItem], _mFocusNode[gTypeOwner],
-                  _mFocusNode[gName], value, _mFocusNode[gId], null, context);
-            });
+        param[gItem][gSuffixIcon] = Row(
+          children: [
+            IconButton(
+                icon: Icon(Icons.image_search_outlined),
+                onPressed: () {
+                  showPopupItem(
+                      param[gItem],
+                      _mFocusNode[gTypeOwner],
+                      _mFocusNode[gName],
+                      value,
+                      _mFocusNode[gId],
+                      null,
+                      context,
+                      true);
+                }),
+            SizedBox(width: 5.0),
+            IconButton(
+                icon: Icon(Icons.file_upload_outlined),
+                onPressed: () {
+                  try {
+                    loadFile(
+                        _mFocusNode[gName], param[gItem], param[gId], context);
+                  } catch (e) {
+                    showMsg(context, e.toString(), null);
+                  }
+                }),
+          ],
+        );
+
+        /*        result.insert(
+      0,
+      {gLabel: 'upload image', gValue: 0},
+    );*/
       }
       return;
     }
@@ -1833,7 +1875,7 @@ class DataModel extends ChangeNotifier {
       var value = getValue(
           _mFocusNode[gName], _mFocusNode[gCol], _mFocusNode[gId])[gValue];
       showPopupItem(param[gItem], _mFocusNode[gTypeOwner], _mFocusNode[gName],
-          value, _mFocusNode[gId], null, context);
+          value, _mFocusNode[gId], null, context, false);
 
       /*if (param[gItem][gSuffixIcon] == null) {
         param[gItem][gSuffixIcon] = IconButton(
@@ -1923,7 +1965,7 @@ class DataModel extends ChangeNotifier {
           var value = getValue(
               _mFocusNode[gName], _mFocusNode[gCol], _mFocusNode[gId])[gValue];
           showPopupItem(param[gItem], _mFocusNode[gTypeOwner],
-              _mFocusNode[gName], value, _mFocusNode[gId], null, context);
+              _mFocusNode[gName], value, _mFocusNode[gId], null, context, true);
         });
   }
 
@@ -2110,6 +2152,85 @@ class DataModel extends ChangeNotifier {
     param[param[gType]] = param[gValue];
 
     return param;
+  }
+
+  getPicker(_param, i, labelColor, backcolor) {
+    dynamic dpid = _param[gData][i];
+    List dataListOriginal = List.of(_dpList[dpid]);
+    //print('----dpid is ' + dpid.toString());
+    dynamic searchTxt = _dpListSearch[dpid] ?? '';
+    //print('----searchTxt is ' + searchTxt.toString());
+    bool isIcon = false;
+    if (_param[gIsIcon] ?? false) {
+      isIcon = true;
+    }
+    bool isLabel = false;
+    if (_param[gIsLabel] ?? false) {
+      isLabel = true;
+    }
+
+    List dataList = [];
+    if (isNull(searchTxt)) {
+      dataList = dataListOriginal;
+    } else {
+      for (int j = 0; j < dataListOriginal.length; j++) {
+        dynamic dj = dataListOriginal[j];
+        if ((isLabel && dj.toString().contains(searchTxt)) ||
+            (isIcon &&
+                getSCurrent(dj[gLabel]).toString().contains(searchTxt))) {
+          dataList.add(dj);
+        }
+      }
+    }
+
+    return CupertinoPicker(
+      scrollController:
+          FixedExtentScrollController(initialItem: _param[gSelectedList][i]),
+      //diameterRatio: 1.5,
+      //offAxisFraction: 0.2, //轴偏离系数
+      //useMagnifier: false, //使用放大镜
+      //magnification: 1.5, //当前选中item放大倍数
+      itemExtent: 40.0, //行高
+      onSelectedItemChanged: (value) {
+        dpListDefaultIndex[_param[gData][i]] = value;
+        /*_param[gRow] = i;
+              _param[gIndex] = value;
+              _param[gSelectedList][i] = value;
+              datamodel.sendRequestOne(
+                  _param[gAction], _param, this._param[gContext] ?? context);*/
+      },
+      //children: datamodel.dpList[param[gData][i]].map((data) {
+      children: (dataList).map((data) {
+        return isLabel
+            ? Text(data,
+                style: TextStyle(
+                  fontWeight: (isNull(_param[gIsBold]))
+                      ? _param[gFontWeight]
+                      : FontWeight.bold, //FontWeight.bold,
+                  fontSize: _param[gFontSize],
+                  color: labelColor,
+                  //backgroundColor: Colors.transparent
+                ))
+            : isIcon
+                ? Row(children: [
+                    SizedBox(
+                      width: 5.0,
+                    ),
+                    Expanded(child: MyLabel({gLabel: data[gLabel]}, backcolor)),
+                    Icon(
+                        IconData(
+                          data[gValue],
+                          fontFamily: 'MaterialIcons',
+                        ),
+                        size: 36.0,
+                        color: Colors.white),
+                    SizedBox(
+                      width: 5.0,
+                    )
+                  ])
+                : MyLabel({gLabel: data}, backcolor);
+      }).toList(),
+    );
   }
 
   int _picIndex = 0;
@@ -2399,8 +2520,8 @@ class DataModel extends ChangeNotifier {
       return w;
     }
 
-    showPopupItem(
-        item, typeOwner, name, param[gValue], id, backColorValue, context);
+    showPopupItem(item, typeOwner, name, param[gValue], id, backColorValue,
+        context, true);
     return Text("");
   }
 
@@ -3469,9 +3590,9 @@ class DataModel extends ChangeNotifier {
       var id = dataRow[gId];
       List<TreeNode> listChild =
           getTreeNodeTable(tableName, id, context, backcolor);
-      int imgDefault = 0xf064c;
+      var imgDefault = 0xf064c.toString();
       if (!isNull(dataRow[gImage])) {
-        imgDefault = getInt(dataRow[gImage]);
+        imgDefault = dataRow[gImage];
       }
       result.add(TreeNode(
           content: InkWell(
@@ -3529,17 +3650,21 @@ class DataModel extends ChangeNotifier {
       parentid = data[0][tableNameParentCol];
     }
 
-    return TreeView(nodes: [
-      TreeNode(
-          content: Row(
-            children: [
-              getImg({gValue: getTableValueAttr(tableName, gIcon)}, backcolor),
-              MyLabel(
-                  {gValue: getTableValueAttr(tableName, gLabel)}, backcolor),
-            ],
-          ),
-          children: getTreeNodeTable(tableName, parentid, context, backcolor)),
-    ]);
+    return Expanded(
+      child: TreeView(nodes: [
+        TreeNode(
+            content: Row(
+              children: [
+                getImg(
+                    {gValue: getTableValueAttr(tableName, gIcon)}, backcolor),
+                MyLabel(
+                    {gValue: getTableValueAttr(tableName, gLabel)}, backcolor),
+              ],
+            ),
+            children:
+                getTreeNodeTable(tableName, parentid, context, backcolor)),
+      ]),
+    );
   }
 
   getTxtImage(label, color, fontSize, height, letterSpacing) {
@@ -3592,14 +3717,15 @@ class DataModel extends ChangeNotifier {
     if (inputType == gDatetime) {
       return toLocalTime(result);
     }
-    if (!isNull(col[gDroplist])) {
-      if (!_dpList.containsKey(col[gDroplist])) {
-        var tableinfo = _tableList[col[gDroplist]];
+    dynamic dplist = getDPidfromItem(col);
+    if (!isNull(dplist)) {
+      if (!_dpList.containsKey(dplist)) {
+        var tableinfo = _tableList[dplist];
         if (tableinfo != null) {
           List tableData = tableinfo[gData];
           if (tableData.length > 0) {
             tableData.forEach((element) {
-              dpListInsert(col[gDroplist], element, null);
+              dpListInsert(dplist, element, null);
             });
           }
         }
@@ -3862,12 +3988,8 @@ class DataModel extends ChangeNotifier {
         var id = data[gId];
         var type = item[gType];
         String value = '';
-        var dpid = item[gDroplist] ?? '';
+        var dpid = getDPidfromItem(item);
 
-        dpid = gDpAddress;
-        if (type == gIcon) {
-          dpid = gDpIcon;
-        }
         if (type == gDate || !isNull(dpid)) {
           if (type == gDate) {
             value = _dpList[gYear][_dpListDefaultIndex[gYear]] +
@@ -3878,16 +4000,6 @@ class DataModel extends ChangeNotifier {
           } else if (type == gIcon) {
             value = getInt(_dpList[dpid][_dpListDefaultIndex[dpid]][gValue])
                 .toString();
-            if (value == '0') {
-              //upload a file
-              try {
-                loadFile(_mFocusNode[gName], item, id, context);
-              } catch (e) {
-                showMsg(context, e.toString(), null);
-              }
-
-              return;
-            }
           } else {
             //print('=========   confirm: ' + item.toString());
             value = _dpList[dpid][_dpListDefaultIndex[dpid]];
@@ -4756,7 +4868,7 @@ class DataModel extends ChangeNotifier {
         item, typeOwner, name, context, id, Colors.black.value, actions);
 
     //}
-    showPopup(context, w, null, actions);
+    showPopup(context, w, null, actions, false);
   }
 
   setBackContext(context, actionData) {
@@ -4769,8 +4881,7 @@ class DataModel extends ChangeNotifier {
   }
 
   setDplistIcon() {
-    List result = [
-      {gLabel: 'upload image', gValue: 0},
+    List<Map> result = [
       {gLabel: 'ten_k', gValue: 0xedf2},
       {gLabel: 'ten_mp', gValue: 0xedf3},
       {gLabel: 'eleven_mp', gValue: 0xedf4},
@@ -6966,7 +7077,7 @@ class DataModel extends ChangeNotifier {
       {gLabel: 'zoom_out', gValue: 0xf4de},
       {gLabel: 'zoom_out_map', gValue: 0xf4dd}
     ];
-
+    result.sort((e1, e2) => e1[gLabel].compareTo(e2[gLabel]));
     _dpList[gDpIcon] = result;
   }
 
@@ -7660,7 +7771,7 @@ class DataModel extends ChangeNotifier {
     Widget w = MyLabel({
       gLabel: result.toString(),
     }, backcolor);
-    showPopup(context, w, null, null);
+    showPopup(context, w, null, null, false);
   }
 
   showMyDetail(param, msg, context, backcolor) {
@@ -7779,10 +7890,11 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  showPopup(context, w, h, actions) {
+  showPopup(context, w, h, actions, needSearch) {
     removeOverlay();
     overlayEntry = OverlayEntry(builder: (BuildContext context) {
-      return MyPopup({gWidget: w, gHeight: h, gActions: actions});
+      return MyPopup(
+          {gWidget: w, gHeight: h, gActions: actions, gSearch: needSearch});
       /*return new Positioned(
           top: MediaQuery.of(context).size.height * 0.7,
           child: buildDraggable(context, MyPopup({gWidget: w, gHeight: h})));*/
@@ -7791,7 +7903,8 @@ class DataModel extends ChangeNotifier {
     myNotifyListeners();
   }
 
-  showPopupItem(item, typeOwner, name, value, id, backcolor, context) async {
+  showPopupItem(
+      item, typeOwner, name, value, id, backcolor, context, needSearch) async {
     if (overlayEntry != null) {
       return;
     }
@@ -7811,7 +7924,7 @@ class DataModel extends ChangeNotifier {
         item, typeOwner, name, context, id, backcolor, actions);
 
     //}
-    showPopup(context, w, null, actions);
+    showPopup(context, w, null, actions, needSearch);
     //}
   }
 
@@ -8047,7 +8160,12 @@ class DataModel extends ChangeNotifier {
       getTableFloatingBtns(name, context);
       return;
     }
-
+    if ((typeOwner ?? '') == gDroplist) {
+      dynamic dpid = name;
+      _dpListSearch[dpid] = text;
+      //myNotifyListeners();
+      return;
+    }
     if (item[gDroplist] == '') {
       item[gValue] = text;
     }

@@ -1,10 +1,7 @@
 import 'package:edu_proj/config/constants.dart';
-//import 'package:edu_proj/widgets/myButton.dart';
-//import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 
 import '../models/DataModel.dart';
-//import 'myLabel.dart';
 
 class TableData extends DataTableSource {
   final Map _param;
@@ -20,8 +17,6 @@ class TableData extends DataTableSource {
   int get selectedRowCount => _selectRowCount;
 
   DataRow getRow(int index) {
-    //debugPrint('===== getRow index is ' + index.toString());
-
     List<DataCell> dataCellList = [];
     dynamic dataRow = _dataModel.getTableData(_param[gTableID])[index];
 
@@ -45,10 +40,8 @@ class TableData extends DataTableSource {
 
       dataCellList.add(DataCell(w, onTap: () {
         _param[gLabel] = gTableItem;
-        //_param[gTableItemColName] = colname;
         _dataModel.setFocus(_param[gTableID], colname, dataRow[gId]);
         _dataModel.getTableFloatingBtns(_param[gTableID], _context);
-
         _dataModel.myNotifyListeners();
       }));
     }
