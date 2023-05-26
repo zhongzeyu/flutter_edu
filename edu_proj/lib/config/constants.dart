@@ -143,7 +143,7 @@ const gInvalidname = 'invalidname';
 const gInvalidEmail = 'Invalid email';
 const gIsBold = 'isBold';
 const gIsFile = 'isFile';
-
+const gIsForm = 'isForm';
 const gIsHidden = 'isHidden';
 const gIsIcon = 'isIcon';
 const gIsKeyword = 'isKeyword';
@@ -316,6 +316,8 @@ const gTranspass = 'transpass';
 const gTreeExpand = 'TreeExpand';
 const gTreeLabel = 'treelabel';
 const gTreeSelected = 'TreeSelected';
+const gTreeView = 'TreeView';
+
 const gTrue = 'true';
 const gTutor = 'tutor';
 const gTxtEditingController = 'txtEditingController';

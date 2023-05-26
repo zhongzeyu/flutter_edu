@@ -92,9 +92,13 @@ class MyItem extends StatelessWidget {
             }
             if (droplistNameTable == tableName) {
               isTreeview = true;
-              result.add(
-                  datamodel.getTreeViewTable(droplistName, context, backcolor));
-              break;
+              for (int j = 0; j < columns.length; j++) {
+                if (columns[j][gType] == gIcon) {
+                  result.add(datamodel.getTreeViewTable(
+                      droplistName, columns[j], context, backcolor));
+                  break;
+                }
+              }
             }
           }
         }

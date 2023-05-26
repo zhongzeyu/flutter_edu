@@ -36,7 +36,7 @@ class MyLabel extends StatelessWidget {
                 fontWeight: (datamodel.isNull(_param[gIsBold]))
                     ? _param[gFontWeight]
                     : FontWeight.bold, //FontWeight.bold,
-                fontSize: _param[gFontSize],
+                fontSize: _param[gFontSize] ?? datamodel.defaultFontSize,
                 color: _param[gColorLabel] ?? labelColor,
                 decoration: _param[gTextDecoration]
 
@@ -49,19 +49,24 @@ class MyLabel extends StatelessWidget {
                   ? datamodel.getSCurrent(_param[gOriginalValue])
                   : _param[gOriginalValue],
               style: TextStyle(
-                  color: labelColor, decoration: _param[gTextDecoration]),
+                color: labelColor,
+                decoration: _param[gTextDecoration],
+                fontSize: _param[gFontSize] ?? datamodel.defaultFontSize,
+              ),
               children: <TextSpan>[
                 TextSpan(
                     text: ' -> \r\n',
                     style: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: labelColor,
+                      fontSize: _param[gFontSize] ?? datamodel.defaultFontSize,
                     )),
                 TextSpan(
                     text: showValue,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: _param[gColorLabel] ?? labelColor,
+                      fontSize: _param[gFontSize] ?? datamodel.defaultFontSize,
                     )),
               ]));
         }

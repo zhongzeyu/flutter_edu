@@ -51,7 +51,7 @@ class MyForm extends StatelessWidget {
           //dynamic dataRow;
           //dataRow = _paramData[gData];
 
-          datamodel.setFocus(_formName, null, null);
+          datamodel.setFocus(_formName, null, null, true);
           //datamodel.formLists[_formName][gStatus] = true;
           items.entries.forEach((itemOne) {
             Map item = itemOne.value;
@@ -72,7 +72,9 @@ class MyForm extends StatelessWidget {
                 if (w != null) {
                   w = InkWell(
                       onTap: () {
-                        datamodel.setFocus(_formName, item[gId], id);
+                        datamodel.setFocus(_formName, item[gId], id, true);
+                        // datamodel.getTableFloatingBtns(_formName, context);
+
                         datamodel.myNotifyListeners();
                       },
                       child: w);

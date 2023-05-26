@@ -104,7 +104,7 @@ class TextFieldWidget extends StatelessWidget {
         maxLength: item[gLength],
         style: TextStyle(
           color: cBackColor,
-          fontSize: item[gFontSize],
+          fontSize: item[gFontSize] ?? datamodel.defaultFontSize,
           fontStyle: item[gFontStyle],
           fontWeight: item[gFontWeight],
           letterSpacing: item[gLetterSpacing],
@@ -119,7 +119,7 @@ class TextFieldWidget extends StatelessWidget {
                 .getSCurrent('Please enter ' + labeltext), //item[gPlaceHolder],
             hintStyle: TextStyle(
               color: cBackColor,
-              fontSize: item[gFontSize],
+              fontSize: item[gFontSize] ?? datamodel.defaultFontSize,
               fontStyle: item[gFontStyle],
               fontWeight: item[gFontWeight],
               letterSpacing: item[gLetterSpacing],
@@ -152,11 +152,13 @@ class TextFieldWidget extends StatelessWidget {
         onTap: () {
           //FocusScope.of(context).requestFocus(_commentFocus);
           //set focus
-          datamodel.setFocus(name, item[gId], null);
+          datamodel.setFocus(
+              name, item[gId], null, ((typeOwner ?? '') == gForm));
         },
         onEditingComplete: () {
           textChange(thistext, item, datamodel, context, typeOwner);
-          datamodel.setFocusNext(name, item[gId], id);
+          datamodel.setFocusNext(
+              name, item[gId], id, ((typeOwner ?? '') == gForm));
           datamodel.myNotifyListeners();
         },
       );
@@ -165,7 +167,8 @@ class TextFieldWidget extends StatelessWidget {
             onKey: (node, event) {
               String keyLabel = event.logicalKey.keyLabel;
               if (keyLabel == 'Tab') {
-                datamodel.setFocusNext(name, item[gId], null);
+                datamodel.setFocusNext(
+                    name, item[gId], null, ((typeOwner ?? '') == gForm));
 
                 datamodel.myNotifyListeners();
               } else {}

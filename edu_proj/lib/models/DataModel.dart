@@ -114,6 +114,8 @@ class DataModel extends ChangeNotifier {
     Colors.yellow.value,
   ];
   Color warningColor = Colors.red;
+  double _defaultFontSize = 15.0;
+  double get defaultFontSize => _defaultFontSize;
   /*final List<int> _colorList = [
     Colors.green.value,
   ];*/
@@ -325,7 +327,7 @@ class DataModel extends ChangeNotifier {
         gSubmit: gSubmit,
         gImgTitle: {
           gTitle: data[gLabel],
-          gFontSize: 40.0,
+          gFontSize: _defaultFontSize + 10.0,
           gHeight: 1.2,
           gLetterSpacing: 1.0
         },
@@ -419,8 +421,10 @@ class DataModel extends ChangeNotifier {
     //print('====== param is ' + param.toString());
     List<Widget> result = [];
     if (param[gTypeOwner] == gForm) {
-      result.add(MyLabel(
-          {gLabel: param[gItem][gLabel] + gCommaStr}, param[gBackgroundColor]));
+      result.add(MyLabel({
+        gLabel: getSCurrent(param[gItem][gLabel]) + gCommaStr,
+        gNeedi10n: false
+      }, param[gBackgroundColor]));
       result.add(SizedBox(width: 10.0));
     }
     if (param[gTypeOwner] == gForm) {
@@ -446,9 +450,11 @@ class DataModel extends ChangeNotifier {
         (param[gTypeOwner] == gForm || param[gIsLabel])) {
       param[gWidget] = Column(children: [
         param[gWidget],
-        MyLabel(
-            {gLabel: param[gAlert], gFontSize: 12.0, gColorLabel: Colors.red},
-            null)
+        MyLabel({
+          gLabel: param[gAlert],
+          gFontSize: _defaultFontSize,
+          gColorLabel: Colors.red
+        }, null)
       ]);
     }
     return param[gWidget];
@@ -986,7 +992,11 @@ class DataModel extends ChangeNotifier {
     }
     data[gOptLock] = (obj.containsKey(gOptLock)) ? obj[gOptLock][gValue] : '';
     //print('        ------------------    formSubmit 1');
-    obj.entries.forEach((MapEntry<dynamic, dynamic> element) {
+    for (int i = 0; i < obj.entries.length; i++) {
+      MapEntry<dynamic, dynamic> element = obj.entries.elementAt(i);
+
+      /*}
+    obj.entries.forEach((MapEntry<dynamic, dynamic> element) {*/
       //var key = element.entries.first.key;
       var item = element.value;
       var type = item[gType];
@@ -996,6 +1006,14 @@ class DataModel extends ChangeNotifier {
       } else if (item[gType] == gHidden) {
       } else if (item[gDbid] != null && item[gDbid] != '') {
         var value = getValue(formid, item[gId], data[gId])[gValue];
+
+        var alert = isItemValueValidStr(item, value);
+        if ((alert ?? '') != '') {
+          showMsg(context, alert, null);
+          setFocus(formid, item[gId], null, true);
+          return;
+        }
+
         //data[objI[gDbid]] = value;
         if (item[gHash] != null && item[gHash]) {
           value = hash(value);
@@ -1011,6 +1029,7 @@ class DataModel extends ChangeNotifier {
         if (isNull(oldValue)) {
           oldValue = '';
         }
+
         if (value == null) {
           value = '';
         }
@@ -1025,7 +1044,7 @@ class DataModel extends ChangeNotifier {
           data[item[gDbid]] = value;
         }
       }
-    });
+    }
     //print('        ------------------    formSubmit 2');
     if (changed) {
       //console.log(data);
@@ -1411,7 +1430,7 @@ class DataModel extends ChangeNotifier {
                   if (dateList[2] != '') {
                     //close the detail
                     //setFormValueShow(formname, id);
-                    setFocusNext(formname, id, null);
+                    setFocusNext(formname, id, null, false);
 
                     myNotifyListeners();
                     return;
@@ -1447,6 +1466,31 @@ class DataModel extends ChangeNotifier {
     return Row(children: bottom);
   }
 
+  getDpDataSearch(dpid, isIcon, isLabel) {
+    dynamic searchTxt = _dpListSearch[dpid] ?? '';
+    List dataListOriginal = List.of(_dpList[dpid]);
+
+    List dataList = [];
+    if (isNull(searchTxt)) {
+      dataList = dataListOriginal;
+    } else {
+      for (int j = 0; j < dataListOriginal.length; j++) {
+        dynamic dj = dataListOriginal[j];
+        var value = dj;
+        if (isIcon) {
+          value = getSCurrent(dj[gLabel]);
+        } else if (!isLabel && dj != '') {
+          var value0 = getSCurrent(dj);
+          value = getSCurrent(value0);
+        }
+        if (dj == '' || value.toString().contains(searchTxt)) {
+          dataList.add(dj);
+        }
+      }
+    }
+    return dataList;
+  }
+
   getDPidfromItem(item) {
     if (item[gType] == gAddress) {
       return gDpAddress;
@@ -1459,6 +1503,19 @@ class DataModel extends ChangeNotifier {
     }
 
     return null;
+  }
+
+  getDPIndex(i, item) {
+    var dpid = getDPidfromItem(item);
+    bool isLabel = false;
+    bool isIcon = false;
+    if (item[gType] == gAddress) {
+      isLabel = true;
+    } else if (item[gType] == gIcon) {
+      isIcon = true;
+    }
+    List data = getDpDataSearch(dpid, isIcon, isLabel);
+    return data[i];
   }
 
   getDpListByKey(key, context, value) {
@@ -1722,8 +1779,10 @@ class DataModel extends ChangeNotifier {
     if (param[gValue].toString().indexOf('http') >= 0) {
       return MyPic({gImg: param[gValue], gHeight: 32.0, gWidth: 32.0});
     } else {
-      return MyIcon(
-          {gValue: param[gValue], gColor: fromBdckcolor(backColorValue)});
+      return MyIcon({
+        gValue: param[gValue],
+        gColor: (param[gColor] ?? fromBdckcolor(backColorValue))
+      });
     }
   }
 
@@ -2156,10 +2215,7 @@ class DataModel extends ChangeNotifier {
 
   getPicker(_param, i, labelColor, backcolor) {
     dynamic dpid = _param[gData][i];
-    List dataListOriginal = List.of(_dpList[dpid]);
     //print('----dpid is ' + dpid.toString());
-    dynamic searchTxt = _dpListSearch[dpid] ?? '';
-    //print('----searchTxt is ' + searchTxt.toString());
     bool isIcon = false;
     if (_param[gIsIcon] ?? false) {
       isIcon = true;
@@ -2169,20 +2225,9 @@ class DataModel extends ChangeNotifier {
       isLabel = true;
     }
 
-    List dataList = [];
-    if (isNull(searchTxt)) {
-      dataList = dataListOriginal;
-    } else {
-      for (int j = 0; j < dataListOriginal.length; j++) {
-        dynamic dj = dataListOriginal[j];
-        if ((isLabel && dj.toString().contains(searchTxt)) ||
-            (isIcon &&
-                getSCurrent(dj[gLabel]).toString().contains(searchTxt))) {
-          dataList.add(dj);
-        }
-      }
-    }
+    //print('----searchTxt is ' + searchTxt.toString());
 
+    List dataList = getDpDataSearch(dpid, isIcon, isLabel);
     return CupertinoPicker(
       scrollController:
           FixedExtentScrollController(initialItem: _param[gSelectedList][i]),
@@ -2228,7 +2273,7 @@ class DataModel extends ChangeNotifier {
                       width: 5.0,
                     )
                   ])
-                : MyLabel({gLabel: data}, backcolor);
+                : MyLabel({gLabel: getSCurrent(data)}, backcolor);
       }).toList(),
     );
   }
@@ -2281,7 +2326,8 @@ class DataModel extends ChangeNotifier {
       info = tableList[name];
     }
     if (info == null) {
-      return MyLabel({gLabel: gNotavailable, gFontSize: 20.0}, backColorValue);
+      return MyLabel(
+          {gLabel: gNotavailable, gFontSize: _defaultFontSize}, backColorValue);
     }
 
     if ((item[gIsHidden] ?? "false") == gTrue) {
@@ -2410,9 +2456,9 @@ class DataModel extends ChangeNotifier {
             if (isReadonly) {
               return;
             }
-            setFocus(name, item[gId], id);
-            textChange(
-                isTrue ? "false" : "true", item, context, type, name, id);
+            setFocus(name, item[gId], id, (param[gTypeOwner] == gForm));
+            textChange(isTrue ? "false" : "true", item, context,
+                param[gTypeOwner], name, id);
 
             myNotifyListeners();
             //phonecallItem();
@@ -2440,7 +2486,7 @@ class DataModel extends ChangeNotifier {
             showTxt = getSCurrent('Please select icon');
           }
         } else {
-          showTxt = getSCurrent('Please enter ' + item[gLabel]);
+          showTxt = getSCurrent('Please enter ') + getSCurrent(item[gLabel]);
         }
       }
 
@@ -2463,15 +2509,44 @@ class DataModel extends ChangeNotifier {
       }
       if (item[gType] == gIcon && !isNull(param[gValue])) {
         param[gIsIcon] = true;
-        Widget wIcon = getImg(param, backColorValue);
-        w = Row(
-          children: [
-            Expanded(child: SizedBox()),
-            IgnorePointer(
-              child: wIcon,
-            ),
-          ],
-        );
+        if (originalValue == param[gValue]) {
+          Widget wIcon = getImg(param, backColorValue);
+          w = (type == gTreeView)
+              ? wIcon
+              : Row(
+                  children: [
+                    Expanded(child: SizedBox()),
+                    IgnorePointer(
+                      child: wIcon,
+                    ),
+                  ],
+                );
+        } else {
+          param[gColor] = Colors.red;
+          Widget wIcon = getImg(param, backColorValue);
+          Widget wIconOriginal =
+              getImg({gValue: originalValue}, backColorValue);
+          w = (type == gTreeView)
+              ? Row(
+                  children: [
+                    wIconOriginal,
+                    MyLabel({gLabel: '->'}, backColorValue),
+                    wIcon,
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: SizedBox()),
+                    IgnorePointer(
+                      child: wIconOriginal,
+                    ),
+                    MyLabel({gLabel: '->'}, backColorValue),
+                    IgnorePointer(
+                      child: wIcon,
+                    ),
+                  ],
+                );
+        }
       } else {
         w = MyLabel(labelParam, backColorValue);
         param[gIsLabel] = true;
@@ -2486,7 +2561,7 @@ class DataModel extends ChangeNotifier {
     if (isNull(droplist)) {
       item[gFocus] = isFocus;
 
-      item[gFontSize] = 11.0;
+      item[gFontSize] = _defaultFontSize;
       item[gFontStyle] = FontStyle.italic;
       if (param[gTypeOwner] != gForm) item[gLength] = null;
       w = TextFieldWidget(
@@ -2668,7 +2743,7 @@ class DataModel extends ChangeNotifier {
     dynamic splitS = source.split('}');
     dynamic result = '';
     dynamic delimiter = '';
-
+    //先按其它符号分隔，再按空格分隔
     for (int i = 0; i < splitS.length; i++) {
       dynamic splitSpace = splitS[i].split(' ');
       for (int k = 0; k < splitSpace.length; k++) {
@@ -2873,7 +2948,7 @@ class DataModel extends ChangeNotifier {
     }
     titleWidgets.add(Text(getSCurrent(dataThis[gLabel]),
         style: TextStyle(
-            fontSize: _tabList[tabName][gFontSize] ?? 24.0,
+            fontSize: _tabList[tabName][gFontSize] ?? (_defaultFontSize + 5),
             fontWeight: index == _tabList[tabName][gTabIndex]
                 ? FontWeight.bold
                 : FontWeight.normal,
@@ -2992,6 +3067,13 @@ class DataModel extends ChangeNotifier {
   }
 
   getTableFloatingBtns(name, context) {
+    var tableInfo = _tableList[name];
+    bool canEdit = tableInfo[gAttr][gCanEdit];
+    bool canDelete = tableInfo[gAttr][gCanDelete];
+    bool hasDetail = ((tableInfo[gAttr][gDetail] ?? "") != "");
+    bool isNotLog = (name.indexOf(gZzylog) < 0);
+    bool canCancel = canEdit;
+
     clearActionBtnMap(name);
     var focusName = _mFocusNode[gName] ?? '';
     if (isNull(focusName)) {
@@ -3014,10 +3096,30 @@ class DataModel extends ChangeNotifier {
 
     double size = 36.0;
     int backgroundcolor = Colors.white.value;
-    var tableInfo = _tableList[name];
-    if (tableInfo[gAttr][gCanEdit]) {
+    bool isForm = _mFocusNode[gIsForm] ?? false;
+    if (isForm) {
+      return;
+    }
+    if (canEdit) {
       var labelValue = gEdit;
       var icon = 61453;
+
+      addActionButton(
+          name,
+          {
+            gLabel: labelValue,
+            gAction: gLocalAction,
+            gTableID: name,
+            gRow: dataRow,
+            gContext: context,
+            gIconSize: size,
+            gIcon: icon,
+            gBackgroundColor: backgroundcolor
+          },
+          context);
+    }
+
+    if (canCancel) {
       if (isModifiedValid(tableInfo, dataRow)) {
         addActionButton(
             name,
@@ -3048,22 +3150,8 @@ class DataModel extends ChangeNotifier {
             },
             context);
       }
-
-      addActionButton(
-          name,
-          {
-            gLabel: labelValue,
-            gAction: gLocalAction,
-            gTableID: name,
-            gRow: dataRow,
-            gContext: context,
-            gIconSize: size,
-            gIcon: icon,
-            gBackgroundColor: backgroundcolor
-          },
-          context);
     }
-    if (tableInfo[gAttr][gCanDelete]) {
+    if (canDelete) {
       addActionButton(
           name,
           {
@@ -3078,7 +3166,7 @@ class DataModel extends ChangeNotifier {
           },
           context);
     }
-    if ((tableInfo[gAttr][gDetail] ?? "") != "") {
+    if (hasDetail) {
       addActionButton(
           name,
           {
@@ -3093,7 +3181,7 @@ class DataModel extends ChangeNotifier {
           },
           context);
     }
-    if (name.indexOf(gZzylog) < 0) {
+    if (isNotLog) {
       addActionButton(
           name,
           {
@@ -3171,7 +3259,8 @@ class DataModel extends ChangeNotifier {
     }
     int backgroundcolor = Colors.white.value;
 
-    return MyLabel({gLabel: value, gFontSize: 10.0}, backgroundcolor);
+    return MyLabel(
+        {gLabel: value, gFontSize: _defaultFontSize - 5}, backgroundcolor);
     /*List<Widget> actionList = [];
     actionList.insert(
         0,
@@ -3578,7 +3667,7 @@ class DataModel extends ChangeNotifier {
     );
   }
 
-  getTreeNodeTable(tableName, parentid, context, backcolor) {
+  getTreeNodeTable(tableName, item, parentid, context, backcolor) {
     List list = getTableRowByParentID(tableName, parentid);
     if (list.length < 1) {
       return null;
@@ -3589,16 +3678,18 @@ class DataModel extends ChangeNotifier {
       Map dataRow = list[i];
       var id = dataRow[gId];
       List<TreeNode> listChild =
-          getTreeNodeTable(tableName, id, context, backcolor);
-      var imgDefault = 0xf064c.toString();
-      if (!isNull(dataRow[gImage])) {
-        imgDefault = dataRow[gImage];
-      }
+          getTreeNodeTable(tableName, item, id, context, backcolor);
+      /*var imgDefault = 0xf064c.toString();
+      if (!isNull(dataRow[item[gId]])) {
+        imgDefault = dataRow[item[gId]];
+      }*/
       result.add(TreeNode(
           content: InkWell(
               child: Row(
                 children: [
-                  getImg({gValue: imgDefault}, backcolor),
+                  getRowItemOne(tableName, dataRow[gId], item, context,
+                      backcolor, gTreeView),
+                  //getImg({gValue: imgDefault}, backcolor),
                   MyLabel(
                       {gValue: getTableValueKeyFromTable(tableName, dataRow)},
                       backcolor),
@@ -3620,7 +3711,7 @@ class DataModel extends ChangeNotifier {
     return result;
   }
 
-  getTreeViewTable(droplistName, context, backcolor) {
+  getTreeViewTable(droplistName, item, context, backcolor) {
     var tableName = droplistName;
     var parentid = '';
     if (droplistName.indexOf("[") > 0) {
@@ -3661,8 +3752,8 @@ class DataModel extends ChangeNotifier {
                     {gValue: getTableValueAttr(tableName, gLabel)}, backcolor),
               ],
             ),
-            children:
-                getTreeNodeTable(tableName, parentid, context, backcolor)),
+            children: getTreeNodeTable(
+                tableName, item, parentid, context, backcolor)),
       ]),
     );
   }
@@ -3718,6 +3809,7 @@ class DataModel extends ChangeNotifier {
       return toLocalTime(result);
     }
     dynamic dplist = getDPidfromItem(col);
+
     if (!isNull(dplist)) {
       if (!_dpList.containsKey(dplist)) {
         var tableinfo = _tableList[dplist];
@@ -3729,6 +3821,13 @@ class DataModel extends ChangeNotifier {
             });
           }
         }
+      }
+      bool isLabel = false;
+      if (inputType == gAddress) {
+        isLabel = true;
+      }
+      if (isLabel) {
+        return result;
       }
 
       return getSCurrent(result);
@@ -3998,11 +4097,12 @@ class DataModel extends ChangeNotifier {
                 '-' +
                 _dpList[gDay][_dpListDefaultIndex[gDay]];
           } else if (type == gIcon) {
-            value = getInt(_dpList[dpid][_dpListDefaultIndex[dpid]][gValue])
-                .toString();
+            var indexRow = getDPIndex(_dpListDefaultIndex[dpid], item);
+            value = getInt(indexRow[gValue]).toString();
           } else {
             //print('=========   confirm: ' + item.toString());
-            value = _dpList[dpid][_dpListDefaultIndex[dpid]];
+            var indexRow = getDPIndex(_dpListDefaultIndex[dpid], item);
+            value = indexRow;
           }
           bool status = setItemAferDPClick(
               item, value, data[gTypeOwner], data[gName], id);
@@ -4216,7 +4316,7 @@ class DataModel extends ChangeNotifier {
       item[gValue] = item[gDefaultValue];
     });
     clearMFocusNode();
-    setFocus(tableName, null, null);
+    setFocus(tableName, null, null, true);
   }
 
   notAvailable(backcolor) {
@@ -4494,6 +4594,7 @@ class DataModel extends ChangeNotifier {
       overlayEntry?.remove();
       overlayEntry = null;
     } catch (e) {}
+    myNotifyListeners();
   }
 
   removeTableModified(tablename, id) {
@@ -7172,7 +7273,7 @@ class DataModel extends ChangeNotifier {
         var email = getValue(gLogin, gEmail, null)[gValue];
         setValue(gLogin, gPassword, null, 'smilesmart');
         setValue(formID, gEmail, null, email);
-        setFocus(formID, gPassword1, null);
+        setFocus(formID, gPassword1, null, true);
         _myId = email;
       }
     }
@@ -7236,19 +7337,25 @@ class DataModel extends ChangeNotifier {
     }
     value = getFormatter(value, item[gType]);
     setValue(name, item[gId], id, value);
-    setFocusNext(name, item[gId], null);
+    setFocusNext(name, item[gId], null, ((typeOwner ?? '') == gForm));
     myNotifyListeners();
     return true;
   }
 
-  setFocus(name, colId, id) {
+  setFocus(name, colId, id, isForm) {
     clearActionBtnMap(name);
     var typeOwner = gForm;
     if (_tableList[name] != null) {
       typeOwner = gTable;
     }
     if (!isNull(colId)) {
-      _mFocusNode = {gType: typeOwner, gName: name, gCol: colId, gId: id};
+      _mFocusNode = {
+        gType: typeOwner,
+        gName: name,
+        gCol: colId,
+        gId: id,
+        gIsForm: isForm
+      };
       print('===========   focusNode is ' + _mFocusNode.toString());
       return;
     }
@@ -7303,7 +7410,7 @@ class DataModel extends ChangeNotifier {
       colId = _mFocusNode = {gType: typeOwner, gName: name, gCol: colId};*/
   }
 
-  setFocusNext(name, colId, id) {
+  setFocusNext(name, colId, id, isForm) {
     //print('============    0');
     if (isNull(colId) || isNull(name)) {
       return;
@@ -7320,7 +7427,12 @@ class DataModel extends ChangeNotifier {
         Map item = itemOne.value;
         if (findItem) {
           if (item[gInputType] != gHidden && item[gType] != gLabel) {
-            _mFocusNode = {gType: type, gName: name, gCol: item[gId]};
+            _mFocusNode = {
+              gType: type,
+              gName: name,
+              gCol: item[gId],
+              gIsForm: isForm
+            };
             return;
           }
         }
@@ -8157,7 +8269,18 @@ class DataModel extends ChangeNotifier {
       //if (!isNullID(id) || (typeOwner == gForm && item[gType] != gSearch)) {
       //setTableValueItem(name, item[gId], id, text);
       setValue(name, item[gId], id, text);
-      getTableFloatingBtns(name, context);
+
+      /*if ((typeOwner ?? '') == gForm) {
+        bool canEdit = false,
+            canDelete = true,
+            hasDetail = false,
+            isNotLog = false,
+            canCancel = true;
+        getTableFloatingBtnsDetail(
+            name, context, canEdit, canDelete, hasDetail, isNotLog, canCancel);
+      } else {
+        getTableFloatingBtns(name, context);
+      }*/
       return;
     }
     if ((typeOwner ?? '') == gDroplist) {
