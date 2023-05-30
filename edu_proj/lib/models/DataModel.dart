@@ -243,6 +243,26 @@ class DataModel extends ChangeNotifier {
     ));
   }
 
+  addNewCheck(actionData, context) {
+    //update current new form info
+    Map param = actionData[0]['param'];
+
+    Map data = actionData[0][gData];
+    if (param[gType] == gTable) {
+      dynamic name = param[gName];
+      dynamic id = param[gId];
+      data.forEach((key, value) {
+        if (key != gId) {
+          Map item = getTableCol(name, key);
+          if (item != null) {
+            textChange(value, item, context, gTable, name, id);
+          }
+        }
+      });
+      myNotifyListeners();
+    }
+  }
+
   addTab(data, context, tabName) {
     if (isNull(data[gLabel]) || data[gLabel] == gDroplist) {
       return;
@@ -258,7 +278,7 @@ class DataModel extends ChangeNotifier {
   }
 
   addTable(data, context) {
-    clearMFocusNode();
+    clearMFocusNode(context);
     if (data[gBody] != null && data[gBody][gZzylog] != null) {
       addZzylog(Map.of(data[gBody][gZzylog]), context);
       return;
@@ -574,7 +594,7 @@ class DataModel extends ChangeNotifier {
 
   backContext(lastFocus, context, lastid) {
     _myDetailIDCurrent = lastid;
-    _mFocusNode = new Map<dynamic, dynamic>.of(lastFocus);
+    setFocusNode(new Map<dynamic, dynamic>.of(lastFocus), context);
     print('============= back to ' +
         _myDetailIDCurrent.toString() +
         " , mFocusNode" +
@@ -699,7 +719,7 @@ class DataModel extends ChangeNotifier {
     _actionLists = {};
     _menuLists = {};
     _dpList = {};
-    clearMFocusNode();
+    clearMFocusNode(context);
 
     removeAllScreens(context);
   }
@@ -712,8 +732,8 @@ class DataModel extends ChangeNotifier {
     _actionBtnMap = {};
   }
 
-  clearMFocusNode() {
-    _mFocusNode = {gType: null};
+  clearMFocusNode(context) {
+    setFocusNode({gType: null}, context);
     clearActionBtnMapAll();
   }
 
@@ -1010,7 +1030,7 @@ class DataModel extends ChangeNotifier {
         var alert = isItemValueValidStr(item, value);
         if ((alert ?? '') != '') {
           showMsg(context, alert, null);
-          setFocus(formid, item[gId], null, true);
+          setFocus(formid, item[gId], null, true, context);
           return;
         }
 
@@ -1430,7 +1450,7 @@ class DataModel extends ChangeNotifier {
                   if (dateList[2] != '') {
                     //close the detail
                     //setFormValueShow(formname, id);
-                    setFocusNext(formname, id, null, false);
+                    setFocusNext(formname, id, null, false, context);
 
                     myNotifyListeners();
                     return;
@@ -2456,7 +2476,8 @@ class DataModel extends ChangeNotifier {
             if (isReadonly) {
               return;
             }
-            setFocus(name, item[gId], id, (param[gTypeOwner] == gForm));
+            setFocus(
+                name, item[gId], id, (param[gTypeOwner] == gForm), context);
             textChange(isTrue ? "false" : "true", item, context,
                 param[gTypeOwner], name, id);
 
@@ -2913,7 +2934,8 @@ class DataModel extends ChangeNotifier {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: tab[gData].length,
-              itemBuilder: (context, index) => getTabByIndex(index, tabID),
+              itemBuilder: (context, index) =>
+                  getTabByIndex(index, tabID, context),
             ),
           ),
           SizedBox(
@@ -2940,7 +2962,7 @@ class DataModel extends ChangeNotifier {
         {gLabel: data[gType] + ' will be available soon'}, backcolor);
   }
 
-  getTabByIndex(int index, tabName) {
+  getTabByIndex(int index, tabName, context) {
     List<Widget> titleWidgets = [];
     var dataThis = _tabList[tabName][gData][index];
     if (!(dataThis[gVisible] ?? true)) {
@@ -2979,7 +3001,7 @@ class DataModel extends ChangeNotifier {
     return GestureDetector(
       onTap: () {
         _tabList[tabName][gTabIndex] = index;
-        clearMFocusNode();
+        clearMFocusNode(context);
         //_tabIndex = index;
         myNotifyListeners();
       },
@@ -4105,7 +4127,7 @@ class DataModel extends ChangeNotifier {
             value = indexRow;
           }
           bool status = setItemAferDPClick(
-              item, value, data[gTypeOwner], data[gName], id);
+              item, value, data[gTypeOwner], data[gName], id, context);
 
           if (status) {
             removeOverlay();
@@ -4315,8 +4337,8 @@ class DataModel extends ChangeNotifier {
       }
       item[gValue] = item[gDefaultValue];
     });
-    clearMFocusNode();
-    setFocus(tableName, null, null, true);
+    clearMFocusNode(context);
+    setFocus(tableName, null, null, true, context);
   }
 
   notAvailable(backcolor) {
@@ -4422,7 +4444,10 @@ class DataModel extends ChangeNotifier {
             actionData = value;
           }
         });
-        if (action == gAddTable) {
+        if (action == gAddnewcheck) {
+          //update the current able data
+          addNewCheck(actionData, context);
+        } else if (action == gAddTable) {
           actionData.forEach((element) {
             Map data0 = Map.of(element);
 
@@ -4448,6 +4473,8 @@ class DataModel extends ChangeNotifier {
           await setFormDefaultValue(actionData);*/
           /*} else if (action == gSetI10n) {
           await setI10n(actionData);*/
+        } else if (action == gSetFocus) {
+          await setFocusNode(actionData[0][gData], context);
         } else if (action == gSetImgList) {
           await setImgList(actionData);
         } else if (action == 'setInitForm') {
@@ -4772,7 +4799,7 @@ class DataModel extends ChangeNotifier {
       //tableData.removeWhere((element) => element[gId] == deletedID);
 
       tableRemove(tablename, data0[gBody], context);
-      clearMFocusNode();
+      clearMFocusNode(context);
     }
 
     myNotifyListeners();
@@ -7273,7 +7300,7 @@ class DataModel extends ChangeNotifier {
         var email = getValue(gLogin, gEmail, null)[gValue];
         setValue(gLogin, gPassword, null, 'smilesmart');
         setValue(formID, gEmail, null, email);
-        setFocus(formID, gPassword1, null, true);
+        setFocus(formID, gPassword1, null, true, context);
         _myId = email;
       }
     }
@@ -7331,32 +7358,33 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  setItemAferDPClick(item, value, typeOwner, name, id) {
+  setItemAferDPClick(item, value, typeOwner, name, id, context) {
     if (!isItemValueValid(item, value)) {
       return false;
     }
     value = getFormatter(value, item[gType]);
     setValue(name, item[gId], id, value);
-    setFocusNext(name, item[gId], null, ((typeOwner ?? '') == gForm));
+    setFocusNext(name, item[gId], null, ((typeOwner ?? '') == gForm), context);
     myNotifyListeners();
     return true;
   }
 
-  setFocus(name, colId, id, isForm) {
+  setFocus(name, colId, id, isForm, context) {
     clearActionBtnMap(name);
     var typeOwner = gForm;
     if (_tableList[name] != null) {
       typeOwner = gTable;
     }
+
     if (!isNull(colId)) {
-      _mFocusNode = {
+      setFocusNode({
         gType: typeOwner,
         gName: name,
         gCol: colId,
         gId: id,
-        gIsForm: isForm
-      };
-      print('===========   focusNode is ' + _mFocusNode.toString());
+        gIsForm: isForm,
+      }, context);
+
       return;
     }
 
@@ -7384,12 +7412,9 @@ class DataModel extends ChangeNotifier {
         colId = item[gId];
         var value = getValue(name, colId, id)[gValue];
         if (isNull(value) && !findFocus) {
-          _mFocusNode = {
-            gType: typeOwner,
-            gName: name,
-            gCol: colId,
-            gId: id ?? ''
-          };
+          setFocusNode(
+              {gType: typeOwner, gName: name, gCol: colId, gId: id ?? ''},
+              context);
           findFocus = true;
           return;
         }
@@ -7410,7 +7435,7 @@ class DataModel extends ChangeNotifier {
       colId = _mFocusNode = {gType: typeOwner, gName: name, gCol: colId};*/
   }
 
-  setFocusNext(name, colId, id, isForm) {
+  setFocusNext(name, colId, id, isForm, context) {
     //print('============    0');
     if (isNull(colId) || isNull(name)) {
       return;
@@ -7427,12 +7452,9 @@ class DataModel extends ChangeNotifier {
         Map item = itemOne.value;
         if (findItem) {
           if (item[gInputType] != gHidden && item[gType] != gLabel) {
-            _mFocusNode = {
-              gType: type,
-              gName: name,
-              gCol: item[gId],
-              gIsForm: isForm
-            };
+            setFocusNode(
+                {gType: type, gName: name, gCol: item[gId], gIsForm: isForm},
+                context);
             return;
           }
         }
@@ -7450,12 +7472,9 @@ class DataModel extends ChangeNotifier {
           if (columns[i][gType] == gLabel) {
             continue;
           }
-          _mFocusNode = {
-            gType: type,
-            gName: name,
-            gCol: columns[i][gId],
-            gId: id
-          };
+          setFocusNode(
+              {gType: type, gName: name, gCol: columns[i][gId], gId: id},
+              context);
           return;
         }
         if (columns[i][gId] == colId) {
@@ -7465,7 +7484,42 @@ class DataModel extends ChangeNotifier {
     }
   }
 
-  setFocusNode(map) {
+  setFocusNode(map, context) {
+    Map lastFocusNode = Map.of(_mFocusNode);
+    if (lastFocusNode[gType] == map[gType] &&
+        (lastFocusNode[gName] ?? '') == (map[gName] ?? '') &&
+        (lastFocusNode[gCol] ?? '') == (map[gCol] ?? '')) {
+      return;
+    }
+
+    //addnewcheck
+    /*
+    检查是否table
+      检查上一项是否addnewcheck
+        检查上一项是否修改
+          向后台发addnewcheck验证
+    后台如果发现新值已存在，执行操作（将值传回）
+    前端： 
+    */
+    if (lastFocusNode[gType] == gTable) {
+      if (!isNull(lastFocusNode[gCol]) && !isNull(lastFocusNode[gName])) {
+        dynamic item = getTableCol(lastFocusNode[gName], lastFocusNode[gCol]);
+        var value = getValue(
+            lastFocusNode[gName], lastFocusNode[gCol], lastFocusNode[gId]);
+        if (value[gType] != gOriginalValue) {
+          var valueModified = value[gValue];
+          bool isItemValid = isItemValueValid(item, valueModified);
+          if (!isItemValid) {
+            return;
+          }
+          if ((item[gAddnewcheck] ?? false)) {
+            //send request
+            lastFocusNode[gValue] = valueModified;
+            sendRequestOne(gAddnewcheck, lastFocusNode, context);
+          }
+        }
+      }
+    }
     _mFocusNode = map;
   }
 
@@ -7841,7 +7895,7 @@ class DataModel extends ChangeNotifier {
 
   showDropList(dpid, item, context) {}
   showFormEdit(data, context) {
-    clearMFocusNode();
+    clearMFocusNode(context);
     var tableName = data[gActionid] ?? data[gTableID];
     Map<dynamic, dynamic> formDefine = _formLists[tableName];
     Map<dynamic, dynamic> items = formDefine[gItems];
@@ -8099,7 +8153,7 @@ class DataModel extends ChangeNotifier {
         if (_tabList[tabName][gTabIndex] != i) {
           _tabList[tabName][gTabIndex] = i;
         }
-        clearMFocusNode();
+        clearMFocusNode(context);
         myNotifyListeners();
         return true;
       }
@@ -8212,7 +8266,7 @@ class DataModel extends ChangeNotifier {
 
   tableSort(tableName, columnIndex, ascending, context) {
     //List data = tableList[tableName][gData];
-    clearMFocusNode();
+    clearMFocusNode(context);
     clearTable(tableName);
     Map tableInfo = tableList[tableName];
     List data = tableInfo[gData];

@@ -40,7 +40,8 @@ class TableData extends DataTableSource {
 
       dataCellList.add(DataCell(w, onTap: () {
         _param[gLabel] = gTableItem;
-        _dataModel.setFocus(_param[gTableID], colname, dataRow[gId], false);
+        _dataModel.setFocus(
+            _param[gTableID], colname, dataRow[gId], false, _context);
         _dataModel.getTableFloatingBtns(_param[gTableID], _context);
         _dataModel.myNotifyListeners();
       }));

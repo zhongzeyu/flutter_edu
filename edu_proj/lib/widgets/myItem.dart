@@ -162,7 +162,7 @@ class MyItem extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: tab[gData].length,
                 itemBuilder: (context, index) =>
-                    datamodel.getTabByIndex(index, tabID),
+                    datamodel.getTabByIndex(index, tabID, context),
               ),
             ),
             SizedBox(

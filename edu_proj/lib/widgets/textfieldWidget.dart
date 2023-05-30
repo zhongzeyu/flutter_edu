@@ -153,12 +153,12 @@ class TextFieldWidget extends StatelessWidget {
           //FocusScope.of(context).requestFocus(_commentFocus);
           //set focus
           datamodel.setFocus(
-              name, item[gId], null, ((typeOwner ?? '') == gForm));
+              name, item[gId], null, ((typeOwner ?? '') == gForm), context);
         },
         onEditingComplete: () {
           textChange(thistext, item, datamodel, context, typeOwner);
           datamodel.setFocusNext(
-              name, item[gId], id, ((typeOwner ?? '') == gForm));
+              name, item[gId], id, ((typeOwner ?? '') == gForm), context);
           datamodel.myNotifyListeners();
         },
       );
@@ -167,8 +167,8 @@ class TextFieldWidget extends StatelessWidget {
             onKey: (node, event) {
               String keyLabel = event.logicalKey.keyLabel;
               if (keyLabel == 'Tab') {
-                datamodel.setFocusNext(
-                    name, item[gId], null, ((typeOwner ?? '') == gForm));
+                datamodel.setFocusNext(name, item[gId], null,
+                    ((typeOwner ?? '') == gForm), context);
 
                 datamodel.myNotifyListeners();
               } else {}
