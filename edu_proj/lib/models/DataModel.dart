@@ -2592,7 +2592,7 @@ class DataModel extends ChangeNotifier {
         name: name,
         id: id,
       );
-      param[gWidget] = w;
+      param[gWidget] = Expanded(child: w);
       param[gIsLabel] = false;
 
       w = addValidCheckWidget(param, context);
@@ -3339,9 +3339,16 @@ class DataModel extends ChangeNotifier {
       return null;
     }
     List tableData = tableInfo[gData];
+    for (int i = 0; i < tableData.length; i++) {
+      if (tableData[i][gId] == id) {
+        return tableData[i];
+      }
+    }
+    return null;
 
-    if (tableInfo[gTableMapPrefix] == null ||
-        tableInfo[gTableMapPrefix][gId] == null) {
+    /*if (tableInfo[gTableMapPrefix] == null ||
+        tableInfo[gTableMapPrefix][gId] == null ||
+        tableData[tableInfo[gTableMapPrefix][gId][id]] == null) {
       Map<dynamic, int> mapIDIndex = {};
 
       for (int i = 0; i < tableData.length; i++) {
@@ -3353,7 +3360,8 @@ class DataModel extends ChangeNotifier {
       }
       tableInfo[gTableMapPrefix][gId] = mapIDIndex;
     }
-    return tableData[tableInfo[gTableMapPrefix][gId][id]];
+
+    return tableData[tableInfo[gTableMapPrefix][gId][id]];*/
   }
 
   getTableRowByParentID(tableName, parentid) {
@@ -3928,7 +3936,7 @@ class DataModel extends ChangeNotifier {
 
   isItemValueValidStr(item, value) {
     if (item[gRequired] && isNull(value)) {
-      return getSCurrent(gIsrequired + "{" + item[gLabel] + "}");
+      return getSCurrent(item[gLabel]) + getSCurrent(' ' + gIsrequired);
     }
     if (item[gType] == gEmail &&
         !isNull(value) &&
@@ -7488,7 +7496,8 @@ class DataModel extends ChangeNotifier {
     Map lastFocusNode = Map.of(_mFocusNode);
     if (lastFocusNode[gType] == map[gType] &&
         (lastFocusNode[gName] ?? '') == (map[gName] ?? '') &&
-        (lastFocusNode[gCol] ?? '') == (map[gCol] ?? '')) {
+        (lastFocusNode[gCol] ?? '') == (map[gCol] ?? '') &&
+        (lastFocusNode[gId] ?? '') == (map[gId] ?? '')) {
       return;
     }
 
@@ -8258,6 +8267,8 @@ class DataModel extends ChangeNotifier {
     if (_dpList.containsKey(tablename)) {
       dpListRemove(tablename, row, context);
     }
+
+    //myNotifyListeners();
   }
 
   toExcel(data, context) {
