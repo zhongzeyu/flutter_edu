@@ -1,6 +1,8 @@
 import 'package:edu_proj/config/constants.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myGlass.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/widgets/textfieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +23,7 @@ class MyPopup extends StatelessWidget {
         backColor = btnColor;
       }
       getActions(context, backcolor) {
-        List actions =
+        List<Widget> actions =
             datamodel.getActionsBasic(_param[gActions], context, backcolor);
         return actions;
       }

@@ -1,5 +1,3 @@
-// @dart=2.9
-
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
@@ -17,7 +15,10 @@ class MyForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int thisbackcolor = backcolor ?? Colors.black.value;
+    int thisbackcolor = backcolor;
+    if (thisbackcolor < 0) {
+      thisbackcolor = Colors.black.value;
+    }
     //bool _submitstatus = true;
 
     dynamic _formName = _param[gValue];
@@ -32,7 +33,7 @@ class MyForm extends StatelessWidget {
               {gLabel: gNotavailable, gFontSize: 20.0}, thisbackcolor);
         }
         formSubmit(context, formKey) {
-          if (!_formKey.currentState.validate()) {
+          if (!_formKey.currentState!.validate()) {
             return;
           }
           formKey.currentState.save();
@@ -40,7 +41,7 @@ class MyForm extends StatelessWidget {
         }
 
         //datamodel.dpList[gYear] = [];
-        Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName];
+        Map<dynamic, dynamic> formDefine = datamodel.formLists[_formName]!;
         formDefine[gKey] = _formKey;
         Map<dynamic, dynamic> items = formDefine[gItems];
         //Color cBackColor = datamodel.fromBdckcolor(backcolor);
@@ -51,14 +52,15 @@ class MyForm extends StatelessWidget {
           //dynamic dataRow;
           //dataRow = _paramData[gData];
 
-          datamodel.setFocus(_formName, null, null, true,context);
+          datamodel.setFocus(_formName, null, null, true, context);
           //datamodel.formLists[_formName][gStatus] = true;
           items.entries.forEach((itemOne) {
             Map item = itemOne.value;
             if ((item[gIsHidden] ?? "false") != gTrue &&
                 (item[gType] ?? "") != gHidden) {
               if ((item[gInputType] ?? "") == gCode) {
-                datamodel.setFocusNode({gType: gForm, gName: _formName},context);
+                datamodel
+                    .setFocusNode({gType: gForm, gName: _formName}, context);
                 if (item[gTextController] == null) {
                   item[gTextController] = TextEditingController();
                 }
@@ -69,20 +71,21 @@ class MyForm extends StatelessWidget {
               } else {
                 Widget w = datamodel.getRowItemOne(
                     _formName, id, item, context, thisbackcolor, gForm);
-                if (w != null) {
-                  w = InkWell(
-                      onTap: () {
-                        datamodel.setFocus(_formName, item[gId], id, true,context);
-                        // datamodel.getTableFloatingBtns(_formName, context);
+                //if (w != null) {
+                w = InkWell(
+                    onTap: () {
+                      datamodel.setFocus(
+                          _formName, item[gId], id, true, context);
+                      // datamodel.getTableFloatingBtns(_formName, context);
 
-                        datamodel.myNotifyListeners();
-                      },
-                      child: w);
-                  result.add(w);
-                  result.add(SizedBox(
-                    height: 10.0,
-                  ));
-                }
+                      datamodel.myNotifyListeners();
+                    },
+                    child: w);
+                result.add(w);
+                result.add(SizedBox(
+                  height: 10.0,
+                ));
+                //}
               }
             }
           });
@@ -110,7 +113,7 @@ class MyForm extends StatelessWidget {
           result.add(InkWell(
             child: MyGlass(paramSubmit),
             onTap: () {
-              if (!_formKey.currentState.validate()) {
+              if (!_formKey.currentState!.validate()) {
                 return;
               }
               formSubmit(context, _formKey);

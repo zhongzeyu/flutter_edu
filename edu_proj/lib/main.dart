@@ -1,5 +1,7 @@
+// ignore_for_file: import_of_legacy_library_into_null_safe
+
 import 'package:edu_proj/common/app_theme.dart';
-import 'package:edu_proj/models/DataModel.dart';
+import 'models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,7 +35,7 @@ class MyAppState extends State<MyApp> {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect

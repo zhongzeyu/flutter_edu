@@ -1,6 +1,3 @@
-// @dart=2.9
-//import 'dart:convert';
-
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/MyForm.dart';
@@ -22,7 +19,7 @@ class MyItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       if (_param[gType] == null) {
-        return null;
+        return SizedBox();
       }
       var thisContext = this._param[gContext] ?? context;
       List<Widget> result = [];
@@ -32,7 +29,8 @@ class MyItem extends StatelessWidget {
         if (_param[gAction] == gTable) {
           List detail = _param[gItems];
           //print('============== param is ' + _param.toString());
-          List list = datamodel.getButtonsList(thisContext, detail, 0, _param);
+          dynamic list =
+              datamodel.getButtonsList(thisContext, detail, 0, _param);
 
           result.add(Wrap(
             spacing: 8.0, //gap between adjacent items
@@ -58,9 +56,9 @@ class MyItem extends StatelessWidget {
           gHeight: _param[gHeight] ?? null,
           gWidth: _param[gWidth] ?? null,
         });
-        if (myPic != null) {
-          result.add(myPic);
-        }
+        // if (myPic != null) {
+        result.add(myPic);
+        //}
 
         /*result.add(Image.memory(
           base64.decode(imgOriginal),
@@ -79,7 +77,7 @@ class MyItem extends StatelessWidget {
         //if is parent self table, use tree
         dynamic tableName = _param[gName];
 
-        Map tableInfo = datamodel.tableList[tableName];
+        dynamic tableInfo = datamodel.tableList[tableName];
         List columns = tableInfo[gColumns];
         bool isTreeview = false;
         for (int i = 0; i < columns.length; i++) {

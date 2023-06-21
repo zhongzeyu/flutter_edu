@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:edu_proj/config/constants.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +42,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
               false, // if set to true the link is handled in flutter
           onRender: (_pages) {
             setState(() {
-              pages = _pages;
+              pages = _pages!;
               isReady = true;
             });
           },
@@ -63,10 +64,10 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
           onLinkHandler: (dynamic uri) {
             //print('goto uri: $uri');
           },
-          onPageChanged: (int page, int total) {
+          onPageChanged: (page, total) {
             // print('page change: $page/$total');
             setState(() {
-              currentPage = page;
+              currentPage = page!;
             });
           },
         );
@@ -115,7 +116,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
               return FloatingActionButton.extended(
                 label: Text(datamodel.getSCurrent("Go to") + " ${pages ~/ 2}"),
                 onPressed: () async {
-                  await snapshot.data.setPage(pages ~/ 2);
+                  await snapshot.data!.setPage(pages ~/ 2);
                 },
               );
             }

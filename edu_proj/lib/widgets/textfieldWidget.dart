@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'dart:async';
 
 import 'package:edu_proj/config/constants.dart';
@@ -18,12 +17,12 @@ class TextFieldWidget extends StatelessWidget {
   //final _debouncer = Debouncer(milliseconds: 2000);
 
   TextFieldWidget(
-      {this.item,
-      this.backcolor,
+      {required this.item,
+      required this.backcolor,
       this.typeOwner,
       this.name,
       this.id,
-      int gBackgroundColor});
+      int? gBackgroundColor});
   /*_getWidth() {
     return null;
     //item[gWidth] ?? null;
@@ -73,7 +72,7 @@ class TextFieldWidget extends StatelessWidget {
       }
 
       TextEditingController txtController = item[gTxtEditingController];
-      var showValue = txtController.text ?? "";
+      var showValue = txtController.text;
 
       if (datamodel.isNull(showValue)) {
         txtController.text = "";
@@ -193,13 +192,13 @@ class TextFieldWidget extends StatelessWidget {
 class Debouncer {
   final int milliseconds;
   VoidCallback action;
-  Timer _timer;
+  Timer? _timer;
 
-  Debouncer({this.milliseconds});
+  Debouncer({required this.milliseconds, required this.action});
 
   run(VoidCallback action) {
     if (_timer != null) {
-      _timer.cancel();
+      _timer?.cancel();
     }
 
     _timer = Timer(Duration(milliseconds: milliseconds), action);

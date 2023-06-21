@@ -1,10 +1,12 @@
 import 'package:edu_proj/config/constants.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myGlass.dart';
 import 'package:edu_proj/widgets/myScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: import_of_legacy_library_into_null_safe
 import '../widgets/myPic.dart';
 
 class MyDetail extends StatelessWidget {
@@ -17,6 +19,7 @@ class MyDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unnecessary_null_comparison
     if (_param == null) {
       return SizedBox();
     }
@@ -29,15 +32,12 @@ class MyDetail extends StatelessWidget {
       List mapActions = [];
       List mapBottoms = [];
       bool isHome = false;
-      int thisbackcolor = backcolor ?? Colors.black.value;
+      int thisbackcolor = backcolor;
       _param.forEach((key, value) {
         if (value == null) {
           return;
         }
         Map mapItem = Map.of(value);
-        if (mapItem == null) {
-          return;
-        }
 
         mapItem.forEach((key1, value1) {
           if (key1 == gActions) {
@@ -51,8 +51,7 @@ class MyDetail extends StatelessWidget {
             mapBottoms.add(Map.of(value1[i]));
           }*/
           } else if (key1 == gItem) {
-            if (value1 is String &&
-                ((value1 + "") ?? "").indexOf(gHometab) > 0) {
+            if (value1 is String && ((value1 + "")).indexOf(gHometab) > 0) {
               isHome = true;
             }
           }

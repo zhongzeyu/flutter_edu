@@ -1,4 +1,5 @@
 import 'package:edu_proj/config/constants.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,13 +11,11 @@ class MyLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int thisbackcolor = backcolor ?? Colors.black.value;
+    int thisbackcolor = backcolor;
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       if (_param != null && (_param[gLabel] ?? _param[gValue]) != null) {
         Color labelColor = Colors.black;
-        if (thisbackcolor != null) {
-          labelColor = datamodel.fromBdckcolor(thisbackcolor);
-        }
+        labelColor = datamodel.fromBdckcolor(thisbackcolor);
         /*if (backcolor == Colors.transparent.value) {
           labelColor = Colors.black;
         }*/

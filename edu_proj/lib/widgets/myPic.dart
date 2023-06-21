@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'dart:convert';
 
 import 'package:edu_proj/config/constants.dart';
@@ -46,7 +45,7 @@ class MyPic extends StatelessWidget {
 
         return datamodel.imgCache[imgName];
       }
-      print('=================img height is ' + _param[gHeight] ?? null);
+      //print('=================img height is ' + _param[gHeight] ?? null);
       return Image.memory(
         base64.decode(_param[gImg]),
         fit: BoxFit.fill,

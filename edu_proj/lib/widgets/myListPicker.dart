@@ -1,8 +1,10 @@
 import 'package:edu_proj/config/constants.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class MyListPicker extends StatelessWidget {
   final Map _param;
   /*
@@ -17,7 +19,7 @@ class MyListPicker extends StatelessWidget {
     gData:[gYear, gMonth, gDay]
    ,
   */
-  final int backcolor;
+  int backcolor;
 
   MyListPicker(this._param, this.backcolor);
 
@@ -37,9 +39,7 @@ class MyListPicker extends StatelessWidget {
       //print('========== dplist is ' +          datamodel.dpList[_param[gData][0]].toString());
 
       Color labelColor = Colors.black;
-      if (backcolor != null) {
-        labelColor = datamodel.fromBdckcolor(backcolor);
-      }
+      labelColor = datamodel.fromBdckcolor(backcolor);
 
       List selectedList = _param[gSelectedList];
 

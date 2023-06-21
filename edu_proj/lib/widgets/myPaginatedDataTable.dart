@@ -1,4 +1,3 @@
-// @dart=2.9
 import 'package:edu_proj/config/constants.dart';
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myLabel.dart';
@@ -19,7 +18,7 @@ class MyPaginatedDataTable extends StatelessWidget {
     return Consumer<DataModel>(builder: (context, datamodel, child) {
       dynamic tableName = _param[gName];
 
-      Map tableInfo = datamodel.tableList[tableName];
+      dynamic tableInfo = datamodel.tableList[tableName];
       List columns = tableInfo[gColumns];
       datamodel.setTableDataSearch(tableName, context, _param[gOther]);
 
@@ -74,10 +73,10 @@ class MyPaginatedDataTable extends StatelessWidget {
         },
         initialFirstRowIndex: tableInfo[gRowCurrent],
         //actions: [Text('action0'), Text('action1')],
-        onRowsPerPageChanged: (int v) {
+        /*onRowsPerPageChanged: (int v) {
           //widget.onRowsPerPageChanged?.call(v ?? 10);
           //datamodel.setRowsPerPage(tableInfo, v);
-        },
+        },*/
         columns: getTableColumns(),
         columnSpacing: 15,
         //horizontalMargin: 5,

@@ -1,10 +1,12 @@
 import 'package:edu_proj/config/constants.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:edu_proj/models/DataModel.dart';
 import 'package:edu_proj/widgets/myScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/myGlass.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import '../widgets/myPic.dart';
 
 class FirstPage extends StatelessWidget {

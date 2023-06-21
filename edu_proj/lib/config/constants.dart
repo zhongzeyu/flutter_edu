@@ -94,6 +94,7 @@ const gEmployee = 'employee';
 const gEn = 'en';
 const gEnterusercode = 'enterusercode';
 const gEntrytime = 'entrytime';
+const gErrMsg = 'errMsg';
 const gEteremailtoresetpassword = 'eteremailtoresetpassword';
 const gExcel = 'Excel';
 const gExpanded = 'Expanded';

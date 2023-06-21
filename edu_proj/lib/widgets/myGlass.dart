@@ -2,6 +2,7 @@ import 'package:edu_proj/config/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// ignore: import_of_legacy_library_into_null_safe
 import '../models/DataModel.dart';
 
 class MyGlass extends StatelessWidget {
@@ -59,7 +60,7 @@ class GlassPainter extends CustomPainter {
   Map param = {};
 
   GlassPainter({
-    this.param,
+    required this.param,
   });
   final Paint paintObject = Paint();
 
